@@ -148,7 +148,7 @@ function AdminPanel() {
   return (
     <main className="min-h-screen bg-white text-brand-navy px-4 sm:px-8 py-8">
       <h1 className="text-2xl font-bold mb-1">Espace organisateur</h1>
-      <p className="text-slate-500 text-sm mb-6">Escape Game IUA X Classe</p>
+      <p className="text-slate-500 text-sm mb-6">Escape Game IUA Classe X</p>
 
       <div className="flex gap-2 mb-6">
         <TabButton active={tab === "questions"} onClick={() => setTab("questions")}>Énigmes</TabButton>

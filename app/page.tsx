@@ -6,13 +6,13 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-white text-center">
       <Image
         src="/logos/logo-iua-x-classe.jpg"
-        alt="IUA X Classe"
+        alt="IUA Classe X"
         width={280}
         height={280}
         className="mb-6 w-56 sm:w-64 h-auto"
         priority
       />
-      <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-brand-navy">Escape Game IUA X Classe</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-brand-navy">Escape Game IUA Classe X</h1>
       <p className="text-slate-600 max-w-md mb-10">
         Un téléphone par équipe. Résolvez les énigmes, débloquez votre fragment,
         puis rejoignez l&apos;amphi pour reconstituer la phrase finale.
