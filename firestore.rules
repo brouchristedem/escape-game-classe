@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Lecture publique des questions et de la config (nécessaire pour jouer),
+    // écriture laissée ouverte car l'espace /admin n'a qu'une protection
+    // par mot de passe côté client (pas d'auth Firebase).
+    // À restreindre si besoin en ajoutant une vraie authentification admin.
+    match /questions/{questionId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
