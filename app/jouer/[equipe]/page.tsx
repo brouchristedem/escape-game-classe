@@ -136,14 +136,14 @@ export default function JouerEquipe() {
   }
 
   if (phase === "loading") {
-    return <Centered>Chargement du quiz...</Centered>;
+    return <Centered>Chargement de l&apos;escape game...</Centered>;
   }
 
   if (phase === "error") {
     return (
       <Centered>
         {equipeValide
-          ? "Aucune question n'est encore configurée pour cette salle. Demandez à l'organisateur de les ajouter dans l'espace organisateur."
+          ? "Aucune énigme n'est encore configurée pour cette salle. Demandez à l'organisateur de les ajouter dans l'espace organisateur."
           : "Numéro d'équipe invalide."}
       </Centered>
     );
@@ -151,15 +151,15 @@ export default function JouerEquipe() {
 
   if (phase === "termine") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white text-center">
-        <p className="text-indigo-300 mb-2">Équipe {equipe}</p>
-        <h1 className="text-2xl font-bold mb-6">Bravo, votre quiz est terminé !</h1>
-        <p className="text-indigo-200 mb-3">Votre fragment de la phrase finale :</p>
-        <div className="bg-amber-400 text-indigo-950 font-bold text-2xl px-8 py-4 rounded-xl mb-8">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-white text-center">
+        <p className="text-brand-blue mb-2">Équipe {equipe}</p>
+        <h1 className="text-2xl font-bold mb-6 text-brand-navy">Bravo, votre escape game est terminé !</h1>
+        <p className="text-slate-600 mb-3">Votre fragment de la phrase finale :</p>
+        <div className="bg-brand-blue-light border-2 border-brand-blue text-brand-navy font-bold text-2xl px-8 py-4 rounded-xl mb-8">
           {fragment}
         </div>
-        <p className="text-indigo-300 max-w-sm">
-          Direction l&apos;amphi, quiz final ! Le Porte-parole garde ce fragment affiché jusqu&apos;à ce qu&apos;il soit posé au tableau.
+        <p className="text-slate-500 max-w-sm">
+          Direction l&apos;amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu&apos;à ce qu&apos;il soit posé au tableau.
         </p>
       </main>
     );
@@ -168,28 +168,28 @@ export default function JouerEquipe() {
   if (!question) return <Centered>Chargement...</Centered>;
 
   return (
-    <main className="min-h-screen flex flex-col px-6 py-8 bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white">
-      <div className="flex items-center justify-between mb-6 text-sm text-indigo-300">
+    <main className="min-h-screen flex flex-col px-6 py-8 bg-white">
+      <div className="flex items-center justify-between mb-6 text-sm text-slate-500">
         <span>Équipe {equipe}</span>
-        <span>Question {index + 1} / {questions.length}</span>
+        <span>Énigme {index + 1} / {questions.length}</span>
         {timeLeft !== null && (
-          <span className={`font-semibold ${timeLeft <= 5 ? "text-red-400" : "text-amber-300"}`}>
+          <span className={`font-semibold ${timeLeft <= 5 ? "text-red-500" : "text-brand-blue"}`}>
             {timeLeft}s
           </span>
         )}
       </div>
 
-      <h1 className="text-xl font-semibold mb-8 leading-snug">{question.texte}</h1>
+      <h1 className="text-xl font-semibold mb-8 leading-snug text-brand-navy">{question.texte}</h1>
 
       <div className="flex flex-col gap-3">
         {question.propositions.map((prop, i) => {
           const isDisabled = disabledOptions.includes(i);
           const isSelected = selected === i;
-          let style = "bg-indigo-800/60 hover:bg-indigo-700";
+          let style = "bg-brand-blue-light border border-brand-blue-light hover:border-brand-blue text-brand-navy";
           if (feedback && isSelected) {
-            style = feedback.ok ? "bg-green-500" : "bg-red-500";
+            style = feedback.ok ? "bg-green-500 text-white" : "bg-red-500 text-white";
           } else if (isDisabled) {
-            style = "bg-indigo-950 text-indigo-500 line-through";
+            style = "bg-slate-100 text-slate-400 line-through";
           }
           return (
             <button
@@ -205,13 +205,13 @@ export default function JouerEquipe() {
       </div>
 
       {feedback && (
-        <div className={`mt-6 text-center font-medium ${feedback.ok ? "text-green-300" : "text-red-300"}`}>
+        <div className={`mt-6 text-center font-medium ${feedback.ok ? "text-green-600" : "text-red-600"}`}>
           {feedback.text}
         </div>
       )}
 
       {attempts === 1 && !feedback && (
-        <p className="mt-6 text-center text-amber-300 text-sm">Dernière tentative pour cette question.</p>
+        <p className="mt-6 text-center text-brand-blue text-sm">Dernière tentative pour cette énigme.</p>
       )}
     </main>
   );
@@ -219,7 +219,7 @@ export default function JouerEquipe() {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 text-center bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white">
+    <main className="min-h-screen flex items-center justify-center px-6 text-center bg-white text-brand-navy">
       <p>{children}</p>
     </main>
   );

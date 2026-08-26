@@ -44,20 +44,20 @@ export default function Admin() {
 
   if (!unlocked) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-slate-950 text-white">
-        <h1 className="text-xl font-semibold mb-4">Espace organisateur</h1>
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
+        <h1 className="text-xl font-semibold mb-4 text-brand-navy">Espace organisateur</h1>
         <input
           type="password"
           value={pwd}
           onChange={(e) => setPwd(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && tryUnlock()}
           placeholder="Mot de passe"
-          className="bg-slate-800 rounded-lg px-4 py-2 mb-3 w-64 text-center"
+          className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-4 py-2 mb-3 w-64 text-center text-brand-navy"
         />
-        <button onClick={tryUnlock} className="bg-amber-400 text-slate-950 font-semibold px-6 py-2 rounded-full">
+        <button onClick={tryUnlock} className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition">
           Entrer
         </button>
-        {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
+        {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
       </main>
     );
   }
@@ -132,7 +132,7 @@ function AdminPanel() {
   }
 
   async function removeQuestion(id: string) {
-    if (!confirm("Supprimer cette question ?")) return;
+    if (!confirm("Supprimer cette énigme ?")) return;
     await deleteQuestion(id);
     reload();
   }
@@ -146,18 +146,18 @@ function AdminPanel() {
   const questionsFiltrees = questions.filter((q) => q.salle === salleFiltre);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-4 sm:px-8 py-8">
+    <main className="min-h-screen bg-white text-brand-navy px-4 sm:px-8 py-8">
       <h1 className="text-2xl font-bold mb-1">Espace organisateur</h1>
-      <p className="text-slate-400 text-sm mb-6">Quiz Semaine d&apos;Intégration</p>
+      <p className="text-slate-500 text-sm mb-6">Escape Game IUA X Classe</p>
 
       <div className="flex gap-2 mb-6">
-        <TabButton active={tab === "questions"} onClick={() => setTab("questions")}>Questions</TabButton>
+        <TabButton active={tab === "questions"} onClick={() => setTab("questions")}>Énigmes</TabButton>
         <TabButton active={tab === "phrase"} onClick={() => setTab("phrase")}>Phrase finale</TabButton>
       </div>
 
       {tab === "phrase" && (
         <section className="max-w-xl">
-          <p className="text-slate-300 mb-4 text-sm">
+          <p className="text-slate-600 mb-4 text-sm">
             Un fragment par équipe (1 à 10). Assemblés dans l&apos;ordre dans l&apos;amphi, ils forment la phrase finale.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -171,7 +171,7 @@ function AdminPanel() {
                     next[i] = e.target.value;
                     setFragments(next);
                   }}
-                  className="bg-slate-800 rounded-lg px-3 py-2 flex-1"
+                  className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-3 py-2 flex-1"
                   placeholder={`Fragment ${i + 1}`}
                 />
               </div>
@@ -180,7 +180,7 @@ function AdminPanel() {
           <button
             onClick={saveFragments}
             disabled={savingFragments}
-            className="bg-amber-400 text-slate-950 font-semibold px-6 py-2 rounded-full"
+            className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition"
           >
             {savingFragments ? "Enregistrement..." : "Enregistrer la phrase"}
           </button>
@@ -193,38 +193,38 @@ function AdminPanel() {
       {tab === "questions" && (
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Formulaire */}
-          <section className="bg-slate-900 rounded-2xl p-5">
-            <h2 className="font-semibold mb-4">{editingId ? "Modifier la question" : "Ajouter une question"}</h2>
+          <section className="bg-brand-blue-light rounded-2xl p-5">
+            <h2 className="font-semibold mb-4 text-brand-navy">{editingId ? "Modifier l'énigme" : "Ajouter une énigme"}</h2>
 
-            <label className="block text-sm text-slate-400 mb-1">Salle de TD</label>
+            <label className="block text-sm text-slate-500 mb-1">Salle de TD</label>
             <select
               value={form.salle}
               onChange={(e) => setForm({ ...form, salle: Number(e.target.value) as Salle })}
-              className="bg-slate-800 rounded-lg px-3 py-2 mb-3 w-full"
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
             >
               <option value={1}>TD1 (équipes 1-3)</option>
               <option value={2}>TD2 (équipes 4-7)</option>
               <option value={3}>TD3 (équipes 8-10)</option>
             </select>
 
-            <label className="block text-sm text-slate-400 mb-1">Ordre d&apos;affichage</label>
+            <label className="block text-sm text-slate-500 mb-1">Ordre d&apos;affichage</label>
             <input
               type="number"
               min={1}
               value={form.ordre}
               onChange={(e) => setForm({ ...form, ordre: Number(e.target.value) })}
-              className="bg-slate-800 rounded-lg px-3 py-2 mb-3 w-full"
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
             />
 
-            <label className="block text-sm text-slate-400 mb-1">Question</label>
+            <label className="block text-sm text-slate-500 mb-1">Énigme</label>
             <textarea
               value={form.texte}
               onChange={(e) => setForm({ ...form, texte: e.target.value })}
-              className="bg-slate-800 rounded-lg px-3 py-2 mb-3 w-full"
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
               rows={2}
             />
 
-            <label className="block text-sm text-slate-400 mb-1">Propositions (cochez la bonne réponse)</label>
+            <label className="block text-sm text-slate-500 mb-1">Propositions (cochez la bonne réponse)</label>
             {form.propositions.map((p, i) => (
               <div key={i} className="flex items-center gap-2 mb-2">
                 <input
@@ -232,6 +232,7 @@ function AdminPanel() {
                   name="correct"
                   checked={form.correctIndex === i}
                   onChange={() => setForm({ ...form, correctIndex: i as 0 | 1 | 2 | 3 })}
+                  className="accent-brand-blue"
                 />
                 <input
                   value={p}
@@ -240,48 +241,48 @@ function AdminPanel() {
                     next[i] = e.target.value;
                     setForm({ ...form, propositions: next });
                   }}
-                  className="bg-slate-800 rounded-lg px-3 py-2 flex-1"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 flex-1"
                   placeholder={`Proposition ${i + 1}`}
                 />
               </div>
             ))}
 
-            <label className="block text-sm text-slate-400 mb-1 mt-2">Texte affiché si bonne réponse</label>
+            <label className="block text-sm text-slate-500 mb-1 mt-2">Texte affiché si bonne réponse</label>
             <input
               value={form.feedbackCorrect}
               onChange={(e) => setForm({ ...form, feedbackCorrect: e.target.value })}
-              className="bg-slate-800 rounded-lg px-3 py-2 mb-3 w-full"
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
               placeholder="Bravo, c'est la bonne réponse !"
             />
 
-            <label className="block text-sm text-slate-400 mb-1">Texte affiché si mauvaise réponse</label>
+            <label className="block text-sm text-slate-500 mb-1">Texte affiché si mauvaise réponse</label>
             <input
               value={form.feedbackIncorrect}
               onChange={(e) => setForm({ ...form, feedbackIncorrect: e.target.value })}
-              className="bg-slate-800 rounded-lg px-3 py-2 mb-3 w-full"
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
               placeholder="Ce n'est pas ça, réessayez !"
             />
 
-            <label className="block text-sm text-slate-400 mb-1">Temps limite (secondes, laisser vide = aucun)</label>
+            <label className="block text-sm text-slate-500 mb-1">Temps limite (secondes, laisser vide = aucun)</label>
             <input
               type="number"
               min={5}
               value={form.tempsLimite}
               onChange={(e) => setForm({ ...form, tempsLimite: e.target.value })}
-              className="bg-slate-800 rounded-lg px-3 py-2 mb-4 w-full"
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-4 w-full"
               placeholder="Ex. 30"
             />
 
             <p className="text-slate-500 text-xs mb-4">
-              Règle fixe du jeu : 2 tentatives par question, puis passage automatique à la question suivante.
+              Règle fixe du jeu : 2 tentatives par énigme, puis passage automatique à l&apos;énigme suivante.
             </p>
 
             <div className="flex gap-3">
-              <button onClick={submitForm} className="bg-amber-400 text-slate-950 font-semibold px-6 py-2 rounded-full">
-                {editingId ? "Enregistrer les modifications" : "Ajouter la question"}
+              <button onClick={submitForm} className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition">
+                {editingId ? "Enregistrer les modifications" : "Ajouter l'énigme"}
               </button>
               {editingId && (
-                <button onClick={resetForm} className="text-slate-400 underline text-sm">
+                <button onClick={resetForm} className="text-slate-500 underline text-sm">
                   Annuler
                 </button>
               )}
@@ -295,8 +296,8 @@ function AdminPanel() {
                 <button
                   key={s}
                   onClick={() => setSalleFiltre(s as Salle)}
-                  className={`px-4 py-1.5 rounded-full text-sm ${
-                    salleFiltre === s ? "bg-amber-400 text-slate-950" : "bg-slate-800 text-slate-300"
+                  className={`px-4 py-1.5 rounded-full text-sm transition ${
+                    salleFiltre === s ? "bg-brand-blue text-white" : "bg-brand-blue-light text-brand-navy"
                   }`}
                 >
                   TD{s}
@@ -304,30 +305,30 @@ function AdminPanel() {
               ))}
             </div>
 
-            {loading && <p className="text-slate-400">Chargement...</p>}
+            {loading && <p className="text-slate-500">Chargement...</p>}
             {!loading && questionsFiltrees.length === 0 && (
-              <p className="text-slate-500 text-sm">Aucune question pour cette salle pour l&apos;instant.</p>
+              <p className="text-slate-500 text-sm">Aucune énigme pour cette salle pour l&apos;instant.</p>
             )}
 
             <div className="flex flex-col gap-3">
               {questionsFiltrees.map((q) => (
-                <div key={q.id} className="bg-slate-900 rounded-xl p-4">
+                <div key={q.id} className="bg-brand-blue-light rounded-xl p-4">
                   <div className="flex justify-between items-start gap-2">
-                    <p className="font-medium text-sm">
+                    <p className="font-medium text-sm text-brand-navy">
                       #{q.ordre} — {q.texte}
                     </p>
                     <div className="flex gap-2 shrink-0 text-xs">
-                      <button onClick={() => editQuestion(q)} className="text-amber-300 underline">
+                      <button onClick={() => editQuestion(q)} className="text-brand-blue underline">
                         Modifier
                       </button>
-                      <button onClick={() => removeQuestion(q.id)} className="text-red-400 underline">
+                      <button onClick={() => removeQuestion(q.id)} className="text-red-500 underline">
                         Supprimer
                       </button>
                     </div>
                   </div>
-                  <ul className="text-slate-400 text-xs mt-2 space-y-0.5">
+                  <ul className="text-slate-500 text-xs mt-2 space-y-0.5">
                     {q.propositions.map((p, i) => (
-                      <li key={i} className={i === q.correctIndex ? "text-green-400" : ""}>
+                      <li key={i} className={i === q.correctIndex ? "text-green-600 font-medium" : ""}>
                         {i === q.correctIndex ? "✓ " : "· "}
                         {p}
                       </li>
@@ -350,8 +351,8 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-medium ${
-        active ? "bg-amber-400 text-slate-950" : "bg-slate-800 text-slate-300"
+      className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+        active ? "bg-brand-blue text-white" : "bg-brand-blue-light text-brand-navy"
       }`}
     >
       {children}

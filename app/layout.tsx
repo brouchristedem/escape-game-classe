@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Quiz Semaine d'Intégration",
-  description: "Escape game quiz pour la semaine d'intégration",
+  title: "Escape Game IUA X Classe",
+  description: "Escape Game de la semaine d'intégration — IUA X Classe",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

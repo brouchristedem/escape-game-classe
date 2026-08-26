@@ -14,18 +14,18 @@ export default function ChoixEquipe() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white">
-      <h1 className="text-2xl font-bold mb-2 text-center">Quel est le numéro de votre équipe ?</h1>
-      <p className="text-indigo-300 text-sm mb-8 text-center">Demandez au Pilote de sélectionner le numéro affiché sur la feuille de salle.</p>
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-white">
+      <h1 className="text-2xl font-bold mb-2 text-center text-brand-navy">Quel est le numéro de votre équipe ?</h1>
+      <p className="text-slate-500 text-sm mb-8 text-center">Demandez au Pilote de sélectionner le numéro affiché sur la feuille de salle.</p>
       <div className="grid grid-cols-5 gap-3 mb-10">
         {equipes.map((n) => (
           <button
             key={n}
             onClick={() => setEquipe(n)}
-            className={`w-14 h-14 rounded-xl text-lg font-semibold transition ${
+            className={`w-14 h-14 rounded-xl text-lg font-semibold transition border ${
               equipe === n
-                ? "bg-amber-400 text-indigo-950"
-                : "bg-indigo-800/60 hover:bg-indigo-700 text-white"
+                ? "bg-brand-blue border-brand-blue text-white"
+                : "bg-brand-blue-light border-brand-blue-light hover:border-brand-blue text-brand-navy"
             }`}
           >
             {n}
@@ -35,9 +35,9 @@ export default function ChoixEquipe() {
       <button
         onClick={commencer}
         disabled={!equipe}
-        className="bg-amber-400 disabled:bg-indigo-700 disabled:text-indigo-400 hover:bg-amber-300 text-indigo-950 font-semibold px-8 py-3 rounded-full text-lg transition disabled:cursor-not-allowed"
+        className="bg-brand-blue disabled:bg-slate-200 disabled:text-slate-400 hover:bg-brand-navy text-white font-semibold px-8 py-3 rounded-full text-lg transition disabled:cursor-not-allowed"
       >
-        Lancer le quiz
+        Lancer l&apos;escape game
       </button>
     </main>
   );
