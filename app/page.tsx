@@ -14,7 +14,7 @@ export default function Home() {
       />
       <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-brand-navy">Escape Game IUA Classe X</h1>
       <p className="text-slate-600 max-w-md mb-10">
-        Un téléphone par équipe. Résolvez les énigmes, débloquez votre fragment,
+        Résolvez les énigmes, débloquez votre fragment,
         puis rejoignez l&apos;amphi pour reconstituer la phrase finale.
       </p>
       <Link
