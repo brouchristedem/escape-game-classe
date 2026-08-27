@@ -12,20 +12,31 @@ export default function Home() {
         className="mb-6 w-56 sm:w-64 h-auto"
         priority
       />
-      <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-brand-navy">Escape Game IUA Classe X</h1>
-      <p className="text-slate-600 max-w-md mb-10">
-        Un téléphone par équipe. Résolvez les énigmes, débloquez votre fragment,
-        puis rejoignez l&apos;amphi pour reconstituer la phrase finale.
+      <h1 className="text-2xl sm:text-3xl font-bold mb-1 tracking-wide text-brand-navy">
+        IUA CLASSE X
+      </h1>
+      <p className="text-sm sm:text-base font-semibold tracking-widest text-brand-blue mb-8 uppercase">
+        Le jeu commence maintenant.
+      </p>
+      <p className="text-slate-600 max-w-sm mb-3 leading-relaxed">
+        Vous avez reçu une mission.
+        <br />
+        Vous ne connaissez pas encore la suite.
+        <br />
+        À vous de la découvrir.
       </p>
       <Link
         href="/jouer"
-        className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-8 py-3 rounded-full text-lg transition"
+        className="mt-7 bg-brand-blue hover:bg-brand-navy text-white font-semibold px-10 py-3 rounded-full text-lg transition"
       >
-        Commencer l&apos;escape game de mon équipe
+        Commencer
       </Link>
+      <p className="mt-8 text-xs text-slate-400 max-w-xs">
+        Chaque équipe possède un téléphone. Gardez-le précieusement.
+      </p>
       <Link
         href="/admin"
-        className="mt-6 text-brand-navy/70 text-sm underline underline-offset-4 hover:text-brand-navy"
+        className="mt-16 text-slate-300 text-[11px] hover:text-slate-400 transition"
       >
         Espace organisateur
       </Link>
