@@ -2,43 +2,48 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { getQuestionsForSalle, getQuizConfig } from "@/lib/data";
-import { Question, salleForEquipe } from "@/lib/types";
+import { getQuestionsForSalle, getQuizConfig, getTeam } from "@/lib/data";
+import { Question, Team, normaliserReponse } from "@/lib/types";
 
-type Phase = "loading" | "error" | "playing" | "revealed" | "termine";
+type Phase = "loading" | "error" | "playing" | "termine";
 
 export default function JouerEquipe() {
   const params = useParams();
-  const equipeRaw = Array.isArray(params.equipe) ? params.equipe[0] : params.equipe;
-  const equipe = Number(equipeRaw);
+  const teamId = Array.isArray(params.teamId) ? params.teamId[0] : params.teamId;
 
   const [phase, setPhase] = useState<Phase>("loading");
+  const [team, setTeam] = useState<Team | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [index, setIndex] = useState(0);
   const [attempts, setAttempts] = useState(0); // tentatives utilisées sur la question en cours
   const [selected, setSelected] = useState<number | null>(null);
   const [disabledOptions, setDisabledOptions] = useState<number[]>([]);
+  const [reponseLibre, setReponseLibre] = useState("");
   const [feedback, setFeedback] = useState<{ text: string; ok: boolean } | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [fragment, setFragment] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const equipeValide = Number.isInteger(equipe) && equipe >= 1 && equipe <= 10;
-
   useEffect(() => {
-    if (!equipeValide) {
+    if (!teamId) {
       setPhase("error");
       return;
     }
-    const salle = salleForEquipe(equipe);
-    getQuestionsForSalle(salle)
-      .then((qs) => {
-        if (qs.length === 0) {
+    getTeam(teamId)
+      .then((t) => {
+        if (!t) {
           setPhase("error");
           return;
         }
-        setQuestions(qs);
-        setPhase("playing");
+        setTeam(t);
+        return getQuestionsForSalle(t.salle).then((qs) => {
+          if (qs.length === 0) {
+            setPhase("error");
+            return;
+          }
+          setQuestions(qs);
+          setPhase("playing");
+        });
       })
       .catch(() => setPhase("error"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,6 +81,7 @@ export default function JouerEquipe() {
     setFeedback(null);
     setSelected(null);
     setDisabledOptions([]);
+    setReponseLibre("");
     setAttempts(0);
     if (index + 1 >= questions.length) {
       finishQuiz();
@@ -88,7 +94,8 @@ export default function JouerEquipe() {
     if (timerRef.current) clearInterval(timerRef.current);
     try {
       const config = await getQuizConfig();
-      setFragment(config.fragments[equipe - 1] || "(fragment non configuré)");
+      const idx = team?.fragmentIndex;
+      setFragment(idx !== null && idx !== undefined ? config.fragments[idx] || "(fragment non configuré)" : "(fragment non attribué)");
     } catch {
       setFragment("(erreur de chargement du fragment)");
     }
@@ -106,14 +113,13 @@ export default function JouerEquipe() {
       } else {
         setFeedback(null);
         setSelected(null);
+        setReponseLibre("");
       }
     }, 1500);
   }
 
-  function handleAnswer(optionIndex: number) {
-    if (!question || feedback) return; // déjà en train de traiter une réponse
-    setSelected(optionIndex);
-    const correct = optionIndex === question.correctIndex;
+  function traiterReponse(correct: boolean) {
+    if (!question) return;
     if (timerRef.current) clearInterval(timerRef.current);
 
     if (correct) {
@@ -122,7 +128,6 @@ export default function JouerEquipe() {
     } else {
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
-      setDisabledOptions((d) => [...d, optionIndex]);
       setFeedback({ text: question.feedbackIncorrect || "Mauvaise réponse.", ok: false });
       setTimeout(() => {
         if (nextAttempts >= 2) {
@@ -130,9 +135,24 @@ export default function JouerEquipe() {
         } else {
           setFeedback(null);
           setSelected(null);
+          setReponseLibre("");
         }
       }, 1500);
     }
+  }
+
+  function handleAnswerQcm(optionIndex: number) {
+    if (!question || feedback) return; // déjà en train de traiter une réponse
+    setSelected(optionIndex);
+    const correct = optionIndex === question.correctIndex;
+    if (!correct) setDisabledOptions((d) => [...d, optionIndex]);
+    traiterReponse(correct);
+  }
+
+  function handleAnswerLibre() {
+    if (!question || feedback || !reponseLibre.trim()) return;
+    const correct = normaliserReponse(reponseLibre) === normaliserReponse(question.reponse ?? "");
+    traiterReponse(correct);
   }
 
   if (phase === "loading") {
@@ -142,9 +162,9 @@ export default function JouerEquipe() {
   if (phase === "error") {
     return (
       <Centered>
-        {equipeValide
+        {team
           ? "Aucune énigme n'est encore configurée pour cette salle. Demandez à l'organisateur de les ajouter dans l'espace organisateur."
-          : "Numéro d'équipe invalide."}
+          : "Équipe introuvable."}
       </Centered>
     );
   }
@@ -152,7 +172,7 @@ export default function JouerEquipe() {
   if (phase === "termine") {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-white text-center">
-        <p className="text-brand-blue mb-2">Équipe {equipe}</p>
+        <p className="text-brand-blue mb-2">{team?.nom}</p>
         <h1 className="text-2xl font-bold mb-6 text-brand-navy">Bravo, votre escape game est terminé !</h1>
         <p className="text-slate-600 mb-3">Votre fragment de la phrase finale :</p>
         <div className="bg-brand-blue-light border-2 border-brand-blue text-brand-navy font-bold text-2xl px-8 py-4 rounded-xl mb-8">
@@ -170,7 +190,7 @@ export default function JouerEquipe() {
   return (
     <main className="min-h-screen flex flex-col px-6 py-8 bg-white">
       <div className="flex items-center justify-between mb-6 text-sm text-slate-500">
-        <span>Équipe {equipe}</span>
+        <span>{team?.nom}</span>
         <span>Énigme {index + 1} / {questions.length}</span>
         {timeLeft !== null && (
           <span className={`font-semibold ${timeLeft <= 5 ? "text-red-500" : "text-brand-blue"}`}>
@@ -181,28 +201,54 @@ export default function JouerEquipe() {
 
       <h1 className="text-xl font-semibold mb-8 leading-snug text-brand-navy">{question.texte}</h1>
 
-      <div className="flex flex-col gap-3">
-        {question.propositions.map((prop, i) => {
-          const isDisabled = disabledOptions.includes(i);
-          const isSelected = selected === i;
-          let style = "bg-brand-blue-light border border-brand-blue-light hover:border-brand-blue text-brand-navy";
-          if (feedback && isSelected) {
-            style = feedback.ok ? "bg-green-500 text-white" : "bg-red-500 text-white";
-          } else if (isDisabled) {
-            style = "bg-slate-100 text-slate-400 line-through";
-          }
-          return (
-            <button
-              key={i}
-              disabled={isDisabled || !!feedback}
-              onClick={() => handleAnswer(i)}
-              className={`text-left px-5 py-4 rounded-xl transition ${style} disabled:cursor-not-allowed`}
-            >
-              {prop}
-            </button>
-          );
-        })}
-      </div>
+      {question.type === "qcm" ? (
+        <div className="flex flex-col gap-3">
+          {(question.propositions ?? []).map((prop, i) => {
+            const isDisabled = disabledOptions.includes(i);
+            const isSelected = selected === i;
+            let style = "bg-brand-blue-light border border-brand-blue-light hover:border-brand-blue text-brand-navy";
+            if (feedback && isSelected) {
+              style = feedback.ok ? "bg-green-500 text-white" : "bg-red-500 text-white";
+            } else if (isDisabled) {
+              style = "bg-slate-100 text-slate-400 line-through";
+            }
+            return (
+              <button
+                key={i}
+                disabled={isDisabled || !!feedback}
+                onClick={() => handleAnswerQcm(i)}
+                className={`text-left px-5 py-4 rounded-xl transition ${style} disabled:cursor-not-allowed`}
+              >
+                {prop}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <input
+            value={reponseLibre}
+            onChange={(e) => setReponseLibre(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAnswerLibre()}
+            disabled={!!feedback}
+            placeholder="Votre réponse..."
+            className={`px-5 py-4 rounded-xl border-2 outline-none transition ${
+              feedback
+                ? feedback.ok
+                  ? "bg-green-500 border-green-500 text-white"
+                  : "bg-red-500 border-red-500 text-white"
+                : "bg-brand-blue-light border-brand-blue-light focus:border-brand-blue text-brand-navy"
+            }`}
+          />
+          <button
+            onClick={handleAnswerLibre}
+            disabled={!!feedback || !reponseLibre.trim()}
+            className="bg-brand-blue disabled:bg-slate-200 disabled:text-slate-400 hover:bg-brand-navy text-white font-semibold px-6 py-3 rounded-full transition disabled:cursor-not-allowed self-start"
+          >
+            Valider
+          </button>
+        </div>
+      )}
 
       {feedback && (
         <div className={`mt-6 text-center font-medium ${feedback.ok ? "text-green-600" : "text-red-600"}`}>

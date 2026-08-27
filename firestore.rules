@@ -13,5 +13,9 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true;
     }
+    match /teams/{teamId} {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }

@@ -12,9 +12,10 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Question, Salle, QuizConfig } from "./types";
+import { Question, Salle, QuizConfig, Team } from "./types";
 
 const QUESTIONS_COL = "questions";
+const TEAMS_COL = "teams";
 const CONFIG_DOC = "config/quiz";
 
 export async function getQuestionsForSalle(salle: Salle): Promise<Question[]> {
@@ -31,7 +32,7 @@ export async function getAllQuestions(): Promise<Question[]> {
   const snap = await getDocs(collection(db, QUESTIONS_COL));
   return snap.docs
     .map((d) => ({ id: d.id, ...(d.data() as Omit<Question, "id">) }))
-    .sort((a, b) => a.salle - b.salle || a.ordre - b.ordre);
+    .sort((a, b) => a.salle.localeCompare(b.salle) || a.ordre - b.ordre);
 }
 
 export async function addQuestion(q: Omit<Question, "id">): Promise<string> {
@@ -50,12 +51,40 @@ export async function deleteQuestion(id: string): Promise<void> {
 export async function getQuizConfig(): Promise<QuizConfig> {
   const snap = await getDoc(doc(db, CONFIG_DOC));
   if (!snap.exists()) {
-    return { fragments: Array(10).fill("") };
+    return { fragments: [] };
   }
   const data = snap.data() as QuizConfig;
-  return { fragments: data.fragments ?? Array(10).fill("") };
+  return { fragments: data.fragments ?? [] };
 }
 
 export async function saveQuizConfig(config: QuizConfig): Promise<void> {
   await setDoc(doc(db, CONFIG_DOC), config);
+}
+
+// --- Équipes ---
+
+export async function getAllTeams(): Promise<Team[]> {
+  const snap = await getDocs(collection(db, TEAMS_COL));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as Omit<Team, "id">) }))
+    .sort((a, b) => a.nom.localeCompare(b.nom));
+}
+
+export async function getTeam(id: string): Promise<Team | null> {
+  const snap = await getDoc(doc(db, TEAMS_COL, id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as Omit<Team, "id">) };
+}
+
+export async function addTeam(t: Omit<Team, "id">): Promise<string> {
+  const ref = await addDoc(collection(db, TEAMS_COL), t);
+  return ref.id;
+}
+
+export async function updateTeam(id: string, t: Partial<Team>): Promise<void> {
+  await updateDoc(doc(db, TEAMS_COL, id), t);
+}
+
+export async function deleteTeam(id: string): Promise<void> {
+  await deleteDoc(doc(db, TEAMS_COL, id));
 }
