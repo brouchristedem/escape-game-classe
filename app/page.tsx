@@ -12,22 +12,24 @@ export default function Home() {
         className="mb-6 w-56 sm:w-64 h-auto"
         priority
       />
-      <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-brand-navy">Escape Game IUA Classe X</h1>
-      <p className="text-slate-600 max-w-md mb-10">
-        Résolvez les énigmes, débloquez votre fragment,
-        puis rejoignez l&apos;amphi pour reconstituer la phrase finale.
+      <h1 className="text-2xl sm:text-3xl font-bold mb-1 tracking-wide text-brand-navy">
+        ESCAPE GAME IUA CLASSE X
+      </h1>
+      <p className="text-sm sm:text-base font-semibold tracking-widest text-brand-blue mb-8 uppercase">
+        Le jeu commence maintenant.
+      </p>
+      <p className="text-slate-600 max-w-sm mb-3 leading-relaxed">
+        Vous avez reçu une mission.
+        <br />
+        Vous ne connaissez pas encore la suite.
+        <br />
+        À vous de la découvrir.
       </p>
       <Link
         href="/jouer"
-        className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-8 py-3 rounded-full text-lg transition"
+        className="mt-7 bg-brand-blue hover:bg-brand-navy text-white font-semibold px-10 py-3 rounded-full text-lg transition"
       >
-        Commencer l&apos;escape game de mon équipe
-      </Link>
-      <Link
-        href="/admin"
-        className="mt-6 text-brand-navy/70 text-sm underline underline-offset-4 hover:text-brand-navy"
-      >
-        Espace organisateur
+        Commencer
       </Link>
     </main>
   );
