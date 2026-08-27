@@ -105,7 +105,8 @@ function AdminPanel() {
       setFragments(config.fragments);
     } catch (e) {
       console.error(e);
-      setLoadError("Impossible de charger les données. Vérifiez la connexion et réessayez.");
+      const detail = e instanceof Error ? e.message : String(e);
+      setLoadError(`Impossible de charger les données. Vérifiez la connexion et réessayez. (${detail})`);
     } finally {
       setLoading(false);
     }
