@@ -25,13 +25,19 @@ export async function getQuestionsForSalle(salle: Salle): Promise<Question[]> {
     orderBy("ordre", "asc")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Question, "id">) }));
+  return snap.docs.map((d) => {
+    const data = d.data() as Omit<Question, "id">;
+    return { id: d.id, ...data, salle: String(data.salle) };
+  });
 }
 
 export async function getAllQuestions(): Promise<Question[]> {
   const snap = await getDocs(collection(db, QUESTIONS_COL));
   return snap.docs
-    .map((d) => ({ id: d.id, ...(d.data() as Omit<Question, "id">) }))
+    .map((d) => {
+      const data = d.data() as Omit<Question, "id">;
+      return { id: d.id, ...data, salle: String(data.salle) };
+    })
     .sort((a, b) => a.salle.localeCompare(b.salle) || a.ordre - b.ordre);
 }
 

@@ -83,6 +83,7 @@ function AdminPanel() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [fragments, setFragments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [tab, setTab] = useState<"equipes" | "questions" | "phrase">("equipes");
 
   const [teamForm, setTeamForm] = useState({ ...emptyTeamForm });
@@ -96,11 +97,18 @@ function AdminPanel() {
 
   async function reload() {
     setLoading(true);
-    const [ts, qs, config] = await Promise.all([getAllTeams(), getAllQuestions(), getQuizConfig()]);
-    setTeams(ts);
-    setQuestions(qs);
-    setFragments(config.fragments);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const [ts, qs, config] = await Promise.all([getAllTeams(), getAllQuestions(), getQuizConfig()]);
+      setTeams(ts);
+      setQuestions(qs);
+      setFragments(config.fragments);
+    } catch (e) {
+      console.error(e);
+      setLoadError("Impossible de charger les données. Vérifiez la connexion et réessayez.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -274,6 +282,15 @@ function AdminPanel() {
       </div>
 
       {loading && <p className="text-slate-500">Chargement...</p>}
+
+      {loadError && (
+        <div className="mb-6 flex items-center gap-3">
+          <p className="text-red-500 text-sm">{loadError}</p>
+          <button onClick={reload} className="text-brand-blue underline text-sm">
+            Réessayer
+          </button>
+        </div>
+      )}
 
       {!loading && tab === "equipes" && (
         <div className="grid lg:grid-cols-2 gap-8">
