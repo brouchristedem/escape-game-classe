@@ -13,7 +13,7 @@ export default function Home() {
         priority
       />
       <h1 className="text-2xl sm:text-3xl font-bold mb-1 tracking-wide text-brand-navy">
-        IUA CLASSE X
+        ESCAPE GAME IUA CLASSE X
       </h1>
       <p className="text-sm sm:text-base font-semibold tracking-widest text-brand-blue mb-8 uppercase">
         Le jeu commence maintenant.
@@ -34,12 +34,6 @@ export default function Home() {
       <p className="mt-8 text-xs text-slate-400 max-w-xs">
         Chaque équipe possède un téléphone. Gardez-le précieusement.
       </p>
-      <Link
-        href="/admin"
-        className="mt-16 text-slate-300 text-[11px] hover:text-slate-400 transition"
-      >
-        Espace organisateur
-      </Link>
     </main>
   );
 }
