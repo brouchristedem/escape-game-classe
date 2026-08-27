@@ -23,8 +23,7 @@ export default function ChoixEquipe() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-white">
-      <h1 className="text-2xl font-bold mb-2 text-center text-brand-navy">Quelle est votre équipe ?</h1>
-      <p className="text-slate-500 text-sm mb-8 text-center">Demandez au Pilote de sélectionner le nom affiché sur la feuille de salle.</p>
+      <h1 className="text-2xl font-bold mb-8 text-center text-brand-navy">Quelle est votre équipe ?</h1>
 
       {loading && <p className="text-slate-500 mb-8">Chargement des équipes...</p>}
 
