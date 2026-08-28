@@ -111,7 +111,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis ce petit pas qui permet d'en faire un plus grand, la première expérience qui ouvre toutes les autres portes. Qui suis-je ?", "le tremplin", "Bravo, Partenariats & Stages. Voici votre fragment : \"une grande famille\""],
   ]),
   ...s("Amphi 1", [
-    ["Je suis un code muet collé sur mon dos, seul indice pour te retrouver parmi des milliers d'autres qui me ressemblent. Qui suis-je ?", "la cote", "Le code muet a parlé."],
+    ["Je suis un code muet collé au dos d'un livre, seul indice pour le retrouver parmi des milliers d'autres qui lui ressemblent. Qui suis-je ?", "la cote", "Le code muet a parlé."],
     ["Je règne ici sans un mot, respecté par tous ceux qui viennent chercher une réponse que personne ne prononce à voix haute. Qui suis-je ?", "le silence", "Le silence n'a jamais été aussi éloquent."],
     ["Je conserve ce que le temps voudrait effacer, des pages jaunies que peu consultent mais que personne n'ose jeter. Qui suis-je ?", "les archives", "Rien de ce qui a été écrit n'est vraiment perdu."],
     ["Je suis la trace discrète qui prouve que tes mots ne sont pas nés de rien, mais d'un savoir emprunté à un autre avant toi. Qui suis-je ?", "la référence", "Personne n'écrit vraiment seul."],
