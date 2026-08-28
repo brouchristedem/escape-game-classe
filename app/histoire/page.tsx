@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getQuizConfig } from "@/lib/data";
+import LoadingScreen from "@/app/components/LoadingScreen";
 
 const HISTOIRE_PAR_DEFAUT = `Bienvenue à l'IUA, Classe X.
 
@@ -16,8 +17,10 @@ Une fois votre fragment récupéré, rejoignez l'amphi. Quand les 10 équipes se
 Le compte à rebours démarre maintenant. Bonne chance.`;
 
 export default function Histoire() {
+  const router = useRouter();
   const [texte, setTexte] = useState(HISTOIRE_PAR_DEFAUT);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
 
   useEffect(() => {
     getQuizConfig()
@@ -27,31 +30,41 @@ export default function Histoire() {
       .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-white text-center">
-      <Image
-        src="/logos/logo-iua-x-classe.png"
-        alt="IUA Classe X"
-        width={536}
-        height={285}
-        className="mb-8 w-48 sm:w-56 h-auto"
-        priority
-      />
+  function continuer() {
+    setNavigating(true);
+    setTimeout(() => router.push("/jouer"), 550);
+  }
 
-      {loading ? (
-        <p className="text-slate-400 text-sm">Chargement...</p>
-      ) : (
-        <div className="max-w-md text-slate-600 leading-relaxed whitespace-pre-line text-left sm:text-center mb-10">
+  if (loading) return <LoadingScreen label="Chargement de la mission..." />;
+  if (navigating) return <LoadingScreen label="Direction votre équipe..." />;
+
+  return (
+    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-white text-center">
+      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-brand-blue/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-brand-navy/10 blur-3xl" />
+
+      <div className="relative z-10 flex flex-col items-center max-w-lg w-full">
+        <Image
+          src="/logos/logo-iua-x-classe.png"
+          alt="IUA Classe X"
+          width={536}
+          height={285}
+          className="mb-8 w-40 sm:w-48 h-auto"
+          priority
+        />
+
+        <div className="mb-10 max-w-md rounded-3xl bg-brand-blue-light/70 ring-1 ring-brand-blue/15 px-6 sm:px-8 py-7 text-slate-700 leading-relaxed whitespace-pre-line text-left sm:text-center shadow-sm">
           {texte}
         </div>
-      )}
 
-      <Link
-        href="/jouer"
-        className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-10 py-3 rounded-full text-lg transition"
-      >
-        Commencer
-      </Link>
+        <button
+          onClick={continuer}
+          className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-10 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-blue/40 active:translate-y-0"
+        >
+          C&apos;est parti
+          <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+        </button>
+      </div>
     </main>
   );
 }

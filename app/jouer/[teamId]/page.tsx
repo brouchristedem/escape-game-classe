@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { getQuestionsForSalle, getQuizConfig, getTeam } from "@/lib/data";
 import { Question, Team, normaliserReponse } from "@/lib/types";
+import LoadingScreen from "@/app/components/LoadingScreen";
 
 type Phase = "loading" | "error" | "playing" | "termine";
 
@@ -21,6 +22,7 @@ export default function JouerEquipe() {
   const [disabledOptions, setDisabledOptions] = useState<number[]>([]);
   const [reponseLibre, setReponseLibre] = useState("");
   const [feedback, setFeedback] = useState<{ text: string; ok: boolean } | null>(null);
+  const [awaitingContinue, setAwaitingContinue] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [fragment, setFragment] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -84,6 +86,7 @@ export default function JouerEquipe() {
 
   function goNextQuestion() {
     setFeedback(null);
+    setAwaitingContinue(false);
     setSelected(null);
     setDisabledOptions([]);
     setReponseLibre("");
@@ -109,18 +112,19 @@ export default function JouerEquipe() {
 
   function handleTimeout() {
     if (!question) return;
-    setFeedback({ text: "Temps écoulé !", ok: false });
     const nextAttempts = attempts + 1;
     setAttempts(nextAttempts);
-    setTimeout(() => {
-      if (nextAttempts >= 2) {
-        goNextQuestion();
-      } else {
+    if (nextAttempts >= 2) {
+      setFeedback({ text: "Temps écoulé ! Vous n'avez pas trouvé.", ok: false });
+      setAwaitingContinue(true);
+    } else {
+      setFeedback({ text: "Temps écoulé !", ok: false });
+      setTimeout(() => {
         setFeedback(null);
         setSelected(null);
         setReponseLibre("");
-      }
-    }, 1500);
+      }, 1400);
+    }
   }
 
   function traiterReponse(correct: boolean) {
@@ -129,20 +133,21 @@ export default function JouerEquipe() {
 
     if (correct) {
       setFeedback({ text: question.feedbackCorrect || "Bonne réponse !", ok: true });
-      setTimeout(() => goNextQuestion(), 1600);
+      setAwaitingContinue(true);
     } else {
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
-      setFeedback({ text: question.feedbackIncorrect || "Mauvaise réponse.", ok: false });
-      setTimeout(() => {
-        if (nextAttempts >= 2) {
-          goNextQuestion();
-        } else {
+      if (nextAttempts >= 2) {
+        setFeedback({ text: question.feedbackIncorrect || "Ce n'est pas la bonne réponse.", ok: false });
+        setAwaitingContinue(true);
+      } else {
+        setFeedback({ text: question.feedbackIncorrect || "Mauvaise réponse, retentez votre chance.", ok: false });
+        setTimeout(() => {
           setFeedback(null);
           setSelected(null);
           setReponseLibre("");
-        }
-      }, 1500);
+        }, 1400);
+      }
     }
   }
 
@@ -161,7 +166,7 @@ export default function JouerEquipe() {
   }
 
   if (phase === "loading") {
-    return <Centered>Chargement de l&apos;escape game...</Centered>;
+    return <LoadingScreen label="Chargement de l'escape game..." />;
   }
 
   if (phase === "error") {
@@ -179,55 +184,85 @@ export default function JouerEquipe() {
 
   if (phase === "termine") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-white text-center">
-        <p className="text-brand-blue mb-2">{team?.nom}</p>
-        <h1 className="text-2xl font-bold mb-6 text-brand-navy">Bravo, votre escape game est terminé !</h1>
-        <p className="text-slate-600 mb-3">Votre fragment de la phrase finale :</p>
-        <div className="bg-brand-blue-light border-2 border-brand-blue text-brand-navy font-bold text-2xl px-8 py-4 rounded-xl mb-8">
-          {fragment}
+      <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-white text-center">
+        <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brand-blue/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-brand-navy/10 blur-3xl" />
+        <div className="relative z-10 flex flex-col items-center max-w-md">
+          <p className="text-brand-blue font-semibold mb-2">{team?.nom}</p>
+          <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">Bravo, votre escape game est terminé !</h1>
+          <p className="text-slate-600 mb-3">Votre fragment de la phrase finale :</p>
+          <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
+            {fragment}
+          </div>
+          <p className="text-slate-500 max-w-sm">
+            Direction l&apos;amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu&apos;à ce qu&apos;il soit posé au tableau.
+          </p>
         </div>
-        <p className="text-slate-500 max-w-sm">
-          Direction l&apos;amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu&apos;à ce qu&apos;il soit posé au tableau.
-        </p>
       </main>
     );
   }
 
-  if (!question) return <Centered>Chargement...</Centered>;
+  if (!question) return <LoadingScreen />;
+
+  const isLastQuestion = index + 1 >= questions.length;
+  const progress = ((index + (feedback?.ok ? 1 : 0)) / questions.length) * 100;
 
   return (
-    <main className="min-h-screen flex flex-col px-6 py-8 bg-white">
-      <div className="flex items-center justify-between mb-6 text-sm text-slate-500">
-        <span>{team?.nom}</span>
-        <span>Énigme {index + 1} / {questions.length}</span>
-        {timeLeft !== null && (
-          <span className={`font-semibold ${timeLeft <= 5 ? "text-red-500" : "text-brand-blue"}`}>
-            {timeLeft}s
-          </span>
-        )}
+    <main className="min-h-screen flex flex-col px-6 py-8 bg-white max-w-xl mx-auto w-full">
+      <div className="mb-6">
+        <div className="flex items-center justify-between text-sm text-slate-500 mb-2">
+          <span className="font-medium text-brand-navy">{team?.nom}</span>
+          <span>Énigme {index + 1} / {questions.length}</span>
+          {timeLeft !== null && (
+            <span
+              className={`font-semibold rounded-full px-2.5 py-0.5 transition-colors ${
+                timeLeft <= 5 ? "bg-red-50 text-red-500" : "bg-brand-blue-light text-brand-blue"
+              }`}
+            >
+              {timeLeft}s
+            </span>
+          )}
+        </div>
+        <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-navy transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
 
-      <h1 className="text-xl font-semibold mb-8 leading-snug text-brand-navy">{question.texte}</h1>
+      <div className="rounded-3xl bg-white ring-1 ring-black/5 shadow-[0_4px_24px_rgba(20,163,221,0.08)] p-6 sm:p-7 mb-6">
+        <h1 className="text-xl font-semibold leading-snug text-brand-navy">{question.texte}</h1>
+      </div>
 
       {question.type === "qcm" ? (
         <div className="flex flex-col gap-3">
           {(question.propositions ?? []).map((prop, i) => {
             const isDisabled = disabledOptions.includes(i);
             const isSelected = selected === i;
-            let style = "bg-brand-blue-light border border-brand-blue-light hover:border-brand-blue text-brand-navy";
+            const isCorrectOption = i === question.correctIndex;
+            const revealCorrect = awaitingContinue && feedback && !feedback.ok && isCorrectOption && !isSelected;
+
+            let style = "bg-brand-blue-light/70 ring-1 ring-black/5 hover:ring-brand-blue/40 hover:-translate-y-0.5 hover:shadow-md text-brand-navy";
             if (feedback && isSelected) {
-              style = feedback.ok ? "bg-green-500 text-white" : "bg-red-500 text-white";
+              style = feedback.ok
+                ? "bg-green-500 text-white ring-1 ring-green-500 shadow-md shadow-green-500/20"
+                : "bg-red-500 text-white ring-1 ring-red-500 shadow-md shadow-red-500/20";
+            } else if (revealCorrect) {
+              style = "bg-green-50 text-green-700 ring-2 ring-green-500";
             } else if (isDisabled) {
-              style = "bg-slate-100 text-slate-400 line-through";
+              style = "bg-slate-100 text-slate-400 line-through ring-1 ring-black/5";
             }
+
             return (
               <button
                 key={i}
                 disabled={isDisabled || !!feedback}
                 onClick={() => handleAnswerQcm(i)}
-                className={`text-left px-5 py-4 rounded-xl transition ${style} disabled:cursor-not-allowed`}
+                className={`text-left px-5 py-4 rounded-2xl transition-all duration-200 ${style} disabled:cursor-not-allowed`}
               >
                 {prop}
+                {revealCorrect && <span className="ml-2 text-xs font-semibold uppercase tracking-wide">Bonne réponse</span>}
               </button>
             );
           })}
@@ -240,32 +275,54 @@ export default function JouerEquipe() {
             onKeyDown={(e) => e.key === "Enter" && handleAnswerLibre()}
             disabled={!!feedback}
             placeholder="Votre réponse..."
-            className={`px-5 py-4 rounded-xl border-2 outline-none transition ${
+            className={`px-5 py-4 rounded-2xl border-2 outline-none transition-all duration-200 ${
               feedback
                 ? feedback.ok
                   ? "bg-green-500 border-green-500 text-white"
                   : "bg-red-500 border-red-500 text-white"
-                : "bg-brand-blue-light border-brand-blue-light focus:border-brand-blue text-brand-navy"
+                : "bg-brand-blue-light/70 border-transparent focus:border-brand-blue text-brand-navy"
             }`}
           />
-          <button
-            onClick={handleAnswerLibre}
-            disabled={!!feedback || !reponseLibre.trim()}
-            className="bg-brand-blue disabled:bg-slate-200 disabled:text-slate-400 hover:bg-brand-navy text-white font-semibold px-6 py-3 rounded-full transition disabled:cursor-not-allowed self-start"
-          >
-            Valider
-          </button>
+          {!feedback && (
+            <button
+              onClick={handleAnswerLibre}
+              disabled={!reponseLibre.trim()}
+              className="self-start rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-6 py-3 font-semibold text-white shadow-md shadow-brand-blue/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+            >
+              Valider
+            </button>
+          )}
+          {awaitingContinue && feedback && !feedback.ok && question.reponse && (
+            <div className="rounded-2xl bg-green-50 ring-2 ring-green-500 text-green-700 px-5 py-3 text-sm">
+              <span className="font-semibold uppercase tracking-wide text-xs">Bonne réponse : </span>
+              {question.reponse}
+            </div>
+          )}
         </div>
       )}
 
       {feedback && (
-        <div className={`mt-6 text-center font-medium ${feedback.ok ? "text-green-600" : "text-red-600"}`}>
+        <div
+          className={`mt-6 rounded-2xl px-5 py-3.5 text-center font-medium ${
+            feedback.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+          }`}
+        >
           {feedback.text}
         </div>
       )}
 
       {attempts === 1 && !feedback && (
-        <p className="mt-6 text-center text-brand-blue text-sm">Dernière tentative pour cette énigme.</p>
+        <p className="mt-6 text-center text-brand-blue text-sm font-medium">Dernière tentative pour cette énigme.</p>
+      )}
+
+      {awaitingContinue && (
+        <button
+          onClick={goNextQuestion}
+          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+        >
+          {isLastQuestion ? "Voir le résultat" : "Énigme suivante"}
+          <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+        </button>
       )}
     </main>
   );
@@ -273,8 +330,10 @@ export default function JouerEquipe() {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 text-center bg-white text-brand-navy">
-      <p>{children}</p>
+    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-white text-brand-navy">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brand-blue/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-brand-navy/10 blur-3xl" />
+      <p className="relative z-10 max-w-sm">{children}</p>
     </main>
   );
 }

@@ -21,7 +21,7 @@
 /* Charte IUA X Classe : fond blanc constant, pas de bascule sombre automatique */
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at top, #f6fbfe 0%, #ffffff 55%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
