@@ -33,6 +33,32 @@ export interface QuizConfig {
   histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
 }
 
+// --- Suivi en direct (lecture seule) de l'écran du chef d'équipe ---
+// Le meneur (celui qui répond) écrit son état à chaque changement ; les
+// autres membres de l'équipe s'y abonnent en lecture seule depuis /suivre.
+export interface LiveState {
+  phase: "playing" | "termine";
+  index: number;
+  totalQuestions: number;
+  questionTexte: string;
+  questionType: TypeEnigme;
+  propositions?: [string, string, string, string];
+  selected: number | null;
+  disabledOptions: number[];
+  reponseLibre: string;
+  feedbackText: string | null;
+  feedbackOk: boolean | null;
+  awaitingContinue: boolean;
+  attempts: number;
+  timeLeft: number | null;
+  dernieresLettres: string | null;
+  lettresMelangees: string[];
+  saisieFragment: string;
+  resultatFragment: "attente" | "trouve" | "revele";
+  fragment: string;
+  updatedAt: number;
+}
+
 // Convertit une durée saisie dans une unité donnée en secondes (stockage interne).
 export function versSecondes(valeur: number, unite: UniteTemps): number {
   if (unite === "minutes") return valeur * 60;
@@ -110,8 +136,27 @@ function seededShuffle<T>(arr: T[], rng: () => number): T[] {
 
 // Caractères "révélables" d'un fragment (lettres et chiffres, sans espaces ni
 // ponctuation, qui restent visibles tels quels dans le résultat final).
-function extraireLettres(fragment: string): string[] {
+export function extraireLettres(fragment: string): string[] {
   return Array.from(fragment).filter((c) => /[A-Za-zÀ-ÖØ-öø-ÿ0-9]/.test(c));
+}
+
+// Toutes les lettres du fragment, mélangées de façon déterministe (même
+// mélange que le plan de déblocage). Utilisé pour afficher la totalité des
+// lettres sur la page de reconstitution, même celles qui n'ont pas été
+// débloquées pendant le jeu.
+export function toutesLesLettresMelangees(fragment: string, seedKey: string): string[] {
+  const rng = mulberry32(hashSeed(seedKey));
+  return seededShuffle(extraireLettres(fragment), rng);
+}
+
+// --- Messages alternés selon la position de l'énigme (0-based) ---
+const MESSAGES_ECHEC = ["ÈCHOUWEY", "RED FLAG"];
+const MESSAGES_REUSSITE = ["GREEN FLAG", "C'EST TCHÔ", "JOLIIIIIE"];
+
+export function messagePourEnigme(index: number, correct: boolean): string {
+  return correct
+    ? MESSAGES_REUSSITE[index % MESSAGES_REUSSITE.length]
+    : MESSAGES_ECHEC[index % MESSAGES_ECHEC.length];
 }
 
 export interface PlanDeblocage {

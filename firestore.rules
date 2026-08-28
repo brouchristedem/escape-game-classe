@@ -17,5 +17,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true;
     }
+    // État en direct de l'écran du chef d'équipe, suivi en lecture seule par
+    // les autres membres de l'équipe depuis /jouer/{teamId}/suivre.
+    match /liveState/{teamId} {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }

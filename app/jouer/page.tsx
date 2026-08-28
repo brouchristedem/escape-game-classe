@@ -12,7 +12,7 @@ export default function ChoixEquipe() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
   const [navigating, setNavigating] = useState(false);
-  const continueRef = useRef<HTMLButtonElement>(null);
+  const continueRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getAllTeams()
@@ -28,10 +28,16 @@ export default function ChoixEquipe() {
     });
   }
 
-  function commencer() {
+  function commencerMeneur() {
     if (!selected) return;
     setNavigating(true);
     setTimeout(() => router.push(`/jouer/${selected}`), 500);
+  }
+
+  function commencerSuiveur() {
+    if (!selected) return;
+    setNavigating(true);
+    setTimeout(() => router.push(`/jouer/${selected}/suivre`), 500);
   }
 
   if (loading) return <LoadingScreen label="Chargement des équipes..." />;
@@ -74,14 +80,22 @@ export default function ChoixEquipe() {
           })}
         </div>
 
-        <button
-          ref={continueRef}
-          onClick={commencer}
-          disabled={!selected}
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
-        >
-          Lancer l&apos;escape game
-        </button>
+        <div ref={continueRef} className="flex flex-col items-center gap-3">
+          <button
+            onClick={commencerMeneur}
+            disabled={!selected}
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+          >
+            Je suis le chef d&apos;équipe (je réponds)
+          </button>
+          <button
+            onClick={commencerSuiveur}
+            disabled={!selected}
+            className="inline-flex items-center gap-2 rounded-full bg-brand-blue-light/70 ring-1 ring-black/5 px-8 py-3 font-medium text-brand-navy transition-all duration-200 hover:ring-brand-blue/40 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Je suis dans l&apos;équipe (je suis en direct)
+          </button>
+        </div>
       </div>
     </main>
   );

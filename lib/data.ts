@@ -7,15 +7,17 @@ import {
   updateDoc,
   deleteDoc,
   setDoc,
+  onSnapshot,
   query,
   where,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Question, Salle, QuizConfig, Team } from "./types";
+import { Question, Salle, QuizConfig, Team, LiveState } from "./types";
 
 const QUESTIONS_COL = "questions";
 const TEAMS_COL = "teams";
 const CONFIG_DOC = "config/quiz";
+const LIVE_STATE_COL = "liveState";
 
 // Pas de orderBy() côté Firestore ici : combiner where + orderBy sur des
 // champs différents nécessite un index composite à créer manuellement dans
@@ -140,4 +142,27 @@ export async function updateTeam(id: string, t: Partial<Team>): Promise<void> {
 
 export async function deleteTeam(id: string): Promise<void> {
   await deleteDoc(doc(db, TEAMS_COL, id));
+}
+
+// --- Suivi en direct (lecture seule) de l'écran du chef d'équipe ---
+
+// Écrit par le meneur à chaque changement d'état ; jamais rejeté (best effort,
+// ça ne doit jamais bloquer le jeu du meneur si ça échoue).
+export async function publierLiveState(teamId: string, state: LiveState): Promise<void> {
+  try {
+    await setDoc(doc(db, LIVE_STATE_COL, teamId), state);
+  } catch {
+    // best effort : le suivi en direct n'est pas critique pour le jeu du meneur
+  }
+}
+
+// Abonnement en lecture seule pour les membres de l'équipe qui suivent le
+// meneur. Retourne la fonction de désabonnement.
+export function ecouterLiveState(
+  teamId: string,
+  callback: (state: LiveState | null) => void
+): () => void {
+  return onSnapshot(doc(db, LIVE_STATE_COL, teamId), (snap) => {
+    callback(snap.exists() ? (snap.data() as LiveState) : null);
+  });
 }

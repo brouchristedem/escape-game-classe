@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { getQuestionsForSalle, getQuizConfig, getTeam } from "@/lib/data";
+import { getQuestionsForSalle, getQuizConfig, getTeam, publierLiveState } from "@/lib/data";
 import {
   Question,
   Team,
@@ -10,6 +10,9 @@ import {
   normaliserFragment,
   calculerPlanDeblocage,
   PlanDeblocage,
+  toutesLesLettresMelangees,
+  messagePourEnigme,
+  LiveState,
 } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
@@ -33,11 +36,14 @@ export default function JouerEquipe() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [fragment, setFragment] = useState("");
   const [plan, setPlan] = useState<PlanDeblocage | null>(null);
+  const [toutesLettres, setToutesLettres] = useState<string[]>([]);
   const [lettresCollectees, setLettresCollectees] = useState<string[]>([]);
   const [dernieresLettres, setDernieresLettres] = useState<string | null>(null);
   const [saisieFragment, setSaisieFragment] = useState("");
   const [tentativesFragment, setTentativesFragment] = useState(0);
   const [resultatFragment, setResultatFragment] = useState<"attente" | "trouve" | "revele">("attente");
+  const [needsRetryClick, setNeedsRetryClick] = useState(false);
+  const [essaiKey, setEssaiKey] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -64,6 +70,7 @@ export default function JouerEquipe() {
             idx !== null && idx !== undefined ? config.fragments[idx] || "" : "";
           setFragment(fragmentTexte);
           setPlan(calculerPlanDeblocage(fragmentTexte, qs.length, t.id));
+          setToutesLettres(toutesLesLettresMelangees(fragmentTexte, t.id));
           setPhase("playing");
         });
       })
@@ -100,7 +107,56 @@ export default function JouerEquipe() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, phase]);
+  }, [index, phase, essaiKey]);
+
+  // Diffuse en direct l'état de l'écran pour les membres de l'équipe qui
+  // suivent le chef d'équipe depuis /suivre (lecture seule).
+  useEffect(() => {
+    if (!teamId) return;
+    if (phase !== "playing" && phase !== "termine") return;
+    const state: LiveState = {
+      phase,
+      index,
+      totalQuestions: questions.length,
+      questionTexte: question?.texte ?? "",
+      questionType: question?.type ?? "libre",
+      propositions: question?.propositions,
+      selected,
+      disabledOptions,
+      reponseLibre,
+      feedbackText: feedback?.text ?? null,
+      feedbackOk: feedback?.ok ?? null,
+      awaitingContinue,
+      attempts,
+      timeLeft,
+      dernieresLettres,
+      lettresMelangees: toutesLettres,
+      saisieFragment,
+      resultatFragment,
+      fragment,
+      updatedAt: Date.now(),
+    };
+    publierLiveState(teamId, state);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    teamId,
+    phase,
+    index,
+    questions.length,
+    question,
+    selected,
+    disabledOptions,
+    reponseLibre,
+    feedback,
+    awaitingContinue,
+    attempts,
+    timeLeft,
+    dernieresLettres,
+    toutesLettres,
+    saisieFragment,
+    resultatFragment,
+    fragment,
+  ]);
 
   function goNextQuestion() {
     setFeedback(null);
@@ -110,6 +166,8 @@ export default function JouerEquipe() {
     setReponseLibre("");
     setAttempts(0);
     setDernieresLettres(null);
+    setNeedsRetryClick(false);
+    setEssaiKey(0);
     if (index + 1 >= questions.length) {
       finishQuiz();
     } else {
@@ -117,11 +175,18 @@ export default function JouerEquipe() {
     }
   }
 
+  function handleRetry() {
+    setFeedback(null);
+    setSelected(null);
+    setReponseLibre("");
+    setNeedsRetryClick(false);
+    setEssaiKey((k) => k + 1);
+  }
+
   function finishQuiz() {
     if (timerRef.current) clearInterval(timerRef.current);
     setPhase("termine");
   }
-
   function validerFragment() {
     if (!saisieFragment.trim()) return;
     const correct = normaliserFragment(saisieFragment) === normaliserFragment(fragment);
@@ -143,15 +208,11 @@ export default function JouerEquipe() {
     const nextAttempts = attempts + 1;
     setAttempts(nextAttempts);
     if (nextAttempts >= 2) {
-      setFeedback({ text: "Temps écoulé ! Vous n'avez pas trouvé.", ok: false });
+      setFeedback({ text: messagePourEnigme(index, false), ok: false });
       setAwaitingContinue(true);
     } else {
       setFeedback({ text: "Temps écoulé !", ok: false });
-      setTimeout(() => {
-        setFeedback(null);
-        setSelected(null);
-        setReponseLibre("");
-      }, 1400);
+      setNeedsRetryClick(true);
     }
   }
 
@@ -167,21 +228,17 @@ export default function JouerEquipe() {
       } else {
         setDernieresLettres(null);
       }
-      setFeedback({ text: question.feedbackCorrect || "Bonne réponse !", ok: true });
+      setFeedback({ text: messagePourEnigme(index, true), ok: true });
       setAwaitingContinue(true);
     } else {
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
       if (nextAttempts >= 2) {
-        setFeedback({ text: question.feedbackIncorrect || "Ce n'est pas la bonne réponse.", ok: false });
+        setFeedback({ text: messagePourEnigme(index, false), ok: false });
         setAwaitingContinue(true);
       } else {
-        setFeedback({ text: question.feedbackIncorrect || "Mauvaise réponse, retentez votre chance.", ok: false });
-        setTimeout(() => {
-          setFeedback(null);
-          setSelected(null);
-          setReponseLibre("");
-        }, 1400);
+        setFeedback({ text: "Mauvaise réponse.", ok: false });
+        setNeedsRetryClick(true);
       }
     }
   }
@@ -218,7 +275,6 @@ export default function JouerEquipe() {
   }
 
   if (phase === "termine") {
-    const lettresMelangees = [...lettresCollectees].join("").split("");
     return (
       <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-white text-center">
         <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brand-blue/10 blur-3xl" />
@@ -230,11 +286,11 @@ export default function JouerEquipe() {
           {resultatFragment === "attente" && (
             <>
               <p className="text-slate-600 mb-3">
-                Voici les lettres récoltées, mélangées. À vous de reconstituer votre fragment :
+                Voici toutes les lettres de votre fragment, mélangées. À vous de le reconstituer :
               </p>
               <div className="flex flex-wrap justify-center gap-2 mb-6">
-                {lettresMelangees.length > 0 ? (
-                  lettresMelangees.map((l, i) => (
+                {toutesLettres.length > 0 ? (
+                  toutesLettres.map((l, i) => (
                     <span
                       key={i}
                       className="inline-flex items-center justify-center h-11 w-11 rounded-xl bg-brand-blue-light ring-1 ring-brand-blue/30 text-brand-navy font-bold text-lg"
@@ -243,7 +299,7 @@ export default function JouerEquipe() {
                     </span>
                   ))
                 ) : (
-                  <span className="text-sm text-slate-400">Aucune lettre débloquée.</span>
+                  <span className="text-sm text-slate-400">Aucune lettre à afficher.</span>
                 )}
               </div>
               <div className="w-full flex flex-col gap-3">
@@ -423,6 +479,15 @@ export default function JouerEquipe() {
 
       {attempts === 1 && !feedback && (
         <p className="mt-6 text-center text-brand-blue text-sm font-medium">Dernière tentative pour cette énigme.</p>
+      )}
+
+      {needsRetryClick && (
+        <button
+          onClick={handleRetry}
+          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+        >
+          Réessayer
+        </button>
       )}
 
       {awaitingContinue && (
