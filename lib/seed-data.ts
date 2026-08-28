@@ -82,7 +82,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je transforme l'ignorance en compétence, la peur en assurance, sans jamais changer ton visage. Qui suis-je ?", "la formation", "On ressort différent, sans avoir changé de nom."],
     ["Nous sommes différents, venus d'ailleurs et d'ici, et pourtant ensemble nous formons une seule équipe plus forte que chacun de nous. Qui sommes-nous ?", "la diversité", "La force n'est pas dans la ressemblance."],
     ["Je suis la flamme invisible qui pousse à se lever tôt un lundi matin. Sans moi, même le talent s'endort. Qui suis-je ?", "la motivation", "La flamme brûle encore. Bien joué."],
-    ["Je ne se voit pas, je se sens, dans un couloir silencieux ou une salle de pause bruyante, quand chacun se sent à sa place. Qui suis-je ?", "la cohésion", "Ce qui unit une équipe ne se voit pas — mais se sent."],
+    ["Je ne me vois pas, je me sens, dans un couloir silencieux ou une salle de pause bruyante, quand chacun se sent à sa place. Qui suis-je ?", "la cohésion", "Ce qui unit une équipe ne se voit pas — mais se sent."],
     ["Je ne m'achète pas au marché, pourtant chaque entreprise sérieuse m'affiche sur ses murs. Je guide les choix quand personne ne regarde. Qui suis-je ?", "les valeurs", "Ce que l'on fait quand personne ne regarde vous définit."],
     ["Je suis ce que chaque service cherche à repérer, à former, puis à garder le plus longtemps possible. Sans moi, aucune organisation n'avance. Qui suis-je ?", "le talent", "Bravo, Ressources Humaines. Voici votre fragment : \"et la solidarité\""],
   ]),
@@ -125,7 +125,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
   ...s("Amphi 10", [
     ["Je suis le premier pas d'un inconnu dans un groupe qui deviendra sa famille, le moment où l'étranger devient l'un des vôtres. Qui suis-je ?", "l'intégration", "L'étranger d'hier est déjà l'un des vôtres."],
     ["Nous entrons ensemble par la même porte et nous en ressortons ensemble des années plus tard, marqués par les mêmes souvenirs. Qui sommes-nous ?", "la promotion", "Une même porte, un même chemin."],
-    ["Je ne se voit pas, je se sens, dans un silence complice ou un cri collectif au même instant. Qui suis-je ?", "la cohésion", "Ce silence complice, c'est déjà la réponse."],
+    ["Je ne me vois pas, je me sens, dans un silence complice ou un cri collectif au même instant. Qui suis-je ?", "la cohésion", "Ce silence complice, c'est déjà la réponse."],
     ["Je nais dans les épreuves partagées, je grandis dans les fous rires, et je survis longtemps après la fin des cours. Qui suis-je ?", "l'esprit", "Ce qui naît dans l'épreuve dure bien après elle."],
     ["Je me répète chaque année sans qu'on me réécrive, transmise d'une classe à l'autre comme un secret de famille. Qui suis-je ?", "la tradition", "Le secret passe, intact, d'une génération à l'autre."],
     ["Je réunis en un lieu et un instant des dizaines de personnes qui, sans moi, ne se seraient peut-être jamais parlé. Qui suis-je ?", "l'événement", "Des inconnus, réunis, qui ne le sont plus."],
@@ -143,7 +143,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je nais d'une étincelle et me propage comme un feu qu'on ne maîtrise plus, sautant d'écran en écran sans demander la permission. Qui suis-je ?", "la viralité", "Le feu s'est propagé plus vite qu'on ne l'imaginait."],
     ["Je suis l'idée unique qu'on veut planter dans mille esprits différents, avec les mêmes mots à chaque fois. Qui suis-je ?", "le message clé", "Une seule idée, répétée mille fois, finit par s'imposer."],
     ["Je suis plus qu'un nom, plus qu'un logo : je suis la promesse que l'on tient à chaque fois qu'on m'utilise. Qui suis-je ?", "la marque", "La promesse est tenue."],
-    ["Je ne se voit pas à l'œil nu, mais je me compte en regards arrêtés, en souvenirs laissés après le passage d'une campagne. Qui suis-je ?", "l'impact", "Ce qui reste après le bruit, voilà l'impact."],
+    ["Je ne me vois pas à l'œil nu, mais je me compte en regards arrêtés, en souvenirs laissés après le passage d'une campagne. Qui suis-je ?", "l'impact", "Ce qui reste après le bruit, voilà l'impact."],
     ["Je suis ce nom qu'on reconnaît sans effort, ce visage familier qui rassure avant même qu'on ait parlé. Qui suis-je ?", "la notoriété", "Bravo, Communication et Marketing. Voici votre fragment : \"les administrateurs, managers\""],
   ]),
   ...s("Amphi 5", [

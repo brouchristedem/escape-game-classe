@@ -47,12 +47,16 @@ export function depuisSecondes(secondes: number, unite: UniteTemps): number {
   return secondes;
 }
 
-// Normalise une chaîne pour comparer les réponses libres (casse, accents, espaces).
+// Normalise une chaîne pour comparer les réponses libres (casse, accents, espaces,
+// article initial). Les réponses attendues sont saisies avec article ("l'autorité",
+// "la vision", "le contrat"...) mais une équipe répond souvent sans : les deux formes
+// doivent être acceptées.
 export function normaliserReponse(texte: string): string {
   return texte
     .trim()
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .replace(/^(l'|le |la |les |un |une |des )/, "");
 }
