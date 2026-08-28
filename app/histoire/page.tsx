@@ -30,11 +30,11 @@ export default function Histoire() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-white text-center">
       <Image
-        src="/logos/logo-iua-x-classe.jpg"
+        src="/logos/logo-iua-x-classe.png"
         alt="IUA Classe X"
-        width={160}
-        height={160}
-        className="mb-8 w-32 sm:w-36 h-auto"
+        width={536}
+        height={285}
+        className="mb-8 w-48 sm:w-56 h-auto"
         priority
       />
 

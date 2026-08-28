@@ -5,11 +5,11 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-white text-center">
       <Image
-        src="/logos/logo-iua-x-classe.jpg"
+        src="/logos/logo-iua-x-classe.png"
         alt="IUA Classe X"
-        width={280}
-        height={280}
-        className="mb-6 w-56 sm:w-64 h-auto"
+        width={536}
+        height={285}
+        className="mb-6 w-64 sm:w-72 h-auto"
         priority
       />
       <h1 className="text-2xl sm:text-3xl font-bold mb-1 tracking-wide text-brand-navy">
