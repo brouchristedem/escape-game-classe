@@ -72,7 +72,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Nous sommes plusieurs voix réunies autour d'une même table, et de nos désaccords naît une décision commune. Qui sommes-nous ?", "le conseil", "Le désaccord bien mené accouche des meilleures décisions."],
     ["Je ne m'achète pas, je ne s'hérite pas toujours, mais on me reconnaît dès qu'on entre dans une pièce. On me suit sans même me connaître. Qui suis-je ?", "le leadership", "On vous a suivi. C'est bien ça, le leadership."],
     ["Je suis le miroir du mois passé, froid sur le papier mais lourd de sens pour qui sait me lire. Sans moi, la Direction navigue à l'aveugle. Qui suis-je ?", "le rapport", "Le passé éclaire toujours l'avenir, à qui sait le lire."],
-    ["Je suis la raison pour laquelle ce service existe, la boussole qui explique pourquoi chaque décision est prise ici. Sans moi, la Direction ne serait qu'un bureau vide. Qui suis-je ?", "la mission", "Bravo, Direction Générale. Voici votre fragment : \"Bienvenue à l'IUA,\""],
+    ["Je suis la raison pour laquelle ce service existe, la boussole qui explique pourquoi chaque décision est prise ici. Sans moi, la Direction ne serait qu'un bureau vide. Qui suis-je ?", "la mission", "Bravo, Direction Générale ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 9", [
     ["Je te lie sans te menotter, je promets sans jurer, je me signe une fois mais je dure longtemps. Qui suis-je ?", "le contrat", "Signé. Il vous engage désormais tous les deux."],
@@ -84,7 +84,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis la flamme invisible qui pousse à se lever tôt un lundi matin. Sans moi, même le talent s'endort. Qui suis-je ?", "la motivation", "La flamme brûle encore. Bien joué."],
     ["Je ne me vois pas, je me sens, dans un couloir silencieux ou une salle de pause bruyante, quand chacun se sent à sa place. Qui suis-je ?", "la cohésion", "Ce qui unit une équipe ne se voit pas — mais se sent."],
     ["Je ne m'achète pas au marché, pourtant chaque entreprise sérieuse m'affiche sur ses murs. Je guide les choix quand personne ne regarde. Qui suis-je ?", "les valeurs", "Ce que l'on fait quand personne ne regarde vous définit."],
-    ["Je suis ce que chaque service cherche à repérer, à former, puis à garder le plus longtemps possible. Sans moi, aucune organisation n'avance. Qui suis-je ?", "le talent", "Bravo, Ressources Humaines. Voici votre fragment : \"et la solidarité\""],
+    ["Je suis ce que chaque service cherche à repérer, à former, puis à garder le plus longtemps possible. Sans moi, aucune organisation n'avance. Qui suis-je ?", "le talent", "Bravo, Ressources Humaines ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 4", [
     ["Je suis une promesse chiffrée avant que l'année ne commence, et un jugement sévère une fois qu'elle s'achève. Qui suis-je ?", "le budget", "La promesse a tenu — ou non. À vous de le savoir."],
@@ -96,7 +96,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis la loi silencieuse qui veut que rien ne se perde : chaque franc qui entre a sa trace, chaque franc qui sort aussi. Qui suis-je ?", "l'équilibre", "Rien ne se perd, tout se retrouve — sur une ligne."],
     ["Je suis ce que l'on accumule avant d'oser investir, la richesse qui dort en attendant de travailler. Qui suis-je ?", "le capital", "La richesse qui dort... vient de se réveiller."],
     ["Plus tu me laisses dormir, plus je grossis tout seul. Je suis la récompense de la patience, ou le prix de l'attente. Qui suis-je ?", "l'intérêt", "Le temps travaille, même quand vous dormez."],
-    ["Je suis le dernier endroit où l'argent s'arrête avant de sortir, ou le premier où il arrive. Sans moi, aucune transaction n'est complète. Qui suis-je ?", "la caisse", "Bravo, Finances & Comptabilité. Voici votre fragment : \"vous rejoignez aujourd'hui\""],
+    ["Je suis le dernier endroit où l'argent s'arrête avant de sortir, ou le premier où il arrive. Sans moi, aucune transaction n'est complète. Qui suis-je ?", "la caisse", "Bravo, Finances & Comptabilité ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 7", [
     ["Je suis un pont signé par trois mains, celle de l'école, celle de l'entreprise, et la tienne, avant que tu ne traverses vers le monde réel. Qui suis-je ?", "la convention de stage", "Le pont est signé. La traversée peut commencer."],
@@ -108,7 +108,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis le moment où la théorie apprise en classe rencontre pour la première fois la réalité d'un bureau. Qui suis-je ?", "le stage", "La théorie vient enfin de rencontrer le réel."],
     ["Nous sommes deux mains qui se serrent malgré des mondes différents, une école et une entreprise, pour offrir une chance à quelqu'un. Qui sommes-nous ?", "l'alliance", "Deux mains, une même chance offerte."],
     ["Je suis quelques lignes écrites par un autre sur toi, capables de t'ouvrir des portes que ton propre CV n'aurait jamais atteintes seul. Qui suis-je ?", "la recommandation", "Les mots d'un autre, plus forts parfois que les vôtres."],
-    ["Je suis ce petit pas qui permet d'en faire un plus grand, la première expérience qui ouvre toutes les autres portes. Qui suis-je ?", "le tremplin", "Bravo, Partenariats & Stages. Voici votre fragment : \"une grande famille\""],
+    ["Je suis ce petit pas qui permet d'en faire un plus grand, la première expérience qui ouvre toutes les autres portes. Qui suis-je ?", "le tremplin", "Bravo, Partenariats & Stages ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 1", [
     ["Je suis un code muet collé au dos d'un livre, seul indice pour le retrouver parmi des milliers d'autres qui lui ressemblent. Qui suis-je ?", "la cote", "Le code muet a parlé."],
@@ -120,7 +120,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je te confie un trésor pour un temps limité, à condition que tu me le rendes avant que le sablier ne se vide. Qui suis-je ?", "l'emprunt", "Le sablier n'était pas encore vide."],
     ["Je peux tenir un monde entier entre deux couvertures, voyager sans bouger, et vieillir sans jamais mourir tout à fait. Qui suis-je ?", "le livre", "Un monde entier, refermé entre vos mains."],
     ["Je suis le chemin patient entre une question sans réponse et une étagère qui la cache quelque part. Qui suis-je ?", "la recherche", "La patience finit toujours par trouver l'étagère."],
-    ["Je suis la seule richesse qui grandit quand on la partage au lieu de diminuer. Qui suis-je ?", "le savoir", "Bravo, Bibliothèque & Documentation. Voici votre fragment : \"où l'exigence\""],
+    ["Je suis la seule richesse qui grandit quand on la partage au lieu de diminuer. Qui suis-je ?", "le savoir", "Bravo, Bibliothèque & Documentation ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 10", [
     ["Je suis le premier pas d'un inconnu dans un groupe qui deviendra sa famille, le moment où l'étranger devient l'un des vôtres. Qui suis-je ?", "l'intégration", "L'étranger d'hier est déjà l'un des vôtres."],
@@ -132,7 +132,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis ce sentiment discret qui fait dire 'nous' plutôt que 'je', même face à des inconnus qui partagent ton uniforme. Qui suis-je ?", "l'appartenance", "'Nous' plutôt que 'je' — tout est dit."],
     ["Je nais parfois d'un simple regard échangé en cours, je grandis dans les pauses et les fous rires, et je dure parfois bien après le diplôme. Qui suis-je ?", "l'amitié", "Certains liens survivent bien plus longtemps que les cours."],
     ["Je suis la main tendue à celui qui n'a pas compris le cours, le partage d'un repas ou d'une feuille de révision. Qui suis-je ?", "la solidarité", "Une main tendue vaut mille discours sur l'entraide."],
-    ["Je suis ce que dix équipes retrouvent enfin quand elles se réunissent après s'être cherchées séparément. Qui suis-je ?", "l'unité", "Bravo, Relations Étudiantes. Voici votre fragment : \"construisent ensemble\""],
+    ["Je suis ce que dix équipes retrouvent enfin quand elles se réunissent après s'être cherchées séparément. Qui suis-je ?", "l'unité", "Bravo, Relations Étudiantes ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 2", [
     ["Je tiens en une poignée de mots, pourtant je dois rester dans toutes les mémoires après qu'on m'a entendu une seule fois. Qui suis-je ?", "le slogan", "Il reste en tête. C'est bien tout son but."],
@@ -144,7 +144,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis l'idée unique qu'on veut planter dans mille esprits différents, avec les mêmes mots à chaque fois. Qui suis-je ?", "le message clé", "Une seule idée, répétée mille fois, finit par s'imposer."],
     ["Je suis plus qu'un nom, plus qu'un logo : je suis la promesse que l'on tient à chaque fois qu'on m'utilise. Qui suis-je ?", "la marque", "La promesse est tenue."],
     ["Je ne me vois pas à l'œil nu, mais je me compte en regards arrêtés, en souvenirs laissés après le passage d'une campagne. Qui suis-je ?", "l'impact", "Ce qui reste après le bruit, voilà l'impact."],
-    ["Je suis ce nom qu'on reconnaît sans effort, ce visage familier qui rassure avant même qu'on ait parlé. Qui suis-je ?", "la notoriété", "Bravo, Communication et Marketing. Voici votre fragment : \"les administrateurs, managers\""],
+    ["Je suis ce nom qu'on reconnaît sans effort, ce visage familier qui rassure avant même qu'on ait parlé. Qui suis-je ?", "la notoriété", "Bravo, Communication et Marketing ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 5", [
     ["Je suis une porte que seul toi peux ouvrir, à condition de ne jamais m'oublier ni me confier à un inconnu. Qui suis-je ?", "le mot de passe", "La porte s'ouvre. Vous la connaissiez déjà, sans le savoir."],
@@ -156,7 +156,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je transforme un message clair en un langage que seul celui qui possède la clé peut à nouveau comprendre. Qui suis-je ?", "le chiffrement", "Le secret reste secret — pour qui n'a pas la clé."],
     ["Je suis un langage secret que seules les machines comprennent vraiment, fait de symboles que les humains ont inventés. Qui suis-je ?", "le code", "Le langage secret, enfin déchiffré par un humain."],
     ["Je surviens toujours au pire moment, transformant en quelques secondes un système fiable en écran noir. Qui suis-je ?", "la panne", "L'écran noir n'aura pas eu raison de vous."],
-    ["Je suis l'ensemble invisible qui fait fonctionner toutes les machines ensemble, et que l'on ne remarque vraiment que le jour où je tombe en panne. Qui suis-je ?", "le système", "Bravo, Informatique & Systèmes. Voici votre fragment : \"et entrepreneurs\""],
+    ["Je suis l'ensemble invisible qui fait fonctionner toutes les machines ensemble, et que l'on ne remarque vraiment que le jour où je tombe en panne. Qui suis-je ?", "le système", "Bravo, Informatique & Systèmes ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 6", [
     ["Je suis un fleuve invisible qui traverse entrepôts et routes, ne s'arrêtant jamais tout à fait, sous peine de tout paralyser. Qui suis-je ?", "le flux", "Le fleuve continue de couler."],
@@ -168,7 +168,7 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis promis avant d'être tenu, redouté quand il approche, et souvent la première victime des imprévus. Qui suis-je ?", "le délai", "Le délai, cette promesse fragile, a été compris."],
     ["Je relie un point de départ à un point d'arrivée, par la route, par les airs ou par la mer, sans jamais rester en place. Qui suis-je ?", "le transport", "Toujours en mouvement, jamais arrêté."],
     ["Je suis le silence brutal d'un rayon qui devrait être plein, la promesse brisée entre celui qui commande et celui qui attend. Qui suis-je ?", "la rupture", "Le silence du rayon vide, évité de justesse."],
-    ["Je nais d'un besoin exprimé quelque part, et je termine mon voyage entre les mains de celui qui m'a demandée. Qui suis-je ?", "la commande", "Bravo, Logistique. Voici votre fragment : \"Classe X,\""],
+    ["Je nais d'un besoin exprimé quelque part, et je termine mon voyage entre les mains de celui qui m'a demandée. Qui suis-je ?", "la commande", "Bravo, Logistique ! Vous avez résolu toutes vos énigmes."],
   ]),
   ...s("Amphi 8", [
     ["Je ne s'arrête jamais, même quand tout semble déjà bon, car je crois qu'il existe toujours un geste de plus à perfectionner. Qui suis-je ?", "l'amélioration", "Il n'y a jamais de point final, seulement des progrès."],
@@ -180,6 +180,6 @@ export const QUESTIONS_SEED: SeedQuestion[] = [
     ["Je suis une idée devenue presque réelle, encore fragile, testée avant d'oser affronter le monde entier. Qui suis-je ?", "le prototype", "Presque réel — c'est déjà énorme."],
     ["Je suis la capacité à voir ce qui n'existe pas encore, à combiner ce que personne n'avait pensé à combiner. Qui suis-je ?", "la créativité", "Voir ce qui n'existe pas encore — c'est déjà l'inventer."],
     ["Je ne se décrète pas, je me mesure, dans un sourire, une note laissée après usage, ou un silence qui en dit long. Qui suis-je ?", "la satisfaction", "Ce sourire-là ne ment jamais."],
-    ["Je suis la preuve que rien n'est jamais vraiment fini, que demain peut toujours être un peu meilleur qu'aujourd'hui. Qui suis-je ?", "le progrès", "Bravo, Qualité & Innovation. Vous détenez le dernier fragment : \"de demain.\""],
+    ["Je suis la preuve que rien n'est jamais vraiment fini, que demain peut toujours être un peu meilleur qu'aujourd'hui. Qui suis-je ?", "le progrès", "Bravo, Qualité & Innovation ! Vous avez résolu toutes vos énigmes."],
   ]),
 ];
