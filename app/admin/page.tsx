@@ -289,15 +289,17 @@ function AdminPanel() {
   async function lancerImport() {
     if (
       !confirm(
-        "Ceci va remplacer toutes les énigmes existantes par les 100 énigmes du scénario \"Le Dossier Perdu\", créer/mettre à jour les 10 équipes, la phrase finale et le texte de l'histoire. Continuer ?"
+        "Ceci va SUPPRIMER toutes les équipes et énigmes existantes, puis recréer les 10 équipes et 100 énigmes du scénario \"Le Dossier Perdu\", la phrase finale et le texte de l'histoire. Continuer ?"
       )
     )
       return;
     setImporting(true);
     try {
-      await importerScenarioParDefaut();
+      const resultat = await importerScenarioParDefaut();
       await reload();
-      alert("Scénario importé avec succès. Vous pouvez tout modifier ci-dessous.");
+      alert(
+        `Import terminé : ${resultat.equipes} équipes et ${resultat.enigmes} énigmes sont maintenant dans la base. Rechargez la page /jouer si vous ne les voyez pas tout de suite.`
+      );
     } catch (e) {
       alert("Échec de l'import : " + (e instanceof Error ? e.message : String(e)));
     } finally {
