@@ -13,6 +13,7 @@ export default function JouerEquipe() {
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [team, setTeam] = useState<Team | null>(null);
+  const [erreurDetail, setErreurDetail] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [index, setIndex] = useState(0);
   const [attempts, setAttempts] = useState(0); // tentatives utilisées sur la question en cours
@@ -38,6 +39,7 @@ export default function JouerEquipe() {
         setTeam(t);
         return getQuestionsForSalle(t.salle).then((qs) => {
           if (qs.length === 0) {
+            setErreurDetail(`Aucune énigme trouvée pour la salle "${t.salle}".`);
             setPhase("error");
             return;
           }
@@ -45,7 +47,10 @@ export default function JouerEquipe() {
           setPhase("playing");
         });
       })
-      .catch(() => setPhase("error"));
+      .catch((e) => {
+        setErreurDetail(e instanceof Error ? e.message : String(e));
+        setPhase("error");
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -165,6 +170,9 @@ export default function JouerEquipe() {
         {team
           ? "Aucune énigme n'est encore configurée pour cette salle. Demandez à l'organisateur de les ajouter dans l'espace organisateur."
           : "Équipe introuvable."}
+        {erreurDetail && (
+          <span className="block text-xs text-slate-400 mt-3">{erreurDetail}</span>
+        )}
       </Centered>
     );
   }

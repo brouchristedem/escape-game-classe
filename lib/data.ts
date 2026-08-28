@@ -9,7 +9,6 @@ import {
   setDoc,
   query,
   where,
-  orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { Question, Salle, QuizConfig, Team } from "./types";
@@ -18,17 +17,19 @@ const QUESTIONS_COL = "questions";
 const TEAMS_COL = "teams";
 const CONFIG_DOC = "config/quiz";
 
+// Pas de orderBy() côté Firestore ici : combiner where + orderBy sur des
+// champs différents nécessite un index composite à créer manuellement dans
+// la console Firebase. On trie donc côté application pour que ça marche
+// sans configuration supplémentaire.
 export async function getQuestionsForSalle(salle: Salle): Promise<Question[]> {
-  const q = query(
-    collection(db, QUESTIONS_COL),
-    where("salle", "==", salle),
-    orderBy("ordre", "asc")
-  );
+  const q = query(collection(db, QUESTIONS_COL), where("salle", "==", salle));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => {
-    const data = d.data() as Omit<Question, "id">;
-    return { id: d.id, ...data, salle: String(data.salle) };
-  });
+  return snap.docs
+    .map((d) => {
+      const data = d.data() as Omit<Question, "id">;
+      return { id: d.id, ...data, salle: String(data.salle) };
+    })
+    .sort((a, b) => a.ordre - b.ordre);
 }
 
 export async function getAllQuestions(): Promise<Question[]> {
