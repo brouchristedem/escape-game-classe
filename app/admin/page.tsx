@@ -12,6 +12,7 @@ import {
   addTeam,
   updateTeam,
   deleteTeam,
+  importerScenarioParDefaut,
 } from "@/lib/data";
 import { Question, Team, TypeEnigme, UniteTemps, versSecondes, depuisSecondes } from "@/lib/types";
 
@@ -84,7 +85,7 @@ function AdminPanel() {
   const [fragments, setFragments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [tab, setTab] = useState<"equipes" | "questions" | "phrase">("equipes");
+  const [tab, setTab] = useState<"equipes" | "questions" | "phrase" | "histoire">("equipes");
 
   const [teamForm, setTeamForm] = useState({ ...emptyTeamForm });
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
@@ -95,6 +96,11 @@ function AdminPanel() {
 
   const [savingFragments, setSavingFragments] = useState(false);
 
+  const [histoire, setHistoire] = useState("");
+  const [savingHistoire, setSavingHistoire] = useState(false);
+
+  const [importing, setImporting] = useState(false);
+
   async function reload() {
     setLoading(true);
     setLoadError(null);
@@ -103,6 +109,7 @@ function AdminPanel() {
       setTeams(ts);
       setQuestions(qs);
       setFragments(config.fragments);
+      setHistoire(config.histoire ?? "");
     } catch (e) {
       console.error(e);
       const detail = e instanceof Error ? e.message : String(e);
@@ -269,6 +276,35 @@ function AdminPanel() {
     setSavingFragments(false);
   }
 
+  // ---------- Histoire ----------
+
+  async function saveHistoire() {
+    setSavingHistoire(true);
+    await saveQuizConfig({ histoire });
+    setSavingHistoire(false);
+  }
+
+  // ---------- Import du scénario par défaut ----------
+
+  async function lancerImport() {
+    if (
+      !confirm(
+        "Ceci va remplacer toutes les énigmes existantes par les 100 énigmes du scénario \"Le Dossier Perdu\", créer/mettre à jour les 10 équipes, la phrase finale et le texte de l'histoire. Continuer ?"
+      )
+    )
+      return;
+    setImporting(true);
+    try {
+      await importerScenarioParDefaut();
+      await reload();
+      alert("Scénario importé avec succès. Vous pouvez tout modifier ci-dessous.");
+    } catch (e) {
+      alert("Échec de l'import : " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const questionsFiltrees = questions.filter((q) => q.salle === salleFiltre);
 
   return (
@@ -276,11 +312,20 @@ function AdminPanel() {
       <h1 className="text-2xl font-bold mb-1">Espace organisateur</h1>
       <p className="text-slate-500 text-sm mb-6">Escape Game IUA Classe X</p>
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-3 flex-wrap">
         <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes &amp; salles</TabButton>
         <TabButton active={tab === "questions"} onClick={() => setTab("questions")}>Énigmes</TabButton>
         <TabButton active={tab === "phrase"} onClick={() => setTab("phrase")}>Phrase finale</TabButton>
+        <TabButton active={tab === "histoire"} onClick={() => setTab("histoire")}>Histoire</TabButton>
       </div>
+
+      <button
+        onClick={lancerImport}
+        disabled={importing}
+        className="text-xs text-brand-blue underline mb-6 disabled:text-slate-400"
+      >
+        {importing ? "Import en cours..." : "Importer le scénario par défaut (\"Le Dossier Perdu\")"}
+      </button>
 
       {loading && <p className="text-slate-500">Chargement...</p>}
 
@@ -499,11 +544,7 @@ function AdminPanel() {
               </select>
             </div>
 
-            <p className="text-slate-500 text-xs mb-4">
-              Règle fixe du jeu : 2 tentatives par énigme, puis passage automatique à l&apos;énigme suivante.
-            </p>
-
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-4">
               <button onClick={submitQForm} className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition">
                 {editingQId ? "Enregistrer les modifications" : "Ajouter l'énigme"}
               </button>
@@ -624,6 +665,32 @@ function AdminPanel() {
           <p className="text-slate-500 text-xs mt-4">
             Aperçu : {fragments.filter(Boolean).join(" ") || "(rien pour l'instant)"}
           </p>
+        </section>
+      )}
+
+      {!loading && tab === "histoire" && (
+        <section className="max-w-xl">
+          <p className="text-slate-600 mb-4 text-sm">
+            Ce texte s&apos;affiche sur la page d&apos;histoire, juste après l&apos;accueil et avant le choix de
+            l&apos;équipe (logo seul, sans titre, au-dessus du texte).
+          </p>
+
+          <label className="block text-sm text-slate-500 mb-1">Texte de l&apos;histoire</label>
+          <textarea
+            value={histoire}
+            onChange={(e) => setHistoire(e.target.value)}
+            rows={10}
+            className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-3 py-2 mb-4 w-full"
+            placeholder="Bienvenue à l'IUA, Classe X..."
+          />
+
+          <button
+            onClick={saveHistoire}
+            disabled={savingHistoire}
+            className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition"
+          >
+            {savingHistoire ? "Enregistrement..." : "Enregistrer l'histoire"}
+          </button>
         </section>
       )}
     </main>

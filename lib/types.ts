@@ -30,6 +30,7 @@ export interface Question {
 
 export interface QuizConfig {
   fragments: string[]; // longueur = nombre de fragments choisi par l'organisateur
+  histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
 }
 
 // Convertit une durée saisie dans une unité donnée en secondes (stockage interne).

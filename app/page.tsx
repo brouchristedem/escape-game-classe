@@ -26,7 +26,7 @@ export default function Home() {
         À vous de la découvrir.
       </p>
       <Link
-        href="/jouer"
+        href="/histoire"
         className="mt-7 bg-brand-blue hover:bg-brand-navy text-white font-semibold px-10 py-3 rounded-full text-lg transition"
       >
         Commencer
