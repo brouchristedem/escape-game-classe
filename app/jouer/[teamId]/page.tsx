@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { getQuestionsForSalle, getQuizConfig, getTeam } from "@/lib/data";
-import { Question, Team, normaliserReponse } from "@/lib/types";
+import {
+  Question,
+  Team,
+  normaliserReponse,
+  normaliserFragment,
+  calculerPlanDeblocage,
+  PlanDeblocage,
+} from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
 type Phase = "loading" | "error" | "playing" | "termine";
@@ -25,6 +32,12 @@ export default function JouerEquipe() {
   const [awaitingContinue, setAwaitingContinue] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [fragment, setFragment] = useState("");
+  const [plan, setPlan] = useState<PlanDeblocage | null>(null);
+  const [lettresCollectees, setLettresCollectees] = useState<string[]>([]);
+  const [dernieresLettres, setDernieresLettres] = useState<string | null>(null);
+  const [saisieFragment, setSaisieFragment] = useState("");
+  const [tentativesFragment, setTentativesFragment] = useState(0);
+  const [resultatFragment, setResultatFragment] = useState<"attente" | "trouve" | "revele">("attente");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -39,13 +52,18 @@ export default function JouerEquipe() {
           return;
         }
         setTeam(t);
-        return getQuestionsForSalle(t.salle).then((qs) => {
+        return Promise.all([getQuestionsForSalle(t.salle), getQuizConfig()]).then(([qs, config]) => {
           if (qs.length === 0) {
             setErreurDetail(`Aucune énigme trouvée pour la salle "${t.salle}".`);
             setPhase("error");
             return;
           }
           setQuestions(qs);
+          const idx = t.fragmentIndex;
+          const fragmentTexte =
+            idx !== null && idx !== undefined ? config.fragments[idx] || "" : "";
+          setFragment(fragmentTexte);
+          setPlan(calculerPlanDeblocage(fragmentTexte, qs.length, t.id));
           setPhase("playing");
         });
       })
@@ -91,6 +109,7 @@ export default function JouerEquipe() {
     setDisabledOptions([]);
     setReponseLibre("");
     setAttempts(0);
+    setDernieresLettres(null);
     if (index + 1 >= questions.length) {
       finishQuiz();
     } else {
@@ -98,16 +117,25 @@ export default function JouerEquipe() {
     }
   }
 
-  async function finishQuiz() {
+  function finishQuiz() {
     if (timerRef.current) clearInterval(timerRef.current);
-    try {
-      const config = await getQuizConfig();
-      const idx = team?.fragmentIndex;
-      setFragment(idx !== null && idx !== undefined ? config.fragments[idx] || "(fragment non configuré)" : "(fragment non attribué)");
-    } catch {
-      setFragment("(erreur de chargement du fragment)");
-    }
     setPhase("termine");
+  }
+
+  function validerFragment() {
+    if (!saisieFragment.trim()) return;
+    const correct = normaliserFragment(saisieFragment) === normaliserFragment(fragment);
+    if (correct) {
+      setResultatFragment("trouve");
+      return;
+    }
+    const nextTentatives = tentativesFragment + 1;
+    setTentativesFragment(nextTentatives);
+    if (nextTentatives >= 2) {
+      setResultatFragment("revele");
+    } else {
+      setSaisieFragment("");
+    }
   }
 
   function handleTimeout() {
@@ -132,6 +160,13 @@ export default function JouerEquipe() {
     if (timerRef.current) clearInterval(timerRef.current);
 
     if (correct) {
+      const lettresDebloquees = plan?.parQuestion[index] ?? null;
+      if (lettresDebloquees) {
+        setLettresCollectees((l) => [...l, lettresDebloquees]);
+        setDernieresLettres(lettresDebloquees);
+      } else {
+        setDernieresLettres(null);
+      }
       setFeedback({ text: question.feedbackCorrect || "Bonne réponse !", ok: true });
       setAwaitingContinue(true);
     } else {
@@ -183,20 +218,82 @@ export default function JouerEquipe() {
   }
 
   if (phase === "termine") {
+    const lettresMelangees = [...lettresCollectees].join("").split("");
     return (
       <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-white text-center">
         <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brand-blue/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-brand-navy/10 blur-3xl" />
-        <div className="relative z-10 flex flex-col items-center max-w-md">
+        <div className="relative z-10 flex flex-col items-center max-w-md w-full">
           <p className="text-brand-blue font-semibold mb-2">{team?.nom}</p>
           <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">Bravo, votre escape game est terminé !</h1>
-          <p className="text-slate-600 mb-3">Votre fragment de la phrase finale :</p>
-          <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-            {fragment}
-          </div>
-          <p className="text-slate-500 max-w-sm">
-            Direction l&apos;amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu&apos;à ce qu&apos;il soit posé au tableau.
-          </p>
+
+          {resultatFragment === "attente" && (
+            <>
+              <p className="text-slate-600 mb-3">
+                Voici les lettres récoltées, mélangées. À vous de reconstituer votre fragment :
+              </p>
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                {lettresMelangees.length > 0 ? (
+                  lettresMelangees.map((l, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center justify-center h-11 w-11 rounded-xl bg-brand-blue-light ring-1 ring-brand-blue/30 text-brand-navy font-bold text-lg"
+                    >
+                      {l}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-slate-400">Aucune lettre débloquée.</span>
+                )}
+              </div>
+              <div className="w-full flex flex-col gap-3">
+                <input
+                  value={saisieFragment}
+                  onChange={(e) => setSaisieFragment(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && validerFragment()}
+                  placeholder="Reconstituez votre fragment..."
+                  className="px-5 py-4 rounded-2xl border-2 border-transparent bg-brand-blue-light/70 focus:border-brand-blue outline-none text-brand-navy text-center font-medium transition-all duration-200"
+                />
+                <button
+                  onClick={validerFragment}
+                  disabled={!saisieFragment.trim()}
+                  className="self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-md shadow-brand-blue/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+                >
+                  Valider
+                </button>
+                {tentativesFragment === 1 && (
+                  <p className="text-sm text-brand-blue font-medium">Dernière tentative !</p>
+                )}
+              </div>
+            </>
+          )}
+
+          {resultatFragment === "trouve" && (
+            <>
+              <p className="text-2xl mb-2">🎉</p>
+              <p className="text-slate-600 mb-3">Trouvé ! Votre fragment de la phrase finale :</p>
+              <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
+                {fragment}
+              </div>
+            </>
+          )}
+
+          {resultatFragment === "revele" && (
+            <>
+              <p className="text-slate-600 mb-3">
+                Pas trouvé cette fois, mais voici votre fragment de la phrase finale :
+              </p>
+              <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
+                {fragment}
+              </div>
+            </>
+          )}
+
+          {resultatFragment !== "attente" && (
+            <p className="text-slate-500 max-w-sm">
+              Direction l&apos;amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu&apos;à ce qu&apos;il soit posé au tableau.
+            </p>
+          )}
         </div>
       </main>
     );
@@ -298,6 +395,19 @@ export default function JouerEquipe() {
               {question.reponse}
             </div>
           )}
+        </div>
+      )}
+
+      {feedback && feedback.ok && dernieresLettres && (
+        <div className="mt-6 rounded-2xl bg-gradient-to-r from-brand-blue-light to-white ring-2 ring-brand-blue/40 px-5 py-4 text-center shadow-sm">
+          <p className="text-2xl mb-1">🏆</p>
+          <p className="font-semibold text-brand-navy">
+            Bravo, vous avez débloqué une partie de votre fragment !
+          </p>
+          <p className="my-2 text-2xl font-extrabold tracking-widest text-brand-blue">
+            {dernieresLettres}
+          </p>
+          <p className="text-sm text-slate-500">Notez-la bien, elle vous servira à la fin.</p>
         </div>
       )}
 

@@ -60,3 +60,104 @@ export function normaliserReponse(texte: string): string {
     .replace(/\s+/g, " ")
     .replace(/^(l'|le |la |les |un |une |des )/, "");
 }
+
+// Normalise un fragment de phrase (contrairement à normaliserReponse, ne
+// retire pas l'article initial : on compare la phrase entière telle quelle,
+// juste insensible à la casse, aux accents et aux espaces superflus).
+export function normaliserFragment(texte: string): string {
+  return texte
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+// --- Mécanique de déblocage progressif du fragment ---
+// À chaque bonne réponse, l'équipe débloque une ou plusieurs lettres de son
+// fragment (dans le désordre). Certaines énigmes ne débloquent rien. Le plan
+// de déblocage est calculé de façon déterministe à partir de l'identifiant de
+// l'équipe, pour rester stable même si la page est rechargée en cours de jeu.
+
+function hashSeed(str: string): number {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(seed: number): () => number {
+  let a = seed;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle<T>(arr: T[], rng: () => number): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Caractères "révélables" d'un fragment (lettres et chiffres, sans espaces ni
+// ponctuation, qui restent visibles tels quels dans le résultat final).
+function extraireLettres(fragment: string): string[] {
+  return Array.from(fragment).filter((c) => /[A-Za-zÀ-ÖØ-öø-ÿ0-9]/.test(c));
+}
+
+export interface PlanDeblocage {
+  // Pour chaque énigme (même index que le tableau de questions), les lettres
+  // débloquées si l'équipe répond correctement, ou null si rien n'est débloqué.
+  parQuestion: (string | null)[];
+}
+
+export function calculerPlanDeblocage(
+  fragment: string,
+  nbQuestions: number,
+  seedKey: string
+): PlanDeblocage {
+  const parQuestion: (string | null)[] = new Array(nbQuestions).fill(null);
+  if (nbQuestions === 0) return { parQuestion };
+
+  const rng = mulberry32(hashSeed(seedKey));
+  const lettresMelangees = seededShuffle(extraireLettres(fragment), rng);
+  const n = lettresMelangees.length;
+  if (n === 0) return { parQuestion };
+
+  if (n <= nbQuestions) {
+    // On choisit n énigmes (sur nbQuestions) qui débloqueront une lettre
+    // chacune ; les autres ne débloquent rien.
+    const indicesChoisis = seededShuffle(
+      Array.from({ length: nbQuestions }, (_, i) => i),
+      rng
+    )
+      .slice(0, n)
+      .sort((a, b) => a - b);
+    indicesChoisis.forEach((qIdx, li) => {
+      parQuestion[qIdx] = lettresMelangees[li];
+    });
+  } else {
+    // Plus de lettres que d'énigmes : on répartit plusieurs lettres par
+    // énigme, aussi équitablement que possible ; ici, aucune énigme ne
+    // débloque "rien" puisqu'il faut caser toutes les lettres.
+    let li = 0;
+    for (let q = 0; q < nbQuestions; q++) {
+      const restQuestions = nbQuestions - q;
+      const restLettres = n - li;
+      const count = Math.ceil(restLettres / restQuestions);
+      parQuestion[q] = lettresMelangees.slice(li, li + count).join("");
+      li += count;
+    }
+  }
+
+  return { parQuestion };
+}
