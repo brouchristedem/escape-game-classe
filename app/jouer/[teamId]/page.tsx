@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { getQuestionsForSalle, getQuizConfig, getTeam, publierLiveState } from "@/lib/data";
+import { getQuestionsForSalle, getQuizConfig, getTeam, publierLiveState, claimerChef } from "@/lib/data";
 import {
   Question,
   Team,
@@ -14,6 +14,7 @@ import {
   messagePourEnigme,
   LiveState,
 } from "@/lib/types";
+import { getSessionId } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
 type Phase = "loading" | "error" | "playing" | "termine";
@@ -44,6 +45,7 @@ export default function JouerEquipe() {
   const [resultatFragment, setResultatFragment] = useState<"attente" | "trouve" | "revele">("attente");
   const [needsRetryClick, setNeedsRetryClick] = useState(false);
   const [essaiKey, setEssaiKey] = useState(0);
+  const [chefRefuse, setChefRefuse] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -51,33 +53,43 @@ export default function JouerEquipe() {
       setPhase("error");
       return;
     }
-    getTeam(teamId)
-      .then((t) => {
+    (async () => {
+      try {
+        // Reprend/confirme la main en tant que chef d'équipe (couvre le cas
+        // d'un accès direct par URL ou d'un rechargement de page, en plus du
+        // clic depuis la page de sélection d'équipe). Si un autre appareil a
+        // déjà la main, on s'arrête là sans démarrer la partie.
+        const { ok } = await claimerChef(teamId, getSessionId());
+        if (!ok) {
+          setChefRefuse(true);
+          setPhase("error");
+          return;
+        }
+
+        const t = await getTeam(teamId);
         if (!t) {
           setPhase("error");
           return;
         }
         setTeam(t);
-        return Promise.all([getQuestionsForSalle(t.salle), getQuizConfig()]).then(([qs, config]) => {
-          if (qs.length === 0) {
-            setErreurDetail(`Aucune énigme trouvée pour la salle "${t.salle}".`);
-            setPhase("error");
-            return;
-          }
-          setQuestions(qs);
-          const idx = t.fragmentIndex;
-          const fragmentTexte =
-            idx !== null && idx !== undefined ? config.fragments[idx] || "" : "";
-          setFragment(fragmentTexte);
-          setPlan(calculerPlanDeblocage(fragmentTexte, qs.length, t.id));
-          setToutesLettres(toutesLesLettresMelangees(fragmentTexte, t.id));
-          setPhase("playing");
-        });
-      })
-      .catch((e) => {
+        const [qs, config] = await Promise.all([getQuestionsForSalle(t.salle), getQuizConfig()]);
+        if (qs.length === 0) {
+          setErreurDetail(`Aucune énigme trouvée pour la salle "${t.salle}".`);
+          setPhase("error");
+          return;
+        }
+        setQuestions(qs);
+        const idx = t.fragmentIndex;
+        const fragmentTexte = idx !== null && idx !== undefined ? config.fragments[idx] || "" : "";
+        setFragment(fragmentTexte);
+        setPlan(calculerPlanDeblocage(fragmentTexte, qs.length, t.id));
+        setToutesLettres(toutesLesLettresMelangees(fragmentTexte, t.id));
+        setPhase("playing");
+      } catch (e) {
         setErreurDetail(e instanceof Error ? e.message : String(e));
         setPhase("error");
-      });
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -135,8 +147,17 @@ export default function JouerEquipe() {
       resultatFragment,
       fragment,
       updatedAt: Date.now(),
+      chefSessionId: getSessionId(),
     };
     publierLiveState(teamId, state);
+
+    // Battement de coeur : même sans changement d'état (le chef d'équipe lit
+    // une énigme sans agir), on republie régulièrement pour que sa place ne
+    // soit pas considérée libre et reprise par un autre appareil.
+    const heartbeat = setInterval(() => {
+      publierLiveState(teamId, { ...state, updatedAt: Date.now() });
+    }, 20_000);
+    return () => clearInterval(heartbeat);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     teamId,
@@ -264,7 +285,9 @@ export default function JouerEquipe() {
   if (phase === "error") {
     return (
       <Centered>
-        {team
+        {chefRefuse
+          ? "Un autre appareil est déjà connecté en tant que chef d'équipe pour cette équipe. Une seule personne peut répondre à la fois."
+          : team
           ? "Aucune énigme n'est encore configurée pour cette salle. Demandez à l'organisateur de les ajouter dans l'espace organisateur."
           : "Équipe introuvable."}
         {erreurDetail && (

@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getAllTeams } from "@/lib/data";
+import { getAllTeams, claimerChef } from "@/lib/data";
 import { Team } from "@/lib/types";
+import { getSessionId } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
 export default function ChoixEquipe() {
@@ -12,6 +13,7 @@ export default function ChoixEquipe() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
   const [navigating, setNavigating] = useState(false);
+  const [erreurChef, setErreurChef] = useState(false);
   const continueRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,9 +30,16 @@ export default function ChoixEquipe() {
     });
   }
 
-  function commencerMeneur() {
+  async function commencerMeneur() {
     if (!selected) return;
+    setErreurChef(false);
     setNavigating(true);
+    const { ok } = await claimerChef(selected, getSessionId());
+    if (!ok) {
+      setNavigating(false);
+      setErreurChef(true);
+      return;
+    }
     setTimeout(() => router.push(`/jouer/${selected}`), 500);
   }
 
@@ -95,6 +104,12 @@ export default function ChoixEquipe() {
           >
             Je suis dans l&apos;équipe (je suis en direct)
           </button>
+          {erreurChef && (
+            <p className="text-sm text-red-500 text-center max-w-sm">
+              Un chef d&apos;équipe est déjà connecté pour cette équipe. Une seule personne peut
+              répondre à la fois — choisissez plutôt &laquo;&nbsp;Je suis dans l&apos;équipe&nbsp;&raquo;.
+            </p>
+          )}
         </div>
       </div>
     </main>

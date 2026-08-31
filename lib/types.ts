@@ -57,7 +57,16 @@ export interface LiveState {
   resultatFragment: "attente" | "trouve" | "revele";
   fragment: string;
   updatedAt: number;
+  // Identifiant de l'appareil qui a actuellement la main en tant que chef
+  // d'équipe (voir claimerChef dans lib/data.ts). Sert à empêcher qu'un autre
+  // appareil prenne le rôle de chef pendant qu'une partie est en cours.
+  chefSessionId: string;
 }
+
+// Durée sans nouvelle activité du chef d'équipe (ms) au-delà de laquelle sa
+// place est considérée libre (déconnexion, tab fermé...) et peut être reprise
+// par un autre appareil.
+export const CHEF_LOCK_TIMEOUT_MS = 45_000;
 
 // Convertit une durée saisie dans une unité donnée en secondes (stockage interne).
 export function versSecondes(valeur: number, unite: UniteTemps): number {

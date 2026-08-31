@@ -10,9 +10,10 @@ import {
   onSnapshot,
   query,
   where,
+  runTransaction,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Question, Salle, QuizConfig, Team, LiveState } from "./types";
+import { Question, Salle, QuizConfig, Team, LiveState, CHEF_LOCK_TIMEOUT_MS } from "./types";
 
 const QUESTIONS_COL = "questions";
 const TEAMS_COL = "teams";
@@ -153,6 +154,38 @@ export async function publierLiveState(teamId: string, state: LiveState): Promis
     await setDoc(doc(db, LIVE_STATE_COL, teamId), state);
   } catch {
     // best effort : le suivi en direct n'est pas critique pour le jeu du meneur
+  }
+}
+
+// Tente de prendre la main en tant que chef d'équipe pour cette équipe.
+// Refuse si un autre appareil a déjà la main et a donné signe de vie
+// récemment (< CHEF_LOCK_TIMEOUT_MS) ; sinon prend (ou reprend) la main.
+// Utilise une transaction pour éviter que deux appareils ne prennent la main
+// en même temps.
+export async function claimerChef(
+  teamId: string,
+  sessionId: string
+): Promise<{ ok: boolean }> {
+  const ref = doc(db, LIVE_STATE_COL, teamId);
+  try {
+    return await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      if (snap.exists()) {
+        const data = snap.data() as Partial<LiveState>;
+        const dejaPrisParAutrui =
+          !!data.chefSessionId &&
+          data.chefSessionId !== sessionId &&
+          !!data.updatedAt &&
+          Date.now() - data.updatedAt < CHEF_LOCK_TIMEOUT_MS;
+        if (dejaPrisParAutrui) return { ok: false };
+      }
+      tx.set(ref, { chefSessionId: sessionId, updatedAt: Date.now() }, { merge: true });
+      return { ok: true };
+    });
+  } catch {
+    // best effort : en cas d'échec réseau/permissions, on ne bloque pas la
+    // partie plutôt que de laisser tout le monde coincé sur une erreur.
+    return { ok: true };
   }
 }
 
