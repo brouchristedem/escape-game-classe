@@ -11,6 +11,8 @@ import {
   query,
   where,
   runTransaction,
+  serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { Question, Salle, QuizConfig, Team, LiveState, CHEF_LOCK_TIMEOUT_MS } from "./types";
@@ -147,13 +149,26 @@ export async function deleteTeam(id: string): Promise<void> {
 
 // --- Suivi en direct (lecture seule) de l'écran du chef d'équipe ---
 
+// Convertit le champ updatedAt (Timestamp Firestore serveur, ou nombre pour
+// d'anciens documents écrits avant ce correctif) en millisecondes epoch.
+function updatedAtEnMillis(value: unknown): number {
+  if (value instanceof Timestamp) return value.toMillis();
+  if (typeof value === "number") return value;
+  return 0;
+}
+
 // Écrit par le meneur à chaque changement d'état ; jamais rejeté (best effort,
-// ça ne doit jamais bloquer le jeu du meneur si ça échoue).
+// ça ne doit jamais bloquer le jeu du meneur si ça échoue). updatedAt est
+// toujours réécrit avec l'horloge du serveur Firestore (pas celle de
+// l'appareil) : deux téléphones peuvent avoir une horloge locale décalée,
+// ce qui faussait la comparaison de fraîcheur utilisée par claimerChef.
 export async function publierLiveState(teamId: string, state: LiveState): Promise<void> {
   try {
-    await setDoc(doc(db, LIVE_STATE_COL, teamId), state);
-  } catch {
-    // best effort : le suivi en direct n'est pas critique pour le jeu du meneur
+    await setDoc(doc(db, LIVE_STATE_COL, teamId), { ...state, updatedAt: serverTimestamp() });
+  } catch (e) {
+    // best effort : le suivi en direct n'est pas critique pour le jeu du meneur,
+    // mais on log pour pouvoir diagnostiquer (ex. règles Firestore non publiées).
+    console.error("publierLiveState a échoué (suivi en direct désactivé pour cette mise à jour) :", e);
   }
 }
 
@@ -162,6 +177,15 @@ export async function publierLiveState(teamId: string, state: LiveState): Promis
 // récemment (< CHEF_LOCK_TIMEOUT_MS) ; sinon prend (ou reprend) la main.
 // Utilise une transaction pour éviter que deux appareils ne prennent la main
 // en même temps.
+//
+// Important : la fraîcheur du verrou est comparée en utilisant l'horloge du
+// serveur Firestore (updatedAt écrit via serverTimestamp()), jamais celle
+// d'un autre appareil. Avant ce correctif, un téléphone A écrivait
+// Date.now() avec SA propre horloge locale, et un téléphone B comparait
+// cette valeur à SA propre horloge locale : si les deux horloges étaient
+// décalées (fréquent sur des téléphones d'étudiants), le verrou pouvait
+// sembler expiré alors qu'il ne l'était pas (ou l'inverse), permettant à
+// deux chefs de se connecter par intermittence.
 export async function claimerChef(
   teamId: string,
   sessionId: string
@@ -175,18 +199,18 @@ export async function claimerChef(
         const dejaPrisParAutrui =
           !!data.chefSessionId &&
           data.chefSessionId !== sessionId &&
-          !!data.updatedAt &&
-          Date.now() - data.updatedAt < CHEF_LOCK_TIMEOUT_MS;
+          Date.now() - updatedAtEnMillis(data.updatedAt) < CHEF_LOCK_TIMEOUT_MS;
         if (dejaPrisParAutrui) return { ok: false };
       }
-      tx.set(ref, { chefSessionId: sessionId, updatedAt: Date.now() }, { merge: true });
+      tx.set(ref, { chefSessionId: sessionId, updatedAt: serverTimestamp() }, { merge: true });
       return { ok: true };
     });
-  } catch {
+  } catch (e) {
     // Fail closed : si la transaction échoue (permissions, règles non
     // republiées, réseau...), on NE laisse PAS passer la revendication.
     // Un faux "ok: true" ici annulerait complètement le verrou et
     // permettrait à deux appareils de devenir chef en même temps.
+    console.error("claimerChef a échoué, revendication refusée par sécurité :", e);
     return { ok: false };
   }
 }

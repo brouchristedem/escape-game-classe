@@ -56,6 +56,9 @@ export interface LiveState {
   saisieFragment: string;
   resultatFragment: "attente" | "trouve" | "revele";
   fragment: string;
+  // Écrit côté serveur (voir serverTimestamp() dans lib/data.ts) pour éviter
+  // toute dépendance à l'horloge locale d'un appareil ; peut apparaître
+  // brièvement comme un objet Timestamp Firestore une fois lu depuis la base.
   updatedAt: number;
   // Identifiant de l'appareil qui a actuellement la main en tant que chef
   // d'équipe (voir claimerChef dans lib/data.ts). Sert à empêcher qu'un autre
