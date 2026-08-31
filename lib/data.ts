@@ -183,9 +183,11 @@ export async function claimerChef(
       return { ok: true };
     });
   } catch {
-    // best effort : en cas d'échec réseau/permissions, on ne bloque pas la
-    // partie plutôt que de laisser tout le monde coincé sur une erreur.
-    return { ok: true };
+    // Fail closed : si la transaction échoue (permissions, règles non
+    // republiées, réseau...), on NE laisse PAS passer la revendication.
+    // Un faux "ok: true" ici annulerait complètement le verrou et
+    // permettrait à deux appareils de devenir chef en même temps.
+    return { ok: false };
   }
 }
 

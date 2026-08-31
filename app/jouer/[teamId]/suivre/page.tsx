@@ -26,7 +26,13 @@ export default function SuivreEquipe() {
 
   if (loading) return <LoadingScreen label="Connexion à l'écran du chef d'équipe..." />;
 
-  if (!state) {
+  // state peut exister mais être incomplet : claimerChef crée le document
+  // liveState avec seulement { chefSessionId, updatedAt } au moment où le
+  // chef prend la main, avant que l'état complet de la partie (phase,
+  // index, questionTexte...) ne soit publié. Sans ce garde-fou, cet écran
+  // affichait "Énigme NaN /" pendant cette fenêtre. On attend un state
+  // avec une vraie phase avant d'afficher quoi que ce soit.
+  if (!state || !state.phase) {
     return (
       <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-white text-brand-navy">
         <p className="max-w-sm text-slate-500">
