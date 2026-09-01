@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,5 +10,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+const appExistaitDeja = getApps().length > 0;
+export const app = appExistaitDeja ? getApp() : initializeApp(firebaseConfig);
+// ignoreUndefinedProperties : sans ça, setDoc()/tx.set() lèvent une erreur
+// dès qu'un champ vaut `undefined` (ex. LiveState.propositions, absent pour
+// les énigmes de type "réponse libre"). Cette erreur était catchée en
+// silence dans publierLiveState, donc le document liveState n'était jamais
+// écrit avec phase="playing" quand la première énigme d'une salle était en
+// mode libre — d'où "le chef n'a pas commencé" affiché sur /suivre alors
+// qu'il avait bien commencé.
+export const db = appExistaitDeja
+  ? getFirestore(app)
+  : initializeFirestore(app, { ignoreUndefinedProperties: true });
