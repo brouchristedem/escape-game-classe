@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ecouterLiveState, getTeam } from "@/lib/data";
-import { LiveState, Team } from "@/lib/types";
+import { ecouterLiveState, getTeam, getQuizConfig } from "@/lib/data";
+import { LiveState, Team, fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
 export default function SuivreEquipe() {
@@ -12,11 +12,13 @@ export default function SuivreEquipe() {
 
   const [team, setTeam] = useState<Team | null>(null);
   const [state, setState] = useState<LiveState | null>(null);
+  const [texts, setTexts] = useState<GameTexts>(fusionnerTextes());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!teamId) return;
     getTeam(teamId).then(setTeam);
+    getQuizConfig().then((config) => setTexts(fusionnerTextes(config.texts)));
     const unsubscribe = ecouterLiveState(teamId, (s) => {
       setState(s);
       setLoading(false);
@@ -24,7 +26,7 @@ export default function SuivreEquipe() {
     return unsubscribe;
   }, [teamId]);
 
-  if (loading) return <LoadingScreen label="Connexion à l'écran du chef d'équipe..." />;
+  if (loading) return <LoadingScreen label={texts.suivreChargementLabel} />;
 
   // state peut exister mais être incomplet : claimerChef crée le document
   // liveState avec seulement { chefSessionId, updatedAt } au moment où le
@@ -35,16 +37,14 @@ export default function SuivreEquipe() {
   if (!state || !state.phase) {
     return (
       <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-white text-brand-navy">
-        <p className="max-w-sm text-slate-500">
-          Le chef d&apos;équipe n&apos;a pas encore démarré l&apos;escape game. Cet écran se mettra à jour automatiquement dès qu&apos;il commencera.
-        </p>
+        <p className="max-w-sm text-slate-500">{texts.suivreAttente}</p>
       </main>
     );
   }
 
   const banner = (
     <div className="mb-4 rounded-full bg-brand-blue-light/70 px-4 py-2 text-center text-xs font-medium text-brand-navy">
-      👀 Vous suivez l&apos;écran du chef d&apos;équipe en direct — lecture seule
+      {texts.suivreBanniere}
     </div>
   );
 
@@ -54,13 +54,11 @@ export default function SuivreEquipe() {
         <div className="relative z-10 flex flex-col items-center max-w-md w-full">
           {banner}
           <p className="text-brand-blue font-semibold mb-2">{team?.nom}</p>
-          <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">Bravo, votre escape game est terminé !</h1>
+          <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">{texts.finTitre}</h1>
 
           {state.resultatFragment === "attente" && (
             <>
-              <p className="text-slate-600 mb-3">
-                Voici toutes les lettres du fragment, mélangées. Le chef d&apos;équipe le reconstitue :
-              </p>
+              <p className="text-slate-600 mb-3">{texts.finTexteReconstituer}</p>
               <div className="flex flex-wrap justify-center gap-2 mb-6">
                 {state.lettresMelangees.map((l, i) => (
                   <span
@@ -75,7 +73,7 @@ export default function SuivreEquipe() {
                 value={state.saisieFragment}
                 readOnly
                 disabled
-                placeholder="Le chef d'équipe saisit ici..."
+                placeholder={texts.suivrePlaceholderSaisie}
                 className="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-brand-blue-light/70 outline-none text-brand-navy text-center font-medium"
               />
             </>
@@ -154,7 +152,7 @@ export default function SuivreEquipe() {
             value={state.reponseLibre}
             readOnly
             disabled
-            placeholder="Le chef d'équipe répond ici..."
+            placeholder={texts.suivrePlaceholderReponse}
             className={`px-5 py-4 rounded-2xl border-2 outline-none ${
               state.feedbackText
                 ? state.feedbackOk
@@ -169,7 +167,7 @@ export default function SuivreEquipe() {
       {state.feedbackOk && state.dernieresLettres && (
         <div className="mt-6 rounded-2xl bg-gradient-to-r from-brand-blue-light to-white ring-2 ring-brand-blue/40 px-5 py-4 text-center shadow-sm">
           <p className="text-2xl mb-1">🏆</p>
-          <p className="font-semibold text-brand-navy">Une partie du fragment vient d&apos;être débloquée !</p>
+          <p className="font-semibold text-brand-navy">{texts.suivreLettreTitre}</p>
           <p className="my-2 text-2xl font-extrabold tracking-widest text-brand-blue">{state.dernieresLettres}</p>
         </div>
       )}
@@ -185,13 +183,11 @@ export default function SuivreEquipe() {
       )}
 
       {state.attempts === 1 && !state.feedbackText && (
-        <p className="mt-6 text-center text-brand-blue text-sm font-medium">Dernière tentative pour cette énigme.</p>
+        <p className="mt-6 text-center text-brand-blue text-sm font-medium">{texts.jeuTexteDerniereTentative}</p>
       )}
 
       {state.awaitingContinue && (
-        <p className="mt-6 text-center text-slate-400 text-sm">
-          Le chef d&apos;équipe passe à la suite quand il est prêt.
-        </p>
+        <p className="mt-6 text-center text-slate-400 text-sm">{texts.suivreAttenteContinuer}</p>
       )}
     </main>
   );

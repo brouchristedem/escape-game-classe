@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getQuizConfig } from "@/lib/data";
+import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
 const HISTOIRE_PAR_DEFAUT = `Bienvenue à l'IUA, Classe X.
@@ -19,6 +20,7 @@ Le compte à rebours démarre maintenant. Bonne chance.`;
 export default function Histoire() {
   const router = useRouter();
   const [texte, setTexte] = useState(HISTOIRE_PAR_DEFAUT);
+  const [texts, setTexts] = useState<GameTexts>(fusionnerTextes());
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
 
@@ -26,6 +28,7 @@ export default function Histoire() {
     getQuizConfig()
       .then((config) => {
         if (config.histoire && config.histoire.trim()) setTexte(config.histoire);
+        setTexts(fusionnerTextes(config.texts));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -35,8 +38,8 @@ export default function Histoire() {
     setTimeout(() => router.push("/jouer"), 550);
   }
 
-  if (loading) return <LoadingScreen label="Chargement de la mission..." />;
-  if (navigating) return <LoadingScreen label="Direction votre équipe..." />;
+  if (loading) return <LoadingScreen label={texts.histoireChargementLabel} />;
+  if (navigating) return <LoadingScreen label={texts.histoireNavigationLabel} />;
 
   return (
     <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-white text-center">
@@ -61,7 +64,7 @@ export default function Histoire() {
           onClick={continuer}
           className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-10 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-blue/40 active:translate-y-0"
         >
-          C&apos;est parti
+          {texts.histoireBouton}
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
       </div>

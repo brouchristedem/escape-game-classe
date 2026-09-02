@@ -13,6 +13,8 @@ import {
   toutesLesLettresMelangees,
   messagePourEnigme,
   LiveState,
+  fusionnerTextes,
+  GameTexts,
 } from "@/lib/types";
 import { getSessionId } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
@@ -27,6 +29,7 @@ export default function JouerEquipe() {
   const [team, setTeam] = useState<Team | null>(null);
   const [erreurDetail, setErreurDetail] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [texts, setTexts] = useState<GameTexts>(fusionnerTextes());
   const [index, setIndex] = useState(0);
   const [attempts, setAttempts] = useState(0); // tentatives utilisées sur la question en cours
   const [selected, setSelected] = useState<number | null>(null);
@@ -73,6 +76,7 @@ export default function JouerEquipe() {
         }
         setTeam(t);
         const [qs, config] = await Promise.all([getQuestionsForSalle(t.salle), getQuizConfig()]);
+        setTexts(fusionnerTextes(config.texts));
         if (qs.length === 0) {
           setErreurDetail(`Aucune énigme trouvée pour la salle "${t.salle}".`);
           setPhase("error");
@@ -82,7 +86,18 @@ export default function JouerEquipe() {
         const idx = t.fragmentIndex;
         const fragmentTexte = idx !== null && idx !== undefined ? config.fragments[idx] || "" : "";
         setFragment(fragmentTexte);
-        setPlan(calculerPlanDeblocage(fragmentTexte, qs.length, t.id));
+        // Seules les vraies énigmes (pas les pages "code") débloquent des
+        // lettres du fragment ; on construit le plan uniquement sur ces
+        // positions puis on le reprojette sur l'index complet des étapes.
+        const indicesEnigmes = qs
+          .map((q, i) => (q.type === "code" ? -1 : i))
+          .filter((i) => i !== -1);
+        const planReduit = calculerPlanDeblocage(fragmentTexte, indicesEnigmes.length, t.id);
+        const parQuestionComplet: (string | null)[] = new Array(qs.length).fill(null);
+        indicesEnigmes.forEach((qIdx, k) => {
+          parQuestionComplet[qIdx] = planReduit.parQuestion[k];
+        });
+        setPlan({ parQuestion: parQuestionComplet });
         setToutesLettres(toutesLesLettresMelangees(fragmentTexte, t.id));
         setPhase("playing");
       } catch (e) {
@@ -94,12 +109,13 @@ export default function JouerEquipe() {
   }, []);
 
   const question = questions[index];
+  const isCodePage = question?.type === "code";
 
-  // Timer par question
+  // Timer par question (jamais pour une page "code")
   useEffect(() => {
     if (phase !== "playing" || !question) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    if (!question.tempsLimite) {
+    if (isCodePage || !question.tempsLimite) {
       setTimeLeft(null);
       return;
     }
@@ -131,7 +147,7 @@ export default function JouerEquipe() {
       index,
       totalQuestions: questions.length,
       questionTexte: question?.texte ?? "",
-      questionType: question?.type ?? "libre",
+      questionType: question?.type === "code" ? "libre" : question?.type ?? "libre",
       propositions: question?.propositions,
       selected,
       disabledOptions,
@@ -225,14 +241,14 @@ export default function JouerEquipe() {
   }
 
   function handleTimeout() {
-    if (!question) return;
+    if (!question || isCodePage) return;
     const nextAttempts = attempts + 1;
     setAttempts(nextAttempts);
     if (nextAttempts >= 2) {
-      setFeedback({ text: messagePourEnigme(index, false), ok: false });
+      setFeedback({ text: messagePourEnigme(index, false, texts.messagesReussite, texts.messagesEchec), ok: false });
       setAwaitingContinue(true);
     } else {
-      setFeedback({ text: "Temps écoulé !", ok: false });
+      setFeedback({ text: texts.jeuTexteTempsEcoule, ok: false });
       setNeedsRetryClick(true);
     }
   }
@@ -249,16 +265,25 @@ export default function JouerEquipe() {
       } else {
         setDernieresLettres(null);
       }
-      setFeedback({ text: messagePourEnigme(index, true), ok: true });
+      setFeedback({
+        text: isCodePage
+          ? question.feedbackCorrect || messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec)
+          : messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec),
+        ok: true,
+      });
       setAwaitingContinue(true);
+    } else if (isCodePage) {
+      // Page "code" : pas de limite de tentatives, on laisse réessayer directement.
+      setFeedback({ text: question.feedbackIncorrect || texts.jeuTexteMauvaiseReponse, ok: false });
+      setNeedsRetryClick(true);
     } else {
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
       if (nextAttempts >= 2) {
-        setFeedback({ text: messagePourEnigme(index, false), ok: false });
+        setFeedback({ text: messagePourEnigme(index, false, texts.messagesReussite, texts.messagesEchec), ok: false });
         setAwaitingContinue(true);
       } else {
-        setFeedback({ text: "Mauvaise réponse.", ok: false });
+        setFeedback({ text: texts.jeuTexteMauvaiseReponse, ok: false });
         setNeedsRetryClick(true);
       }
     }
@@ -279,17 +304,17 @@ export default function JouerEquipe() {
   }
 
   if (phase === "loading") {
-    return <LoadingScreen label="Chargement de l'escape game..." />;
+    return <LoadingScreen label={texts.jeuChargementLabel} />;
   }
 
   if (phase === "error") {
     return (
       <Centered>
         {chefRefuse
-          ? "Un autre appareil est déjà connecté en tant que chef d'équipe pour cette équipe. Une seule personne peut répondre à la fois."
+          ? texts.jeuErreurChefRefuse
           : team
-          ? "Aucune énigme n'est encore configurée pour cette salle. Demandez à l'organisateur de les ajouter dans l'espace organisateur."
-          : "Équipe introuvable."}
+          ? texts.jeuErreurAucuneEnigme
+          : texts.jeuErreurEquipeIntrouvable}
         {erreurDetail && (
           <span className="block text-xs text-slate-400 mt-3">{erreurDetail}</span>
         )}
@@ -304,13 +329,11 @@ export default function JouerEquipe() {
         <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-brand-navy/10 blur-3xl" />
         <div className="relative z-10 flex flex-col items-center max-w-md w-full">
           <p className="text-brand-blue font-semibold mb-2">{team?.nom}</p>
-          <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">Bravo, votre escape game est terminé !</h1>
+          <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">{texts.finTitre}</h1>
 
           {resultatFragment === "attente" && (
             <>
-              <p className="text-slate-600 mb-3">
-                Voici toutes les lettres de votre fragment, mélangées. À vous de le reconstituer :
-              </p>
+              <p className="text-slate-600 mb-3">{texts.finTexteReconstituer}</p>
               <div className="flex flex-wrap justify-center gap-2 mb-6">
                 {toutesLettres.length > 0 ? (
                   toutesLettres.map((l, i) => (
@@ -322,7 +345,7 @@ export default function JouerEquipe() {
                     </span>
                   ))
                 ) : (
-                  <span className="text-sm text-slate-400">Aucune lettre à afficher.</span>
+                  <span className="text-sm text-slate-400">{texts.finAucuneLettre}</span>
                 )}
               </div>
               <div className="w-full flex flex-col gap-3">
@@ -330,7 +353,7 @@ export default function JouerEquipe() {
                   value={saisieFragment}
                   onChange={(e) => setSaisieFragment(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && validerFragment()}
-                  placeholder="Reconstituez votre fragment..."
+                  placeholder={texts.finPlaceholderSaisie}
                   className="px-5 py-4 rounded-2xl border-2 border-transparent bg-brand-blue-light/70 focus:border-brand-blue outline-none text-brand-navy text-center font-medium transition-all duration-200"
                 />
                 <button
@@ -338,10 +361,10 @@ export default function JouerEquipe() {
                   disabled={!saisieFragment.trim()}
                   className="self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-md shadow-brand-blue/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
                 >
-                  Valider
+                  {texts.finLabelValiderFragment}
                 </button>
                 {tentativesFragment === 1 && (
-                  <p className="text-sm text-brand-blue font-medium">Dernière tentative !</p>
+                  <p className="text-sm text-brand-blue font-medium">{texts.finTexteDerniereTentative}</p>
                 )}
               </div>
             </>
@@ -350,7 +373,7 @@ export default function JouerEquipe() {
           {resultatFragment === "trouve" && (
             <>
               <p className="text-2xl mb-2">🎉</p>
-              <p className="text-slate-600 mb-3">Trouvé ! Votre fragment de la phrase finale :</p>
+              <p className="text-slate-600 mb-3">{texts.finTexteTrouve}</p>
               <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
                 {fragment}
               </div>
@@ -359,9 +382,7 @@ export default function JouerEquipe() {
 
           {resultatFragment === "revele" && (
             <>
-              <p className="text-slate-600 mb-3">
-                Pas trouvé cette fois, mais voici votre fragment de la phrase finale :
-              </p>
+              <p className="text-slate-600 mb-3">{texts.finTexteRevele}</p>
               <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
                 {fragment}
               </div>
@@ -369,9 +390,7 @@ export default function JouerEquipe() {
           )}
 
           {resultatFragment !== "attente" && (
-            <p className="text-slate-500 max-w-sm">
-              Direction l&apos;amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu&apos;à ce qu&apos;il soit posé au tableau.
-            </p>
+            <p className="text-slate-500 max-w-sm">{texts.finTexteDirectionAmphi}</p>
           )}
         </div>
       </main>
@@ -388,7 +407,7 @@ export default function JouerEquipe() {
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-slate-500 mb-2">
           <span className="font-medium text-brand-navy">{team?.nom}</span>
-          <span>Énigme {index + 1} / {questions.length}</span>
+          <span>{isCodePage ? "Page suivante" : `Énigme ${index + 1} / ${questions.length}`}</span>
           {timeLeft !== null && (
             <span
               className={`font-semibold rounded-full px-2.5 py-0.5 transition-colors ${
@@ -411,7 +430,33 @@ export default function JouerEquipe() {
         <h1 className="text-xl font-semibold leading-snug text-brand-navy">{question.texte}</h1>
       </div>
 
-      {question.type === "qcm" ? (
+      {isCodePage ? (
+        <div className="flex flex-col gap-3">
+          <input
+            value={reponseLibre}
+            onChange={(e) => setReponseLibre(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAnswerLibre()}
+            disabled={!!feedback}
+            placeholder={texts.codePagePlaceholder}
+            className={`px-5 py-4 rounded-2xl border-2 outline-none transition-all duration-200 text-center font-medium tracking-wide ${
+              feedback
+                ? feedback.ok
+                  ? "bg-green-500 border-green-500 text-white"
+                  : "bg-red-500 border-red-500 text-white"
+                : "bg-brand-blue-light/70 border-transparent focus:border-brand-blue text-brand-navy"
+            }`}
+          />
+          {!feedback && (
+            <button
+              onClick={handleAnswerLibre}
+              disabled={!reponseLibre.trim()}
+              className="self-start rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-6 py-3 font-semibold text-white shadow-md shadow-brand-blue/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+            >
+              {texts.codePageBouton}
+            </button>
+          )}
+        </div>
+      ) : question.type === "qcm" ? (
         <div className="flex flex-col gap-3">
           {(question.propositions ?? []).map((prop, i) => {
             const isDisabled = disabledOptions.includes(i);
@@ -450,7 +495,7 @@ export default function JouerEquipe() {
             onChange={(e) => setReponseLibre(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAnswerLibre()}
             disabled={!!feedback}
-            placeholder="Votre réponse..."
+            placeholder={texts.jeuPlaceholderReponseLibre}
             className={`px-5 py-4 rounded-2xl border-2 outline-none transition-all duration-200 ${
               feedback
                 ? feedback.ok
@@ -465,12 +510,12 @@ export default function JouerEquipe() {
               disabled={!reponseLibre.trim()}
               className="self-start rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-6 py-3 font-semibold text-white shadow-md shadow-brand-blue/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
             >
-              Valider
+              {texts.jeuLabelValider}
             </button>
           )}
           {awaitingContinue && feedback && !feedback.ok && question.reponse && (
             <div className="rounded-2xl bg-green-50 ring-2 ring-green-500 text-green-700 px-5 py-3 text-sm">
-              <span className="font-semibold uppercase tracking-wide text-xs">Bonne réponse : </span>
+              <span className="font-semibold uppercase tracking-wide text-xs">{texts.jeuTexteBonneReponseLabel} </span>
               {question.reponse}
             </div>
           )}
@@ -480,13 +525,11 @@ export default function JouerEquipe() {
       {feedback && feedback.ok && dernieresLettres && (
         <div className="mt-6 rounded-2xl bg-gradient-to-r from-brand-blue-light to-white ring-2 ring-brand-blue/40 px-5 py-4 text-center shadow-sm">
           <p className="text-2xl mb-1">🏆</p>
-          <p className="font-semibold text-brand-navy">
-            Bravo, vous avez débloqué une partie de votre fragment !
-          </p>
+          <p className="font-semibold text-brand-navy">{texts.jeuTexteLettreDebloqueeTitre}</p>
           <p className="my-2 text-2xl font-extrabold tracking-widest text-brand-blue">
             {dernieresLettres}
           </p>
-          <p className="text-sm text-slate-500">Notez-la bien, elle vous servira à la fin.</p>
+          <p className="text-sm text-slate-500">{texts.jeuTexteLettreDebloqueeNote}</p>
         </div>
       )}
 
@@ -500,8 +543,8 @@ export default function JouerEquipe() {
         </div>
       )}
 
-      {attempts === 1 && !feedback && (
-        <p className="mt-6 text-center text-brand-blue text-sm font-medium">Dernière tentative pour cette énigme.</p>
+      {attempts === 1 && !feedback && !isCodePage && (
+        <p className="mt-6 text-center text-brand-blue text-sm font-medium">{texts.jeuTexteDerniereTentative}</p>
       )}
 
       {needsRetryClick && (
@@ -509,7 +552,7 @@ export default function JouerEquipe() {
           onClick={handleRetry}
           className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
         >
-          Réessayer
+          {texts.jeuLabelReessayer}
         </button>
       )}
 
@@ -518,7 +561,7 @@ export default function JouerEquipe() {
           onClick={goNextQuestion}
           className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
         >
-          {isLastQuestion ? "Voir le résultat" : "Énigme suivante"}
+          {isLastQuestion ? texts.jeuLabelVoirResultat : texts.jeuLabelEnigmeSuivante}
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
       )}

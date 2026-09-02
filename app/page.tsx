@@ -2,12 +2,21 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getQuizConfig } from "@/lib/data";
+import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
 export default function Home() {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
+  const [texts, setTexts] = useState<GameTexts>(fusionnerTextes());
+
+  useEffect(() => {
+    getQuizConfig()
+      .then((config) => setTexts(fusionnerTextes(config.texts)))
+      .catch(() => {});
+  }, []);
 
   function commencer() {
     setNavigating(true);
@@ -15,7 +24,7 @@ export default function Home() {
   }
 
   if (navigating) {
-    return <LoadingScreen label="Ouverture de votre mission..." />;
+    return <LoadingScreen label={texts.accueilChargementLabel} />;
   }
 
   return (
@@ -36,24 +45,20 @@ export default function Home() {
         </div>
 
         <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 tracking-wide text-brand-navy">
-          ESCAPE GAME IUA CLASSE X
+          {texts.accueilTitre}
         </h1>
         <p className="text-xs sm:text-sm font-semibold tracking-[0.25em] text-brand-blue mb-8 uppercase">
-          Le jeu commence maintenant
+          {texts.accueilSousTitre}
         </p>
-        <p className="text-slate-600 max-w-sm mb-10 leading-relaxed">
-          Vous avez reçu une mission.
-          <br />
-          Vous ne connaissez pas encore la suite.
-          <br />
-          À vous de la découvrir.
+        <p className="text-slate-600 max-w-sm mb-10 leading-relaxed whitespace-pre-line">
+          {texts.accueilDescription}
         </p>
 
         <button
           onClick={commencer}
           className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-10 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-blue/40 active:translate-y-0"
         >
-          Commencer
+          {texts.accueilBouton}
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
       </div>

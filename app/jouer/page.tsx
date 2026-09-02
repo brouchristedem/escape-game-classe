@@ -2,14 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getAllTeams, claimerChef } from "@/lib/data";
-import { Team } from "@/lib/types";
+import { getAllTeams, claimerChef, getQuizConfig } from "@/lib/data";
+import { Team, fusionnerTextes, GameTexts } from "@/lib/types";
 import { getSessionId } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 
 export default function ChoixEquipe() {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
+  const [texts, setTexts] = useState<GameTexts>(fusionnerTextes());
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
   const [navigating, setNavigating] = useState(false);
@@ -17,8 +18,11 @@ export default function ChoixEquipe() {
   const continueRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getAllTeams()
-      .then(setTeams)
+    Promise.all([getAllTeams(), getQuizConfig()])
+      .then(([ts, config]) => {
+        setTeams(ts);
+        setTexts(fusionnerTextes(config.texts));
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -49,8 +53,8 @@ export default function ChoixEquipe() {
     setTimeout(() => router.push(`/jouer/${selected}/suivre`), 500);
   }
 
-  if (loading) return <LoadingScreen label="Chargement des équipes..." />;
-  if (navigating) return <LoadingScreen label="Préparation de votre mission..." />;
+  if (loading) return <LoadingScreen label={texts.equipeChargementLabel} />;
+  if (navigating) return <LoadingScreen label={texts.equipeNavigationLabel} />;
 
   return (
     <main className="relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-14 bg-white">
@@ -58,13 +62,11 @@ export default function ChoixEquipe() {
       <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-brand-navy/10 blur-3xl" />
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
-        <h1 className="text-2xl font-extrabold mb-2 text-center text-brand-navy">Quelle est votre équipe ?</h1>
-        <p className="text-sm text-slate-500 mb-8 text-center">Sélectionnez votre équipe pour démarrer l&apos;escape game.</p>
+        <h1 className="text-2xl font-extrabold mb-2 text-center text-brand-navy">{texts.equipeTitre}</h1>
+        <p className="text-sm text-slate-500 mb-8 text-center">{texts.equipeSousTitre}</p>
 
         {!loading && teams.length === 0 && (
-          <p className="text-slate-500 mb-8 text-center max-w-sm">
-            Aucune équipe n&apos;est encore configurée. Demandez à l&apos;organisateur de les créer dans l&apos;espace organisateur.
-          </p>
+          <p className="text-slate-500 mb-8 text-center max-w-sm">{texts.equipeAucuneEquipe}</p>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10 w-full">
@@ -95,20 +97,17 @@ export default function ChoixEquipe() {
             disabled={!selected}
             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
           >
-            Je suis le chef d&apos;équipe (je réponds)
+            {texts.equipeBoutonChef}
           </button>
           <button
             onClick={commencerSuiveur}
             disabled={!selected}
             className="inline-flex items-center gap-2 rounded-full bg-brand-blue-light/70 ring-1 ring-black/5 px-8 py-3 font-medium text-brand-navy transition-all duration-200 hover:ring-brand-blue/40 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Je suis dans l&apos;équipe (je suis en direct)
+            {texts.equipeBoutonSuiveur}
           </button>
           {erreurChef && (
-            <p className="text-sm text-red-500 text-center max-w-sm">
-              Un chef d&apos;équipe est déjà connecté pour cette équipe. Une seule personne peut
-              répondre à la fois — choisissez plutôt &laquo;&nbsp;Je suis dans l&apos;équipe&nbsp;&raquo;.
-            </p>
+            <p className="text-sm text-red-500 text-center max-w-sm">{texts.equipeErreurChef}</p>
           )}
         </div>
       </div>

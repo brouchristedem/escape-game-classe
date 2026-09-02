@@ -60,13 +60,23 @@ export async function deleteQuestion(id: string): Promise<void> {
   await deleteDoc(doc(db, QUESTIONS_COL, id));
 }
 
+// Renumérote automatiquement le "ordre" de toutes les étapes d'une salle
+// (énigmes + pages code) selon l'ordre du tableau fourni (position = ordre).
+// Utilisé par l'admin "Circuit du jeu" après un ajout, une suppression ou un
+// déplacement, pour que la numérotation reste toujours 1, 2, 3... sans trou.
+export async function renumeroterEtapes(orderedIds: string[]): Promise<void> {
+  await Promise.all(
+    orderedIds.map((id, i) => updateDoc(doc(db, QUESTIONS_COL, id), { ordre: i + 1 }))
+  );
+}
+
 export async function getQuizConfig(): Promise<QuizConfig> {
   const snap = await getDoc(doc(db, CONFIG_DOC));
   if (!snap.exists()) {
-    return { fragments: [], histoire: "" };
+    return { fragments: [], histoire: "", texts: {} };
   }
   const data = snap.data() as QuizConfig;
-  return { fragments: data.fragments ?? [], histoire: data.histoire ?? "" };
+  return { fragments: data.fragments ?? [], histoire: data.histoire ?? "", texts: data.texts ?? {} };
 }
 
 // merge: true pour ne jamais écraser un champ (ex. l'histoire) quand on ne

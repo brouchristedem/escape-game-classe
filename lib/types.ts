@@ -1,7 +1,11 @@
 // Nom de salle libre, choisi par l'organisateur (ex. "Amphi B", "TD1", "Salle 204").
 export type Salle = string;
 
-export type TypeEnigme = "qcm" | "libre";
+// "code" = page intercalaire ajoutée librement dans le circuit par
+// l'organisateur : un texte affiché en haut + un code à saisir pour débloquer
+// la suite (pas de tentatives limitées, pas de temps limite, pas de lettre de
+// fragment débloquée).
+export type TypeEnigme = "qcm" | "libre" | "code";
 
 export type UniteTemps = "secondes" | "minutes" | "heures";
 
@@ -17,20 +21,160 @@ export interface Question {
   salle: Salle;
   ordre: number;
   type: TypeEnigme;
-  texte: string; // énoncé de l'énigme
+  texte: string; // énoncé de l'énigme, ou texte affiché en haut d'une page "code"
   // Champs spécifiques QCM
   propositions?: [string, string, string, string];
   correctIndex?: 0 | 1 | 2 | 3;
-  // Champ spécifique réponse libre
-  reponse?: string; // réponse attendue (comparaison insensible à la casse/accents)
+  // Champ spécifique réponse libre ET page "code" (le code attendu est stocké ici)
+  reponse?: string; // réponse/code attendu (comparaison insensible à la casse/accents)
   feedbackCorrect: string;
   feedbackIncorrect: string;
-  tempsLimite: number | null; // toujours stocké en secondes, null = pas de limite
+  tempsLimite: number | null; // toujours stocké en secondes, null = pas de limite ; ignoré pour type "code"
 }
 
 export interface QuizConfig {
   fragments: string[]; // longueur = nombre de fragments choisi par l'organisateur
   histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
+  texts?: Partial<GameTexts>; // tous les autres textes du site, éditables depuis l'admin
+}
+
+// --- Tous les textes affichés sur les pages joueur (hors énoncés d'énigmes,
+// qui restent gérés individuellement dans Question). Chaque champ a une
+// valeur par défaut dans DEFAULT_GAME_TEXTS : tant que rien n'est modifié
+// depuis l'admin, l'affichage est strictement identique à avant.
+export interface GameTexts {
+  accueilTitre: string;
+  accueilSousTitre: string;
+  accueilDescription: string;
+  accueilBouton: string;
+  accueilChargementLabel: string;
+
+  histoireBouton: string;
+  histoireChargementLabel: string;
+  histoireNavigationLabel: string;
+
+  equipeTitre: string;
+  equipeSousTitre: string;
+  equipeAucuneEquipe: string;
+  equipeBoutonChef: string;
+  equipeBoutonSuiveur: string;
+  equipeErreurChef: string;
+  equipeChargementLabel: string;
+  equipeNavigationLabel: string;
+
+  jeuChargementLabel: string;
+  jeuErreurChefRefuse: string;
+  jeuErreurAucuneEnigme: string;
+  jeuErreurEquipeIntrouvable: string;
+  jeuLabelValider: string;
+  jeuLabelReessayer: string;
+  jeuLabelEnigmeSuivante: string;
+  jeuLabelVoirResultat: string;
+  jeuTexteTempsEcoule: string;
+  jeuTexteMauvaiseReponse: string;
+  jeuTexteDerniereTentative: string;
+  jeuTexteBonneReponseLabel: string;
+  jeuTexteLettreDebloqueeTitre: string;
+  jeuTexteLettreDebloqueeNote: string;
+  jeuPlaceholderReponseLibre: string;
+
+  codePagePlaceholder: string;
+  codePageBouton: string;
+
+  finTitre: string;
+  finTexteReconstituer: string;
+  finAucuneLettre: string;
+  finPlaceholderSaisie: string;
+  finLabelValiderFragment: string;
+  finTexteDerniereTentative: string;
+  finTexteTrouve: string;
+  finTexteRevele: string;
+  finTexteDirectionAmphi: string;
+
+  suivreBanniere: string;
+  suivreAttente: string;
+  suivreChargementLabel: string;
+  suivrePlaceholderReponse: string;
+  suivrePlaceholderSaisie: string;
+  suivreLettreTitre: string;
+  suivreAttenteContinuer: string;
+
+  messagesReussite: string[];
+  messagesEchec: string[];
+}
+
+export const DEFAULT_GAME_TEXTS: GameTexts = {
+  accueilTitre: "ESCAPE GAME IUA CLASSE X",
+  accueilSousTitre: "Le jeu commence maintenant",
+  accueilDescription:
+    "Vous avez reçu une mission.\nVous ne connaissez pas encore la suite.\nÀ vous de la découvrir.",
+  accueilBouton: "Commencer",
+  accueilChargementLabel: "Ouverture de votre mission...",
+
+  histoireBouton: "C'est parti",
+  histoireChargementLabel: "Chargement de la mission...",
+  histoireNavigationLabel: "Direction votre équipe...",
+
+  equipeTitre: "Quelle est votre équipe ?",
+  equipeSousTitre: "Sélectionnez votre équipe pour démarrer l'escape game.",
+  equipeAucuneEquipe:
+    "Aucune équipe n'est encore configurée. Demandez à l'organisateur de les créer dans l'espace organisateur.",
+  equipeBoutonChef: "Je suis le chef d'équipe (je réponds)",
+  equipeBoutonSuiveur: "Je suis dans l'équipe (je suis en direct)",
+  equipeErreurChef:
+    "Un chef d'équipe est déjà connecté pour cette équipe. Une seule personne peut répondre à la fois — choisissez plutôt « Je suis dans l'équipe ».",
+  equipeChargementLabel: "Chargement des équipes...",
+  equipeNavigationLabel: "Préparation de votre mission...",
+
+  jeuChargementLabel: "Chargement de l'escape game...",
+  jeuErreurChefRefuse:
+    "Un autre appareil est déjà connecté en tant que chef d'équipe pour cette équipe. Une seule personne peut répondre à la fois.",
+  jeuErreurAucuneEnigme:
+    "Aucune énigme n'est encore configurée pour cette salle. Demandez à l'organisateur de les ajouter dans l'espace organisateur.",
+  jeuErreurEquipeIntrouvable: "Équipe introuvable.",
+  jeuLabelValider: "Valider",
+  jeuLabelReessayer: "Réessayer",
+  jeuLabelEnigmeSuivante: "Énigme suivante",
+  jeuLabelVoirResultat: "Voir le résultat",
+  jeuTexteTempsEcoule: "Temps écoulé !",
+  jeuTexteMauvaiseReponse: "Mauvaise réponse.",
+  jeuTexteDerniereTentative: "Dernière tentative pour cette énigme.",
+  jeuTexteBonneReponseLabel: "Bonne réponse :",
+  jeuTexteLettreDebloqueeTitre: "Bravo, vous avez débloqué une partie de votre fragment !",
+  jeuTexteLettreDebloqueeNote: "Notez-la bien, elle vous servira à la fin.",
+  jeuPlaceholderReponseLibre: "Votre réponse...",
+
+  codePagePlaceholder: "Entrez le code...",
+  codePageBouton: "Valider le code",
+
+  finTitre: "Bravo, votre escape game est terminé !",
+  finTexteReconstituer: "Voici toutes les lettres de votre fragment, mélangées. À vous de le reconstituer :",
+  finAucuneLettre: "Aucune lettre à afficher.",
+  finPlaceholderSaisie: "Reconstituez votre fragment...",
+  finLabelValiderFragment: "Valider",
+  finTexteDerniereTentative: "Dernière tentative !",
+  finTexteTrouve: "Trouvé ! Votre fragment de la phrase finale :",
+  finTexteRevele: "Pas trouvé cette fois, mais voici votre fragment de la phrase finale :",
+  finTexteDirectionAmphi:
+    "Direction l'amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu'à ce qu'il soit posé au tableau.",
+
+  suivreBanniere: "👀 Vous suivez l'écran du chef d'équipe en direct — lecture seule",
+  suivreAttente:
+    "Le chef d'équipe n'a pas encore démarré l'escape game. Cet écran se mettra à jour automatiquement dès qu'il commencera.",
+  suivreChargementLabel: "Connexion à l'écran du chef d'équipe...",
+  suivrePlaceholderReponse: "Le chef d'équipe répond ici...",
+  suivrePlaceholderSaisie: "Le chef d'équipe saisit ici...",
+  suivreLettreTitre: "Une partie du fragment vient d'être débloquée !",
+  suivreAttenteContinuer: "Le chef d'équipe passe à la suite quand il est prêt.",
+
+  messagesReussite: ["GREEN FLAG", "C'EST TCHÔ", "JOLIIIIIE"],
+  messagesEchec: ["ÈCHOUWEY", "RED FLAG"],
+};
+
+// Fusionne les textes enregistrés (éventuellement partiels/absents) avec les
+// valeurs par défaut, pour que la page joueur ait toujours une valeur affichable.
+export function fusionnerTextes(partiel?: Partial<GameTexts> | null): GameTexts {
+  return { ...DEFAULT_GAME_TEXTS, ...(partiel ?? {}) };
 }
 
 // --- Suivi en direct (lecture seule) de l'écran du chef d'équipe ---
@@ -162,13 +306,18 @@ export function toutesLesLettresMelangees(fragment: string, seedKey: string): st
 }
 
 // --- Messages alternés selon la position de l'énigme (0-based) ---
-const MESSAGES_ECHEC = ["ÈCHOUWEY", "RED FLAG"];
-const MESSAGES_REUSSITE = ["GREEN FLAG", "C'EST TCHÔ", "JOLIIIIIE"];
-
-export function messagePourEnigme(index: number, correct: boolean): string {
-  return correct
-    ? MESSAGES_REUSSITE[index % MESSAGES_REUSSITE.length]
-    : MESSAGES_ECHEC[index % MESSAGES_ECHEC.length];
+// Les listes sont éditables depuis l'admin (GameTexts.messagesReussite /
+// messagesEchec) ; on retombe sur les valeurs par défaut si la liste
+// enregistrée est vide.
+export function messagePourEnigme(
+  index: number,
+  correct: boolean,
+  messagesReussite: string[] = DEFAULT_GAME_TEXTS.messagesReussite,
+  messagesEchec: string[] = DEFAULT_GAME_TEXTS.messagesEchec
+): string {
+  const listeReussite = messagesReussite.length ? messagesReussite : DEFAULT_GAME_TEXTS.messagesReussite;
+  const listeEchec = messagesEchec.length ? messagesEchec : DEFAULT_GAME_TEXTS.messagesEchec;
+  return correct ? listeReussite[index % listeReussite.length] : listeEchec[index % listeEchec.length];
 }
 
 export interface PlanDeblocage {
