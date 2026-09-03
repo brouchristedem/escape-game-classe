@@ -104,7 +104,7 @@ export interface GameTexts {
 }
 
 export const DEFAULT_GAME_TEXTS: GameTexts = {
-  accueilTitre: "ESCAPE GAME IUA CLASSE X",
+  accueilTitre: "ESCAPE GAME DE L'IUA CLASSE X",
   accueilSousTitre: "Le jeu commence maintenant",
   accueilDescription:
     "Vous avez reçu une mission.\nVous ne connaissez pas encore la suite.\nÀ vous de la découvrir.",

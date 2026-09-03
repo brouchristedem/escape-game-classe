@@ -8,15 +8,13 @@ import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 
-const HISTOIRE_PAR_DEFAUT = `Bienvenue à l'IUA, Classe X.
+const HISTOIRE_PAR_DEFAUT = `Mr X est quelque part parmi nous, mais son identité reste un mystère.
 
-Ce matin, le Directeur du Département Administration des Affaires devait vous lire un message officiel de bienvenue. Problème : la veille au soir, un ancien étudiant facétieux a piraté le système et fragmenté ce message en 10 morceaux, cachés dans les 10 services de l'établissement.
+Il a laissé derrière lui des indices, des traces et quelques énigmes à résoudre. Chaque découverte vous rapprochera de lui… ou vous conduira sur une fausse piste.
 
-Votre équipe représente un service. Pour récupérer votre fragment, vous devrez résoudre 10 énigmes — de vraies énigmes, pas des questions de cours. Chacune se répond par déduction, jamais par hasard.
+Ne vous fiez à personne et observez chaque détail. Le temps presse, et Mr X ne restera pas caché éternellement.
 
-Une fois votre fragment récupéré, rejoignez l'amphi. Quand les 10 équipes seront réunies, vous reconstituerez le message original.
-
-Le compte à rebours démarre maintenant. Bonne chance.`;
+Saurez-vous découvrir qui il est avant qu'il ne soit trop tard ?`;
 
 export default function Histoire() {
   const router = useRouter();

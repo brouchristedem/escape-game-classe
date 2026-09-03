@@ -166,11 +166,13 @@ function AdminPanel() {
     if (editingTeamId) {
       await updateTeam(editingTeamId, { nom: teamForm.nom.trim() });
     } else {
-      // Salle et fragment sont attribués automatiquement (répartition entre
-      // les salles déjà utilisées dans le circuit) ; modifiables ensuite en
-      // parcourant le circuit de cette équipe en mode édition (le fragment)
-      // ou en me redemandant de changer la salle si besoin.
-      const salle = sallesConnues.length > 0 ? sallesConnues[teams.length % sallesConnues.length] : "";
+      // Toutes les équipes partagent le même circuit d'énigmes en ligne (une
+      // seule salle) : ce n'est plus une salle par équipe, puisque les salles
+      // physiques ne sont plus attribuées équipe par équipe mais visitées au
+      // fil du jeu par le candidat de chaque équipe. Seul le fragment est
+      // encore attribué automatiquement ; modifiable ensuite en parcourant le
+      // circuit de cette équipe en mode édition.
+      const salle = sallesConnues.length > 0 ? sallesConnues[0] : "";
       await addTeam({ nom: teamForm.nom.trim(), salle, fragmentIndex: teams.length });
     }
     resetTeamForm();
@@ -444,8 +446,9 @@ function AdminPanel() {
             />
             {!editingTeamId && (
               <p className="text-slate-500 text-xs mb-4">
-                La salle et le fragment de cette équipe sont attribués automatiquement ; le fragment se modifie
-                ensuite directement en parcourant le circuit de l&apos;équipe en mode édition.
+                Toutes les équipes partagent le même circuit d&apos;énigmes en ligne ; seul le fragment de cette
+                équipe est attribué automatiquement, et se modifie ensuite directement en parcourant le circuit de
+                l&apos;équipe en mode édition.
               </p>
             )}
 
