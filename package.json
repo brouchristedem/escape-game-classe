@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "firebase": "^12.18.0",
+    "mammoth": "^1.12.2",
     "next": "16.3.3",
+    "pdfjs-dist": "^6.3.289",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

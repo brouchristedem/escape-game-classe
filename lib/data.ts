@@ -85,48 +85,37 @@ export async function saveQuizConfig(config: Partial<QuizConfig>): Promise<void>
   await setDoc(doc(db, CONFIG_DOC), config, { merge: true });
 }
 
-// --- Import du scénario par défaut ("Le Dossier Perdu") ---
-// Remplace toutes les énigmes existantes, crée/actualise les 10 équipes
-// (par nom), et enregistre la phrase finale + le texte de l'histoire.
-// Tout reste ensuite modifiable normalement depuis l'espace organisateur.
-export async function importerScenarioParDefaut(): Promise<{ equipes: number; enigmes: number }> {
-  const { TEAMS_SEED, QUESTIONS_SEED, FRAGMENTS_SEED, HISTOIRE_TEXTE } = await import("./seed-data");
-
-  // 1. Supprimer toutes les énigmes existantes
+// --- Vider le scénario actuel ---
+// Supprime toutes les énigmes/pages du circuit et remet à zéro la phrase
+// finale (fragments) et le texte de l'histoire, pour repartir d'une page
+// blanche avant d'importer son propre scénario. Les équipes ne sont pas
+// touchées (gérées séparément dans l'onglet "Équipes & salles").
+export async function viderScenario(): Promise<void> {
   const existingQuestions = await getAllQuestions();
   await Promise.all(existingQuestions.map((q) => deleteQuestion(q.id)));
+  await saveQuizConfig({ fragments: [], histoire: "" });
+}
 
-  // 2. Ajouter les nouvelles énigmes (toutes en réponse libre)
-  await Promise.all(
-    QUESTIONS_SEED.map((q) =>
-      addQuestion({
-        salle: q.salle,
-        ordre: q.ordre,
-        type: "libre",
-        texte: q.texte,
-        reponse: q.reponse,
-        feedbackCorrect: q.feedbackCorrect,
-        feedbackIncorrect: q.feedbackIncorrect,
-        tempsLimite: null,
-      })
-    )
-  );
+// --- Import d'un scénario personnalisé (texte extrait d'un Word ou PDF) ---
+// Remplace toutes les énigmes existantes par celles du document fourni.
+// L'histoire et les fragments ne sont écrasés que si le document en
+// contient (sinon les valeurs déjà enregistrées sont conservées).
+export async function importerScenario(parsed: {
+  histoire: string | null;
+  fragments: string[] | null;
+  questions: Omit<Question, "id">[];
+}): Promise<{ enigmes: number }> {
+  const existingQuestions = await getAllQuestions();
+  await Promise.all(existingQuestions.map((q) => deleteQuestion(q.id)));
+  await Promise.all(parsed.questions.map((q) => addQuestion(q)));
 
-  // 3. Supprimer toutes les équipes existantes (évite les doublons dus à des
-  //    noms qui ne correspondent pas exactement, ex. casse différente) puis
-  //    recréer les 10 équipes du scénario.
-  const existingTeams = await getAllTeams();
-  await Promise.all(existingTeams.map((t) => deleteTeam(t.id)));
-  await Promise.all(
-    TEAMS_SEED.map((t) => addTeam({ nom: t.nom, salle: t.salle, fragmentIndex: t.fragmentIndex }))
-  );
+  const config: Partial<QuizConfig> = {};
+  if (parsed.histoire !== null) config.histoire = parsed.histoire;
+  if (parsed.fragments !== null) config.fragments = parsed.fragments;
+  if (Object.keys(config).length > 0) await saveQuizConfig(config);
 
-  // 4. Phrase finale + histoire
-  await saveQuizConfig({ fragments: FRAGMENTS_SEED, histoire: HISTOIRE_TEXTE });
-
-  // Vérification : relit ce qui a réellement été écrit, pour confirmation fiable.
-  const [teamsApres, questionsApres] = await Promise.all([getAllTeams(), getAllQuestions()]);
-  return { equipes: teamsApres.length, enigmes: questionsApres.length };
+  const questionsApres = await getAllQuestions();
+  return { enigmes: questionsApres.length };
 }
 
 // --- Équipes ---

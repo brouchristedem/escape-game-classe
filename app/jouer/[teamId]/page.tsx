@@ -7,6 +7,7 @@ import {
   getQuizConfig,
   saveQuizConfig,
   getTeam,
+  updateTeam,
   publierLiveState,
   claimerChef,
   updateQuestion,
@@ -53,6 +54,7 @@ export default function JouerEquipe() {
   const [awaitingContinue, setAwaitingContinue] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [fragment, setFragment] = useState("");
+  const [fragmentsAll, setFragmentsAll] = useState<string[]>([]);
   const [plan, setPlan] = useState<PlanDeblocage | null>(null);
   const [toutesLettres, setToutesLettres] = useState<string[]>([]);
   const [lettresCollectees, setLettresCollectees] = useState<string[]>([]);
@@ -109,6 +111,7 @@ export default function JouerEquipe() {
         const idx = t.fragmentIndex;
         const fragmentTexte = idx !== null && idx !== undefined ? config.fragments[idx] || "" : "";
         setFragment(fragmentTexte);
+        setFragmentsAll(config.fragments);
         // Seules les vraies énigmes (pas les pages "code") débloquent des
         // lettres du fragment ; on construit le plan uniquement sur ces
         // positions puis on le reprojette sur l'index complet des étapes.
@@ -277,6 +280,25 @@ export default function JouerEquipe() {
     const next = { ...texts, [key]: value };
     setTexts(next);
     await saveQuizConfig({ texts: next });
+  }
+
+  // Modifie le fragment (part de la phrase finale) de cette équipe,
+  // directement depuis le circuit en mode édition. Si l'équipe n'avait pas
+  // encore d'index de fragment (anciennes données), on lui en crée un.
+  async function saveFragmentText(value: string) {
+    if (!team) return;
+    let idx = team.fragmentIndex;
+    const next = [...fragmentsAll];
+    if (idx === null || idx === undefined) {
+      idx = next.length;
+      await updateTeam(team.id, { fragmentIndex: idx });
+      setTeam((t) => (t ? { ...t, fragmentIndex: idx! } : t));
+    }
+    while (next.length <= idx) next.push("");
+    next[idx] = value;
+    setFragmentsAll(next);
+    setFragment(value);
+    await saveQuizConfig({ fragments: next });
   }
 
   // Insère une nouvelle étape (énigme libre ou page code) juste après
@@ -497,7 +519,7 @@ export default function JouerEquipe() {
               <p className="text-2xl mb-2">🎉</p>
               <EditableText as="p" multiline value={texts.finTexteTrouve} onSave={(v) => saveGlobalText("finTexteTrouve", v)} className="text-slate-600 mb-3" />
               <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-                {fragment || "(fragment)"}
+                <EditableText as="span" value={fragment} onSave={saveFragmentText} placeholder="(fragment)" />
               </div>
             </>
           )}
@@ -506,7 +528,7 @@ export default function JouerEquipe() {
             <>
               <EditableText as="p" multiline value={texts.finTexteRevele} onSave={(v) => saveGlobalText("finTexteRevele", v)} className="text-slate-600 mb-3" />
               <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-                {fragment || "(fragment)"}
+                <EditableText as="span" value={fragment} onSave={saveFragmentText} placeholder="(fragment)" />
               </div>
             </>
           )}
@@ -746,6 +768,20 @@ export default function JouerEquipe() {
             onSave={(v) => saveGlobalText("jeuTexteLettreDebloqueeNote", v)}
             className="text-sm text-slate-500"
           />
+          {editMode && (
+            <div className="mt-3 pt-3 border-t border-brand-blue/20 text-left">
+              <p className="text-[10px] font-semibold text-brand-navy/60 uppercase tracking-wide mb-1">
+                Fragment complet de cette équipe (texte final)
+              </p>
+              <EditableText
+                as="p"
+                value={fragment}
+                onSave={saveFragmentText}
+                placeholder="Écrire le fragment de cette équipe..."
+                className="font-bold text-brand-blue"
+              />
+            </div>
+          )}
         </div>
       )}
 

@@ -13,7 +13,8 @@ import {
   addTeam,
   updateTeam,
   deleteTeam,
-  importerScenarioParDefaut,
+  viderScenario,
+  importerScenario,
 } from "@/lib/data";
 import {
   Question,
@@ -26,6 +27,7 @@ import {
   DEFAULT_GAME_TEXTS,
   fusionnerTextes,
 } from "@/lib/types";
+import { SCENARIO_FORMAT_GUIDE, extraireTexteFichier, parseScenario } from "@/lib/scenarioParser";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "integration2026";
 
@@ -44,8 +46,6 @@ const emptyQuestionForm = {
 
 const emptyTeamForm = {
   nom: "",
-  salle: "",
-  fragmentIndex: "" as string | number,
 };
 
 export default function Admin() {
@@ -89,12 +89,11 @@ export default function Admin() {
   return <AdminPanel />;
 }
 
-type Tab = "circuit" | "equipes" | "phrase" | "histoire" | "textes";
+type Tab = "circuit" | "equipes" | "scenario" | "histoire" | "textes";
 
 function AdminPanel() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [fragments, setFragments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("circuit");
@@ -107,15 +106,16 @@ function AdminPanel() {
   const [salleFiltre, setSalleFiltre] = useState<string>("");
   const [savingStep, setSavingStep] = useState(false);
 
-  const [savingFragments, setSavingFragments] = useState(false);
-
   const [histoire, setHistoire] = useState("");
   const [savingHistoire, setSavingHistoire] = useState(false);
 
   const [siteTexts, setSiteTexts] = useState<GameTexts>(fusionnerTextes());
   const [savingTexts, setSavingTexts] = useState(false);
 
+  const [viding, setViding] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
 
   async function reload() {
     setLoading(true);
@@ -124,7 +124,6 @@ function AdminPanel() {
       const [ts, qs, config] = await Promise.all([getAllTeams(), getAllQuestions(), getQuizConfig()]);
       setTeams(ts);
       setQuestions(qs);
-      setFragments(config.fragments);
       setHistoire(config.histoire ?? "");
       setSiteTexts(fusionnerTextes(config.texts));
     } catch (e) {
@@ -160,30 +159,26 @@ function AdminPanel() {
   }
 
   async function submitTeamForm() {
-    if (!teamForm.nom.trim() || !teamForm.salle.trim()) {
-      alert("Merci de donner un nom d'équipe et une salle.");
+    if (!teamForm.nom.trim()) {
+      alert("Merci de donner un nom d'équipe.");
       return;
     }
-    const payload = {
-      nom: teamForm.nom.trim(),
-      salle: teamForm.salle.trim(),
-      fragmentIndex: teamForm.fragmentIndex === "" ? null : Number(teamForm.fragmentIndex),
-    };
     if (editingTeamId) {
-      await updateTeam(editingTeamId, payload);
+      await updateTeam(editingTeamId, { nom: teamForm.nom.trim() });
     } else {
-      await addTeam(payload);
+      // Salle et fragment sont attribués automatiquement (répartition entre
+      // les salles déjà utilisées dans le circuit) ; modifiables ensuite en
+      // parcourant le circuit de cette équipe en mode édition (le fragment)
+      // ou en me redemandant de changer la salle si besoin.
+      const salle = sallesConnues.length > 0 ? sallesConnues[teams.length % sallesConnues.length] : "";
+      await addTeam({ nom: teamForm.nom.trim(), salle, fragmentIndex: teams.length });
     }
     resetTeamForm();
     reload();
   }
 
   function editTeam(t: Team) {
-    setTeamForm({
-      nom: t.nom,
-      salle: t.salle,
-      fragmentIndex: t.fragmentIndex ?? "",
-    });
+    setTeamForm({ nom: t.nom });
     setEditingTeamId(t.id);
     setTab("equipes");
   }
@@ -332,27 +327,6 @@ function AdminPanel() {
     }
   }
 
-  // ---------- Phrase finale / fragments ----------
-
-  function setNombreFragments(n: number) {
-    const nb = Math.max(0, n);
-    setFragments((prev) => {
-      const next = [...prev];
-      if (nb > next.length) {
-        while (next.length < nb) next.push("");
-      } else {
-        next.length = nb;
-      }
-      return next;
-    });
-  }
-
-  async function saveFragments() {
-    setSavingFragments(true);
-    await saveQuizConfig({ fragments });
-    setSavingFragments(false);
-  }
-
   // ---------- Histoire ----------
 
   async function saveHistoire() {
@@ -373,24 +347,59 @@ function AdminPanel() {
     setSavingTexts(false);
   }
 
-  // ---------- Import du scénario par défaut ----------
+  // ---------- Scénario : vider / importer depuis un fichier Word ou PDF ----------
 
-  async function lancerImport() {
+  async function lancerVidage() {
     if (
       !confirm(
-        "Ceci va SUPPRIMER toutes les équipes et énigmes existantes, puis recréer les 10 équipes et 100 énigmes du scénario \"Le Dossier Perdu\", la phrase finale et le texte de l'histoire. Continuer ?"
+        "Ceci va SUPPRIMER toutes les énigmes du circuit ainsi que la phrase finale et le texte de l'histoire. Les équipes ne sont pas touchées. Continuer ?"
       )
     )
       return;
-    setImporting(true);
+    setViding(true);
     try {
-      const resultat = await importerScenarioParDefaut();
+      await viderScenario();
       await reload();
-      alert(
-        `Import terminé : ${resultat.equipes} équipes et ${resultat.enigmes} énigmes sont maintenant dans la base. Rechargez la page /jouer si vous ne les voyez pas tout de suite.`
-      );
+      setImportMessage("Scénario vidé. Vous pouvez maintenant importer votre propre document.");
     } catch (e) {
-      alert("Échec de l'import : " + (e instanceof Error ? e.message : String(e)));
+      alert("Échec : " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setViding(false);
+    }
+  }
+
+  async function lancerImportFichier() {
+    if (!importFile) {
+      alert("Choisissez d'abord un fichier .docx ou .pdf.");
+      return;
+    }
+    setImporting(true);
+    setImportMessage(null);
+    try {
+      const texte = await extraireTexteFichier(importFile);
+      const parsed = parseScenario(texte);
+      if (parsed.questions.length === 0) {
+        setImportMessage(
+          "Aucune énigme reconnue dans ce document. Vérifiez qu'il respecte bien le format ci-dessous (mots-clés SALLE / ENIGME / TYPE / TEXTE...)."
+        );
+        return;
+      }
+      if (
+        !confirm(
+          `${parsed.questions.length} énigme(s)/page(s) détectée(s)${
+            parsed.fragments ? `, ${parsed.fragments.length} fragment(s)` : ""
+          }${
+            parsed.histoire ? ", et un texte d'histoire" : ""
+          }. Ceci remplacera toutes les énigmes existantes du circuit. Continuer ?`
+        )
+      )
+        return;
+      const resultat = await importerScenario(parsed);
+      await reload();
+      setImportFile(null);
+      setImportMessage(`Import réussi : ${resultat.enigmes} énigme(s)/page(s) importée(s).`);
+    } catch (e) {
+      setImportMessage("Échec de l'import : " + (e instanceof Error ? e.message : String(e)));
     } finally {
       setImporting(false);
     }
@@ -404,18 +413,10 @@ function AdminPanel() {
       <div className="flex gap-2 mb-3 flex-wrap">
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
         <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes &amp; salles</TabButton>
-        <TabButton active={tab === "phrase"} onClick={() => setTab("phrase")}>Phrase finale</TabButton>
+        <TabButton active={tab === "scenario"} onClick={() => setTab("scenario")}>Scénario</TabButton>
         <TabButton active={tab === "histoire"} onClick={() => setTab("histoire")}>Histoire</TabButton>
         <TabButton active={tab === "textes"} onClick={() => setTab("textes")}>Textes du site</TabButton>
       </div>
-
-      <button
-        onClick={lancerImport}
-        disabled={importing}
-        className="text-xs text-brand-blue underline mb-6 disabled:text-slate-400"
-      >
-        {importing ? "Import en cours..." : "Importer le scénario par défaut (\"Le Dossier Perdu\")"}
-      </button>
 
       {loading && <p className="text-slate-500">Chargement...</p>}
 
@@ -437,37 +438,16 @@ function AdminPanel() {
             <input
               value={teamForm.nom}
               onChange={(e) => setTeamForm({ ...teamForm, nom: e.target.value })}
-              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
+              onKeyDown={(e) => e.key === "Enter" && submitTeamForm()}
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-4 w-full"
               placeholder="Ex. Les Lions, Team Bassam..."
             />
-
-            <label className="block text-sm text-slate-500 mb-1">Salle attribuée</label>
-            <input
-              value={teamForm.salle}
-              onChange={(e) => setTeamForm({ ...teamForm, salle: e.target.value })}
-              list="salles-existantes"
-              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
-              placeholder="Ex. Amphi B, Salle 204, TD1..."
-            />
-            <datalist id="salles-existantes">
-              {sallesConnues.map((s) => (
-                <option key={s} value={s} />
-              ))}
-            </datalist>
-
-            <label className="block text-sm text-slate-500 mb-1">Fragment attribué (facultatif)</label>
-            <select
-              value={teamForm.fragmentIndex}
-              onChange={(e) => setTeamForm({ ...teamForm, fragmentIndex: e.target.value })}
-              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-4 w-full"
-            >
-              <option value="">Aucun / pas encore attribué</option>
-              {fragments.map((_, i) => (
-                <option key={i} value={i}>
-                  Fragment {i + 1}
-                </option>
-              ))}
-            </select>
+            {!editingTeamId && (
+              <p className="text-slate-500 text-xs mb-4">
+                La salle et le fragment de cette équipe sont attribués automatiquement ; le fragment se modifie
+                ensuite directement en parcourant le circuit de l&apos;équipe en mode édition.
+              </p>
+            )}
 
             <div className="flex gap-3">
               <button onClick={submitTeamForm} className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition">
@@ -489,10 +469,6 @@ function AdminPanel() {
                   <div className="flex justify-between items-start gap-2">
                     <div>
                       <p className="font-medium text-sm text-brand-navy">{t.nom}</p>
-                      <p className="text-slate-500 text-xs mt-1">Salle : {t.salle}</p>
-                      <p className="text-slate-500 text-xs">
-                        Fragment : {t.fragmentIndex !== null && t.fragmentIndex !== undefined ? `#${t.fragmentIndex + 1}` : "non attribué"}
-                      </p>
                     </div>
                     <div className="flex gap-2 shrink-0 text-xs">
                       <button onClick={() => editTeam(t)} className="text-brand-blue underline">
@@ -771,49 +747,55 @@ function AdminPanel() {
         </div>
       )}
 
-      {!loading && tab === "phrase" && (
-        <section className="max-w-xl">
-          <p className="text-slate-600 mb-4 text-sm">
-            Choisissez le nombre de fragments de la phrase finale, rédigez chaque fragment, puis attribuez-en un à
-            chaque équipe dans l&apos;onglet &quot;Équipes &amp; salles&quot;.
+      {!loading && tab === "scenario" && (
+        <section className="max-w-2xl">
+          <p className="text-slate-600 mb-2 text-sm">
+            Le fragment de chaque équipe (sa part de la phrase finale) se modifie directement en parcourant le
+            circuit de cette équipe en mode édition, dans l&apos;encadré &quot;lettre débloquée&quot; ou sur l&apos;écran
+            final.
           </p>
 
-          <label className="block text-sm text-slate-500 mb-1">Nombre de fragments</label>
-          <input
-            type="number"
-            min={0}
-            value={fragments.length}
-            onChange={(e) => setNombreFragments(Number(e.target.value) || 0)}
-            className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-3 py-2 mb-4 w-32"
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {fragments.map((f, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-slate-500 w-20 shrink-0 text-sm">Fragment {i + 1}</span>
-                <input
-                  value={f}
-                  onChange={(e) => {
-                    const next = [...fragments];
-                    next[i] = e.target.value;
-                    setFragments(next);
-                  }}
-                  className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-3 py-2 flex-1"
-                  placeholder={`Fragment ${i + 1}`}
-                />
-              </div>
-            ))}
+          <div className="bg-brand-blue-light rounded-2xl p-5 mb-6">
+            <h2 className="font-semibold mb-2 text-brand-navy">Vider le scénario actuel</h2>
+            <p className="text-slate-600 text-sm mb-3">
+              Supprime toutes les énigmes du circuit, la phrase finale et le texte de l&apos;histoire, pour repartir
+              d&apos;une page blanche avant d&apos;importer votre propre scénario. Les équipes ne sont pas touchées.
+            </p>
+            <button
+              onClick={lancerVidage}
+              disabled={viding}
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-2 rounded-full transition disabled:opacity-60"
+            >
+              {viding ? "Suppression..." : "Vider le scénario actuel"}
+            </button>
           </div>
-          <button
-            onClick={saveFragments}
-            disabled={savingFragments}
-            className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition"
-          >
-            {savingFragments ? "Enregistrement..." : "Enregistrer la phrase"}
-          </button>
-          <p className="text-slate-500 text-xs mt-4">
-            Aperçu : {fragments.filter(Boolean).join(" ") || "(rien pour l'instant)"}
-          </p>
+
+          <div className="bg-brand-blue-light rounded-2xl p-5 mb-6">
+            <h2 className="font-semibold mb-2 text-brand-navy">Importer un scénario (Word ou PDF)</h2>
+            <p className="text-slate-600 text-sm mb-3">
+              Choisissez un fichier <code>.docx</code> ou <code>.pdf</code> rédigé selon le format ci-dessous.
+              L&apos;import remplace toutes les énigmes existantes du circuit.
+            </p>
+            <input
+              type="file"
+              accept=".docx,.pdf"
+              onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+              className="block mb-3 text-sm"
+            />
+            <button
+              onClick={lancerImportFichier}
+              disabled={importing || !importFile}
+              className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-5 py-2 rounded-full transition disabled:opacity-60"
+            >
+              {importing ? "Import en cours..." : "Importer ce fichier"}
+            </button>
+            {importMessage && <p className="text-slate-600 text-sm mt-3">{importMessage}</p>}
+          </div>
+
+          <div className="bg-amber-50 ring-1 ring-amber-200 rounded-2xl p-5">
+            <h2 className="font-semibold mb-2 text-brand-navy">Format attendu du document</h2>
+            <pre className="whitespace-pre-wrap text-xs text-slate-700 leading-relaxed">{SCENARIO_FORMAT_GUIDE}</pre>
+          </div>
         </section>
       )}
 
