@@ -112,6 +112,10 @@ function AdminPanel() {
   const [siteTexts, setSiteTexts] = useState<GameTexts>(fusionnerTextes());
   const [savingTexts, setSavingTexts] = useState(false);
 
+  const [fragments, setFragments] = useState<string[]>([]);
+  const [savingFragmentId, setSavingFragmentId] = useState<string | null>(null);
+  const [savedFragmentId, setSavedFragmentId] = useState<string | null>(null);
+
   const [viding, setViding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -126,6 +130,7 @@ function AdminPanel() {
       setQuestions(qs);
       setHistoire(config.histoire ?? "");
       setSiteTexts(fusionnerTextes(config.texts));
+      setFragments(config.fragments ?? []);
     } catch (e) {
       console.error(e);
       const detail = e instanceof Error ? e.message : String(e);
@@ -189,6 +194,29 @@ function AdminPanel() {
     if (!confirm("Supprimer cette équipe ?")) return;
     await deleteTeam(id);
     reload();
+  }
+
+  // Enregistre le fragment (part de la phrase finale) d'une équipe depuis
+  // l'admin. Si l'équipe n'a pas encore d'index de fragment (anciennes
+  // données), on lui en attribue un. C'est la seule source de vérité : la
+  // page officielle /jouer/[teamId] lit ce même tableau QuizConfig.fragments.
+  async function saveFragment(team: Team, value: string) {
+    let idx = team.fragmentIndex;
+    const next = [...fragments];
+    if (idx === null || idx === undefined) {
+      idx = next.length;
+      await updateTeam(team.id, { fragmentIndex: idx });
+      setTeams((ts) => ts.map((t) => (t.id === team.id ? { ...t, fragmentIndex: idx! } : t)));
+    }
+    while (next.length <= idx) next.push("");
+    next[idx] = value;
+    setSavingFragmentId(team.id);
+    setSavedFragmentId(null);
+    await saveQuizConfig({ fragments: next });
+    setFragments(next);
+    setSavingFragmentId(null);
+    setSavedFragmentId(team.id);
+    setTimeout(() => setSavedFragmentId((cur) => (cur === team.id ? null : cur)), 2000);
   }
 
   // ---------- Circuit du jeu (énigmes + pages code, dans l'ordre) ----------
@@ -451,9 +479,9 @@ function AdminPanel() {
             />
             {!editingTeamId && (
               <p className="text-slate-500 text-xs mb-4">
-                Toutes les équipes partagent le même circuit d&apos;énigmes en ligne ; seul le fragment de cette
-                équipe est attribué automatiquement, et se modifie ensuite directement en parcourant le circuit de
-                l&apos;équipe en mode édition.
+                Toutes les équipes partagent le même circuit d&apos;énigmes en ligne. Le fragment (sa part de la
+                phrase finale) est attribué automatiquement à la création, et se modifie ci-contre, sur chaque
+                équipe.
               </p>
             )}
 
@@ -474,7 +502,7 @@ function AdminPanel() {
             <div className="flex flex-col gap-3">
               {teams.map((t) => (
                 <div key={t.id} className="bg-brand-blue-light rounded-xl p-4">
-                  <div className="flex justify-between items-start gap-2">
+                  <div className="flex justify-between items-start gap-2 mb-3">
                     <div>
                       <p className="font-medium text-sm text-brand-navy">{t.nom}</p>
                     </div>
@@ -487,6 +515,12 @@ function AdminPanel() {
                       </button>
                     </div>
                   </div>
+                  <TeamFragmentField
+                    initialValue={t.fragmentIndex !== null && t.fragmentIndex !== undefined ? fragments[t.fragmentIndex] ?? "" : ""}
+                    saving={savingFragmentId === t.id}
+                    saved={savedFragmentId === t.id}
+                    onSave={(value) => saveFragment(t, value)}
+                  />
                 </div>
               ))}
             </div>
@@ -980,6 +1014,52 @@ function TypeButton({ active, onClick, children }: { active: boolean; onClick: (
     >
       {children}
     </button>
+  );
+}
+
+function TeamFragmentField({
+  initialValue,
+  saving,
+  saved,
+  onSave,
+}: {
+  initialValue: string;
+  saving: boolean;
+  saved: boolean;
+  onSave: (value: string) => void;
+}) {
+  const [draft, setDraft] = useState(initialValue);
+
+  useEffect(() => {
+    setDraft(initialValue);
+  }, [initialValue]);
+
+  const dirty = draft !== initialValue;
+
+  return (
+    <div>
+      <label className="block text-[11px] font-semibold text-brand-navy/60 uppercase tracking-wide mb-1">
+        Fragment (part de la phrase finale)
+      </label>
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={2}
+        placeholder="Écrire le fragment de cette équipe..."
+        className="bg-white border border-slate-200 rounded-lg px-3 py-2 w-full text-sm"
+      />
+      <div className="flex items-center gap-3 mt-2">
+        <button
+          onClick={() => onSave(draft)}
+          disabled={!dirty || saving}
+          className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-4 py-1.5 rounded-full text-xs transition disabled:opacity-50"
+        >
+          {saving ? "Enregistrement..." : "Enregistrer le fragment"}
+        </button>
+        {!dirty && saved && <span className="text-xs text-green-600 font-medium">✓ Enregistré</span>}
+        {dirty && <span className="text-xs text-amber-600">Modifications non enregistrées</span>}
+      </div>
+    </div>
   );
 }
 
