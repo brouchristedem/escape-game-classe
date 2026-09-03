@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getQuizConfig } from "@/lib/data";
+import { getQuizConfig, saveQuizConfig } from "@/lib/data";
 import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
+import EditableText from "@/app/components/EditableText";
 
 const HISTOIRE_PAR_DEFAUT = `Bienvenue à l'IUA, Classe X.
 
@@ -38,6 +39,17 @@ export default function Histoire() {
     setTimeout(() => router.push("/jouer"), 550);
   }
 
+  async function saveHistoire(v: string) {
+    setTexte(v);
+    await saveQuizConfig({ histoire: v });
+  }
+
+  async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
+    const next = { ...texts, [key]: value };
+    setTexts(next);
+    await saveQuizConfig({ texts: next });
+  }
+
   if (loading) return <LoadingScreen label={texts.histoireChargementLabel} />;
   if (navigating) return <LoadingScreen label={texts.histoireNavigationLabel} />;
 
@@ -56,15 +68,19 @@ export default function Histoire() {
           priority
         />
 
-        <div className="mb-10 max-w-md rounded-3xl bg-brand-blue-light/70 ring-1 ring-brand-blue/15 px-6 sm:px-8 py-7 text-slate-700 leading-relaxed whitespace-pre-line text-left sm:text-center shadow-sm">
-          {texte}
-        </div>
+        <EditableText
+          as="div"
+          multiline
+          value={texte}
+          onSave={saveHistoire}
+          className="mb-10 max-w-md rounded-3xl bg-brand-blue-light/70 ring-1 ring-brand-blue/15 px-6 sm:px-8 py-7 text-slate-700 leading-relaxed whitespace-pre-line text-left sm:text-center shadow-sm"
+        />
 
         <button
           onClick={continuer}
           className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-10 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-blue/40 active:translate-y-0"
         >
-          {texts.histoireBouton}
+          <EditableText as="span" value={texts.histoireBouton} onSave={(v) => saveText("histoireBouton", v)} className="text-white" />
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
       </div>

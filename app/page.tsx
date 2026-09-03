@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getQuizConfig } from "@/lib/data";
+import { getQuizConfig, saveQuizConfig } from "@/lib/data";
 import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
+import EditableText from "@/app/components/EditableText";
 
 export default function Home() {
   const router = useRouter();
@@ -17,6 +18,12 @@ export default function Home() {
       .then((config) => setTexts(fusionnerTextes(config.texts)))
       .catch(() => {});
   }, []);
+
+  async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
+    const next = { ...texts, [key]: value };
+    setTexts(next);
+    await saveQuizConfig({ texts: next });
+  }
 
   function commencer() {
     setNavigating(true);
@@ -44,21 +51,31 @@ export default function Home() {
           />
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 tracking-wide text-brand-navy">
-          {texts.accueilTitre}
-        </h1>
-        <p className="text-xs sm:text-sm font-semibold tracking-[0.25em] text-brand-blue mb-8 uppercase">
-          {texts.accueilSousTitre}
-        </p>
-        <p className="text-slate-600 max-w-sm mb-10 leading-relaxed whitespace-pre-line">
-          {texts.accueilDescription}
-        </p>
+        <EditableText
+          as="h1"
+          value={texts.accueilTitre}
+          onSave={(v) => saveText("accueilTitre", v)}
+          className="text-2xl sm:text-3xl font-extrabold mb-2 tracking-wide text-brand-navy"
+        />
+        <EditableText
+          as="p"
+          value={texts.accueilSousTitre}
+          onSave={(v) => saveText("accueilSousTitre", v)}
+          className="text-xs sm:text-sm font-semibold tracking-[0.25em] text-brand-blue mb-8 uppercase"
+        />
+        <EditableText
+          as="p"
+          multiline
+          value={texts.accueilDescription}
+          onSave={(v) => saveText("accueilDescription", v)}
+          className="text-slate-600 max-w-sm mb-10 leading-relaxed whitespace-pre-line"
+        />
 
         <button
           onClick={commencer}
           className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-10 py-3.5 text-lg font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-blue/40 active:translate-y-0"
         >
-          {texts.accueilBouton}
+          <EditableText as="span" value={texts.accueilBouton} onSave={(v) => saveText("accueilBouton", v)} className="text-white" />
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
       </div>

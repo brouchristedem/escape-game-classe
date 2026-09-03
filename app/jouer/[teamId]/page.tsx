@@ -2,7 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { getQuestionsForSalle, getQuizConfig, getTeam, publierLiveState, claimerChef } from "@/lib/data";
+import {
+  getQuestionsForSalle,
+  getQuizConfig,
+  saveQuizConfig,
+  getTeam,
+  publierLiveState,
+  claimerChef,
+  updateQuestion,
+  addQuestion,
+  deleteQuestion,
+  renumeroterEtapes,
+} from "@/lib/data";
 import {
   Question,
   Team,
@@ -18,12 +29,15 @@ import {
 } from "@/lib/types";
 import { getSessionId } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
+import EditableText from "@/app/components/EditableText";
+import { useAdminMode } from "@/lib/adminMode";
 
 type Phase = "loading" | "error" | "playing" | "termine";
 
 export default function JouerEquipe() {
   const params = useParams();
   const teamId = Array.isArray(params.teamId) ? params.teamId[0] : params.teamId;
+  const { editMode } = useAdminMode();
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [team, setTeam] = useState<Team | null>(null);
@@ -62,11 +76,20 @@ export default function JouerEquipe() {
         // d'un accès direct par URL ou d'un rechargement de page, en plus du
         // clic depuis la page de sélection d'équipe). Si un autre appareil a
         // déjà la main, on s'arrête là sans démarrer la partie.
-        const { ok } = await claimerChef(teamId, getSessionId());
-        if (!ok) {
-          setChefRefuse(true);
-          setPhase("error");
-          return;
+        // Exception : l'organisateur en mode édition ne prend jamais la main
+        // (lecture directe de sessionStorage ici pour éviter tout décalage
+        // avec le contexte React au tout premier rendu).
+        const previewOrganisateur =
+          typeof window !== "undefined" &&
+          sessionStorage.getItem("admin_ok") === "1" &&
+          sessionStorage.getItem("admin_edit_mode") === "1";
+        if (!previewOrganisateur) {
+          const { ok } = await claimerChef(teamId, getSessionId());
+          if (!ok) {
+            setChefRefuse(true);
+            setPhase("error");
+            return;
+          }
         }
 
         const t = await getTeam(teamId);
@@ -142,6 +165,9 @@ export default function JouerEquipe() {
   useEffect(() => {
     if (!teamId) return;
     if (phase !== "playing" && phase !== "termine") return;
+    // En mode édition, l'organisateur navigue sans publier son état : on ne
+    // veut pas écraser l'écran en direct d'une vraie équipe qui joue.
+    if (editMode) return;
     const state: LiveState = {
       phase,
       index,
@@ -224,6 +250,82 @@ export default function JouerEquipe() {
     if (timerRef.current) clearInterval(timerRef.current);
     setPhase("termine");
   }
+
+  // ---------- Édition en direct (organisateur uniquement) ----------
+
+  function allerAEtape(cible: number) {
+    if (cible < 0 || cible >= questions.length) return;
+    setFeedback(null);
+    setAwaitingContinue(false);
+    setSelected(null);
+    setDisabledOptions([]);
+    setReponseLibre("");
+    setAttempts(0);
+    setDernieresLettres(null);
+    setNeedsRetryClick(false);
+    setEssaiKey(0);
+    setIndex(cible);
+  }
+
+  async function saveQuestionField<K extends keyof Question>(key: K, value: Question[K]) {
+    if (!question) return;
+    await updateQuestion(question.id, { [key]: value } as Partial<Question>);
+    setQuestions((qs) => qs.map((q) => (q.id === question.id ? { ...q, [key]: value } : q)));
+  }
+
+  async function saveGlobalText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
+    const next = { ...texts, [key]: value };
+    setTexts(next);
+    await saveQuizConfig({ texts: next });
+  }
+
+  // Insère une nouvelle étape (énigme libre ou page code) juste après
+  // l'étape actuellement affichée, renumérote le circuit, puis affiche
+  // directement la nouvelle étape pour que l'organisateur la remplisse —
+  // sans jamais passer par /admin.
+  async function inserer(type: "libre" | "code") {
+    if (!team || !question) return;
+    const ordreProvisoire = question.ordre + 0.5;
+    const nouvelle = {
+      salle: team.salle,
+      ordre: ordreProvisoire,
+      type,
+      texte: type === "code" ? "Nouvelle page : entrez le code pour continuer." : "Nouvelle énigme à rédiger.",
+      reponse: "",
+      feedbackCorrect: "",
+      feedbackIncorrect: "",
+      tempsLimite: null as number | null,
+    };
+    const newId = await addQuestion(nouvelle);
+    const tousTries = [...questions, { ...nouvelle, id: newId } as Question].sort((a, b) => a.ordre - b.ordre);
+    await renumeroterEtapes(tousTries.map((q) => q.id));
+    const qs = await getQuestionsForSalle(team.salle);
+    setQuestions(qs);
+    const nouvelIndex = qs.findIndex((q) => q.id === newId);
+    if (nouvelIndex !== -1) {
+      setFeedback(null);
+      setAwaitingContinue(false);
+      setSelected(null);
+      setDisabledOptions([]);
+      setReponseLibre("");
+      setAttempts(0);
+      setIndex(nouvelIndex);
+    }
+  }
+
+  async function supprimerEtapeActuelle() {
+    if (!team || !question) return;
+    if (!confirm("Supprimer cette étape du circuit ?")) return;
+    await deleteQuestion(question.id);
+    const restantes = questions.filter((q) => q.id !== question.id).sort((a, b) => a.ordre - b.ordre);
+    await renumeroterEtapes(restantes.map((q) => q.id));
+    const qs = await getQuestionsForSalle(team.salle);
+    setQuestions(qs);
+    setFeedback(null);
+    setAwaitingContinue(false);
+    setIndex((i) => Math.min(i, Math.max(qs.length - 1, 0)));
+  }
+
   function validerFragment() {
     if (!saisieFragment.trim()) return;
     const correct = normaliserFragment(saisieFragment) === normaliserFragment(fragment);
@@ -329,11 +431,22 @@ export default function JouerEquipe() {
         <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-brand-navy/10 blur-3xl" />
         <div className="relative z-10 flex flex-col items-center max-w-md w-full">
           <p className="text-brand-blue font-semibold mb-2">{team?.nom}</p>
-          <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">{texts.finTitre}</h1>
+          {editMode && (
+            <button
+              onClick={() => {
+                setPhase("playing");
+                setIndex(Math.max(questions.length - 1, 0));
+              }}
+              className="text-xs text-brand-blue underline mb-4"
+            >
+              ← Revenir au circuit
+            </button>
+          )}
+          <EditableText as="h1" value={texts.finTitre} onSave={(v) => saveGlobalText("finTitre", v)} className="text-2xl font-extrabold mb-6 text-brand-navy" />
 
-          {resultatFragment === "attente" && (
+          {(resultatFragment === "attente" || editMode) && (
             <>
-              <p className="text-slate-600 mb-3">{texts.finTexteReconstituer}</p>
+              <EditableText as="p" multiline value={texts.finTexteReconstituer} onSave={(v) => saveGlobalText("finTexteReconstituer", v)} className="text-slate-600 mb-3" />
               <div className="flex flex-wrap justify-center gap-2 mb-6">
                 {toutesLettres.length > 0 ? (
                   toutesLettres.map((l, i) => (
@@ -353,44 +466,53 @@ export default function JouerEquipe() {
                   value={saisieFragment}
                   onChange={(e) => setSaisieFragment(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && validerFragment()}
+                  disabled={editMode}
                   placeholder={texts.finPlaceholderSaisie}
                   className="px-5 py-4 rounded-2xl border-2 border-transparent bg-brand-blue-light/70 focus:border-brand-blue outline-none text-brand-navy text-center font-medium transition-all duration-200"
                 />
                 <button
                   onClick={validerFragment}
-                  disabled={!saisieFragment.trim()}
+                  disabled={!saisieFragment.trim() || editMode}
                   className="self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-md shadow-brand-blue/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
                 >
                   {texts.finLabelValiderFragment}
                 </button>
-                {tentativesFragment === 1 && (
+                {editMode && (
+                  <div className="rounded-2xl bg-amber-50 ring-1 ring-amber-200 p-4 flex flex-col gap-2 text-left">
+                    <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Texte du bouton</label>
+                    <EditableText as="p" value={texts.finLabelValiderFragment} onSave={(v) => saveGlobalText("finLabelValiderFragment", v)} className="text-sm text-slate-700" />
+                    <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-1">Texte « dernière tentative »</label>
+                    <EditableText as="p" value={texts.finTexteDerniereTentative} onSave={(v) => saveGlobalText("finTexteDerniereTentative", v)} className="text-sm text-slate-700" />
+                  </div>
+                )}
+                {tentativesFragment === 1 && !editMode && (
                   <p className="text-sm text-brand-blue font-medium">{texts.finTexteDerniereTentative}</p>
                 )}
               </div>
             </>
           )}
 
-          {resultatFragment === "trouve" && (
+          {(resultatFragment === "trouve" || editMode) && (
             <>
               <p className="text-2xl mb-2">🎉</p>
-              <p className="text-slate-600 mb-3">{texts.finTexteTrouve}</p>
+              <EditableText as="p" multiline value={texts.finTexteTrouve} onSave={(v) => saveGlobalText("finTexteTrouve", v)} className="text-slate-600 mb-3" />
               <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-                {fragment}
+                {fragment || "(fragment)"}
               </div>
             </>
           )}
 
-          {resultatFragment === "revele" && (
+          {(resultatFragment === "revele" || editMode) && (
             <>
-              <p className="text-slate-600 mb-3">{texts.finTexteRevele}</p>
+              <EditableText as="p" multiline value={texts.finTexteRevele} onSave={(v) => saveGlobalText("finTexteRevele", v)} className="text-slate-600 mb-3" />
               <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-                {fragment}
+                {fragment || "(fragment)"}
               </div>
             </>
           )}
 
-          {resultatFragment !== "attente" && (
-            <p className="text-slate-500 max-w-sm">{texts.finTexteDirectionAmphi}</p>
+          {(resultatFragment !== "attente" || editMode) && (
+            <EditableText as="p" multiline value={texts.finTexteDirectionAmphi} onSave={(v) => saveGlobalText("finTexteDirectionAmphi", v)} className="text-slate-500 max-w-sm" />
           )}
         </div>
       </main>
@@ -427,7 +549,13 @@ export default function JouerEquipe() {
       </div>
 
       <div className="rounded-3xl bg-white ring-1 ring-black/5 shadow-[0_4px_24px_rgba(20,163,221,0.08)] p-6 sm:p-7 mb-6">
-        <h1 className="text-xl font-semibold leading-snug text-brand-navy">{question.texte}</h1>
+        <EditableText
+          as="h1"
+          multiline
+          value={question.texte}
+          onSave={(v) => saveQuestionField("texte", v)}
+          className="text-xl font-semibold leading-snug text-brand-navy"
+        />
       </div>
 
       {isCodePage ? (
@@ -436,7 +564,7 @@ export default function JouerEquipe() {
             value={reponseLibre}
             onChange={(e) => setReponseLibre(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAnswerLibre()}
-            disabled={!!feedback}
+            disabled={!!feedback || editMode}
             placeholder={texts.codePagePlaceholder}
             className={`px-5 py-4 rounded-2xl border-2 outline-none transition-all duration-200 text-center font-medium tracking-wide ${
               feedback
@@ -446,7 +574,7 @@ export default function JouerEquipe() {
                 : "bg-brand-blue-light/70 border-transparent focus:border-brand-blue text-brand-navy"
             }`}
           />
-          {!feedback && (
+          {!feedback && !editMode && (
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
@@ -454,6 +582,36 @@ export default function JouerEquipe() {
             >
               {texts.codePageBouton}
             </button>
+          )}
+          {editMode && (
+            <div className="rounded-2xl bg-amber-50 ring-1 ring-amber-200 p-4 flex flex-col gap-2">
+              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Texte du bouton</label>
+              <EditableText as="p" value={texts.codePageBouton} onSave={(v) => saveGlobalText("codePageBouton", v)} className="text-sm text-slate-700" />
+              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-1">Code attendu (visible uniquement par vous)</label>
+              <EditableText
+                as="p"
+                value={question.reponse ?? ""}
+                onSave={(v) => saveQuestionField("reponse", v)}
+                placeholder="Ex. IUA2026"
+                className="font-mono text-brand-navy"
+              />
+              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-2">Message si code correct</label>
+              <EditableText
+                as="p"
+                value={question.feedbackCorrect}
+                onSave={(v) => saveQuestionField("feedbackCorrect", v)}
+                placeholder="(message par défaut)"
+                className="text-sm text-slate-700"
+              />
+              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-2">Message si code incorrect</label>
+              <EditableText
+                as="p"
+                value={question.feedbackIncorrect}
+                onSave={(v) => saveQuestionField("feedbackIncorrect", v)}
+                placeholder="(message par défaut)"
+                className="text-sm text-slate-700"
+              />
+            </div>
           )}
         </div>
       ) : question.type === "qcm" ? (
@@ -474,8 +632,29 @@ export default function JouerEquipe() {
             } else if (isDisabled) {
               style = "bg-slate-100 text-slate-400 line-through ring-1 ring-black/5";
             }
+            if (editMode && isCorrectOption) style += " ring-2 ring-green-500";
 
-            return (
+            return editMode ? (
+              <div key={i} className={`flex items-center gap-2 px-5 py-3 rounded-2xl ${style}`}>
+                <button
+                  onClick={() => saveQuestionField("correctIndex", i as 0 | 1 | 2 | 3)}
+                  title="Marquer comme la bonne réponse"
+                  className={`shrink-0 h-5 w-5 rounded-full border-2 ${
+                    isCorrectOption ? "bg-green-500 border-green-500" : "border-slate-300"
+                  }`}
+                />
+                <EditableText
+                  as="span"
+                  value={prop}
+                  onSave={(v) => {
+                    const next = [...(question.propositions ?? ["", "", "", ""])] as [string, string, string, string];
+                    next[i] = v;
+                    saveQuestionField("propositions", next);
+                  }}
+                  className="flex-1 text-left"
+                />
+              </div>
+            ) : (
               <button
                 key={i}
                 disabled={isDisabled || !!feedback}
@@ -494,7 +673,7 @@ export default function JouerEquipe() {
             value={reponseLibre}
             onChange={(e) => setReponseLibre(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAnswerLibre()}
-            disabled={!!feedback}
+            disabled={!!feedback || editMode}
             placeholder={texts.jeuPlaceholderReponseLibre}
             className={`px-5 py-4 rounded-2xl border-2 outline-none transition-all duration-200 ${
               feedback
@@ -504,7 +683,7 @@ export default function JouerEquipe() {
                 : "bg-brand-blue-light/70 border-transparent focus:border-brand-blue text-brand-navy"
             }`}
           />
-          {!feedback && (
+          {!feedback && !editMode && (
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
@@ -512,6 +691,19 @@ export default function JouerEquipe() {
             >
               {texts.jeuLabelValider}
             </button>
+          )}
+          {editMode && (
+            <div className="rounded-2xl bg-amber-50 ring-1 ring-amber-200 p-4 flex flex-col gap-2">
+              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Texte du bouton</label>
+              <EditableText as="p" value={texts.jeuLabelValider} onSave={(v) => saveGlobalText("jeuLabelValider", v)} className="text-sm text-slate-700" />
+              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-1">Réponse attendue (visible uniquement par vous)</label>
+              <EditableText
+                as="p"
+                value={question.reponse ?? ""}
+                onSave={(v) => saveQuestionField("reponse", v)}
+                className="font-mono text-brand-navy"
+              />
+            </div>
           )}
           {awaitingContinue && feedback && !feedback.ok && question.reponse && (
             <div className="rounded-2xl bg-green-50 ring-2 ring-green-500 text-green-700 px-5 py-3 text-sm">
@@ -522,14 +714,38 @@ export default function JouerEquipe() {
         </div>
       )}
 
-      {feedback && feedback.ok && dernieresLettres && (
+      {editMode && (
+        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          <button onClick={() => inserer("libre")} className="text-brand-blue underline">
+            + Insérer une énigme après cette étape
+          </button>
+          <button onClick={() => inserer("code")} className="text-brand-blue underline">
+            + Insérer une page code après cette étape
+          </button>
+          <button onClick={supprimerEtapeActuelle} className="text-red-500 underline">
+            Supprimer cette étape
+          </button>
+        </div>
+      )}
+
+      {(editMode || (feedback && feedback.ok && dernieresLettres)) && (
         <div className="mt-6 rounded-2xl bg-gradient-to-r from-brand-blue-light to-white ring-2 ring-brand-blue/40 px-5 py-4 text-center shadow-sm">
           <p className="text-2xl mb-1">🏆</p>
-          <p className="font-semibold text-brand-navy">{texts.jeuTexteLettreDebloqueeTitre}</p>
+          <EditableText
+            as="p"
+            value={texts.jeuTexteLettreDebloqueeTitre}
+            onSave={(v) => saveGlobalText("jeuTexteLettreDebloqueeTitre", v)}
+            className="font-semibold text-brand-navy"
+          />
           <p className="my-2 text-2xl font-extrabold tracking-widest text-brand-blue">
-            {dernieresLettres}
+            {dernieresLettres || "AB"}
           </p>
-          <p className="text-sm text-slate-500">{texts.jeuTexteLettreDebloqueeNote}</p>
+          <EditableText
+            as="p"
+            value={texts.jeuTexteLettreDebloqueeNote}
+            onSave={(v) => saveGlobalText("jeuTexteLettreDebloqueeNote", v)}
+            className="text-sm text-slate-500"
+          />
         </div>
       )}
 
@@ -543,20 +759,25 @@ export default function JouerEquipe() {
         </div>
       )}
 
-      {attempts === 1 && !feedback && !isCodePage && (
-        <p className="mt-6 text-center text-brand-blue text-sm font-medium">{texts.jeuTexteDerniereTentative}</p>
+      {(attempts === 1 || editMode) && !feedback && !isCodePage && (
+        <EditableText
+          as="p"
+          value={texts.jeuTexteDerniereTentative}
+          onSave={(v) => saveGlobalText("jeuTexteDerniereTentative", v)}
+          className="mt-6 text-center text-brand-blue text-sm font-medium"
+        />
       )}
 
-      {needsRetryClick && (
+      {(needsRetryClick || editMode) && (
         <button
           onClick={handleRetry}
           className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
         >
-          {texts.jeuLabelReessayer}
+          <EditableText as="span" value={texts.jeuLabelReessayer} onSave={(v) => saveGlobalText("jeuLabelReessayer", v)} className="text-white" />
         </button>
       )}
 
-      {awaitingContinue && (
+      {awaitingContinue && !editMode && (
         <button
           onClick={goNextQuestion}
           className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
@@ -564,6 +785,31 @@ export default function JouerEquipe() {
           {isLastQuestion ? texts.jeuLabelVoirResultat : texts.jeuLabelEnigmeSuivante}
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
+      )}
+
+      {editMode && (
+        <div className="mt-8 flex items-center justify-between gap-3 sticky bottom-4 bg-white/90 backdrop-blur rounded-2xl ring-1 ring-black/10 px-4 py-3 shadow-lg">
+          <button
+            onClick={() => allerAEtape(index - 1)}
+            disabled={index === 0}
+            className="text-sm font-semibold text-brand-navy disabled:text-slate-300"
+          >
+            ← Étape précédente
+          </button>
+          <span className="text-xs text-slate-400">Vous parcourez le circuit en mode édition</span>
+          {isLastQuestion ? (
+            <button onClick={finishQuiz} className="text-sm font-semibold text-brand-blue">
+              Voir l&apos;écran final →
+            </button>
+          ) : (
+            <button
+              onClick={() => allerAEtape(index + 1)}
+              className="text-sm font-semibold text-brand-navy disabled:text-slate-300"
+            >
+              Étape suivante →
+            </button>
+          )}
+        </div>
       )}
     </main>
   );
