@@ -100,11 +100,13 @@ export async function viderScenario(): Promise<void> {
 // Remplace toutes les énigmes existantes par celles du document fourni.
 // L'histoire et les fragments ne sont écrasés que si le document en
 // contient (sinon les valeurs déjà enregistrées sont conservées).
+// Crée aussi automatiquement une équipe par salle du document qui n'a pas
+// encore d'équipe (les équipes existantes ne sont jamais touchées).
 export async function importerScenario(parsed: {
   histoire: string | null;
   fragments: string[] | null;
   questions: Omit<Question, "id">[];
-}): Promise<{ enigmes: number }> {
+}): Promise<{ enigmes: number; equipesCreees: number }> {
   const existingQuestions = await getAllQuestions();
   await Promise.all(existingQuestions.map((q) => deleteQuestion(q.id)));
   await Promise.all(parsed.questions.map((q) => addQuestion(q)));
@@ -114,8 +116,21 @@ export async function importerScenario(parsed: {
   if (parsed.fragments !== null) config.fragments = parsed.fragments;
   if (Object.keys(config).length > 0) await saveQuizConfig(config);
 
+  // Une équipe par salle du document, seulement pour les salles qui n'ont
+  // pas déjà une équipe (on ne duplique jamais, on ne touche pas à
+  // l'existant).
+  const sallesDuDocument = [...new Set(parsed.questions.map((q) => q.salle).filter(Boolean))];
+  const equipesExistantes = await getAllTeams();
+  const sallesDejaAttribuees = new Set(equipesExistantes.map((t) => t.salle));
+  const nouvellesSalles = sallesDuDocument.filter((s) => !sallesDejaAttribuees.has(s));
+  await Promise.all(
+    nouvellesSalles.map((salle, i) =>
+      addTeam({ nom: salle, salle, fragmentIndex: equipesExistantes.length + i })
+    )
+  );
+
   const questionsApres = await getAllQuestions();
-  return { enigmes: questionsApres.length };
+  return { enigmes: questionsApres.length, equipesCreees: nouvellesSalles.length };
 }
 
 // --- Équipes ---

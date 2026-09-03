@@ -399,7 +399,12 @@ function AdminPanel() {
       const resultat = await importerScenario(parsed);
       await reload();
       setImportFile(null);
-      setImportMessage(`Import réussi : ${resultat.enigmes} énigme(s)/page(s) importée(s).`);
+      setImportMessage(
+        `Import réussi : ${resultat.enigmes} énigme(s)/page(s) importée(s)` +
+          (resultat.equipesCreees > 0
+            ? `, ${resultat.equipesCreees} équipe(s) créée(s) automatiquement (une par salle).`
+            : ".")
+      );
     } catch (e) {
       setImportMessage("Échec de l'import : " + (e instanceof Error ? e.message : String(e)));
     } finally {
