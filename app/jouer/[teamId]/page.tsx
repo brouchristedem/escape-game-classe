@@ -366,15 +366,11 @@ export default function JouerEquipe() {
 
   function handleTimeout() {
     if (!question || isCodePage) return;
-    const nextAttempts = attempts + 1;
-    setAttempts(nextAttempts);
-    if (nextAttempts >= 2) {
-      setFeedback({ text: messagePourEnigme(index, false, texts.messagesReussite, texts.messagesEchec), ok: false });
-      setAwaitingContinue(true);
-    } else {
-      setFeedback({ text: texts.jeuTexteTempsEcoule, ok: false });
-      setNeedsRetryClick(true);
-    }
+    setAttempts((a) => a + 1);
+    // Temps écoulé : on ne fait jamais avancer automatiquement, l'équipe réessaie
+    // jusqu'à trouver la bonne réponse.
+    setFeedback({ text: texts.jeuTexteTempsEcoule, ok: false });
+    setNeedsRetryClick(true);
   }
 
   function traiterReponse(correct: boolean) {
@@ -401,15 +397,11 @@ export default function JouerEquipe() {
       setFeedback({ text: question.feedbackIncorrect || texts.jeuTexteMauvaiseReponse, ok: false });
       setNeedsRetryClick(true);
     } else {
-      const nextAttempts = attempts + 1;
-      setAttempts(nextAttempts);
-      if (nextAttempts >= 2) {
-        setFeedback({ text: messagePourEnigme(index, false, texts.messagesReussite, texts.messagesEchec), ok: false });
-        setAwaitingContinue(true);
-      } else {
-        setFeedback({ text: texts.jeuTexteMauvaiseReponse, ok: false });
-        setNeedsRetryClick(true);
-      }
+      setAttempts((a) => a + 1);
+      // Mauvaise réponse : jamais de passage automatique, l'équipe réessaie
+      // jusqu'à trouver la bonne énigme.
+      setFeedback({ text: texts.jeuTexteMauvaiseReponse, ok: false });
+      setNeedsRetryClick(true);
     }
   }
 
@@ -793,15 +785,6 @@ export default function JouerEquipe() {
         >
           {feedback.text}
         </div>
-      )}
-
-      {(attempts === 1 || editMode) && !feedback && !isCodePage && (
-        <EditableText
-          as="p"
-          value={texts.jeuTexteDerniereTentative}
-          onSave={(v) => saveGlobalText("jeuTexteDerniereTentative", v)}
-          className="mt-6 text-center text-brand-blue text-sm font-medium"
-        />
       )}
 
       {(needsRetryClick || editMode) && (
