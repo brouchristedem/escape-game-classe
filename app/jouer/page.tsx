@@ -89,7 +89,7 @@ export default function ChoixEquipe() {
           className="text-sm text-slate-500 mb-8 text-center"
         />
 
-        {!loading && teams.length === 0 && (
+        {(!loading && teams.length === 0) || editMode ? (
           <EditableText
             as="p"
             multiline
@@ -97,7 +97,7 @@ export default function ChoixEquipe() {
             onSave={(v) => saveText("equipeAucuneEquipe", v)}
             className="text-slate-500 mb-8 text-center max-w-sm"
           />
-        )}
+        ) : null}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10 w-full">
           {teams.map((t) => {
@@ -136,7 +136,7 @@ export default function ChoixEquipe() {
           >
             <EditableText as="span" value={texts.equipeBoutonSuiveur} onSave={(v) => saveText("equipeBoutonSuiveur", v)} />
           </button>
-          {erreurChef && (
+          {(erreurChef || editMode) && (
             <EditableText
               as="p"
               multiline

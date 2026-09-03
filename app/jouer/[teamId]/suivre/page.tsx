@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ecouterLiveState, getTeam, getQuizConfig } from "@/lib/data";
+import { ecouterLiveState, getTeam, getQuizConfig, saveQuizConfig } from "@/lib/data";
 import { LiveState, Team, fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
+import EditableText from "@/app/components/EditableText";
 
 export default function SuivreEquipe() {
   const params = useParams();
@@ -26,6 +27,12 @@ export default function SuivreEquipe() {
     return unsubscribe;
   }, [teamId]);
 
+  async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
+    const next = { ...texts, [key]: value };
+    setTexts(next);
+    await saveQuizConfig({ texts: next });
+  }
+
   if (loading) return <LoadingScreen label={texts.suivreChargementLabel} />;
 
   // state peut exister mais être incomplet : claimerChef crée le document
@@ -37,15 +44,18 @@ export default function SuivreEquipe() {
   if (!state || !state.phase) {
     return (
       <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-white text-brand-navy">
-        <p className="max-w-sm text-slate-500">{texts.suivreAttente}</p>
+        <EditableText as="p" multiline value={texts.suivreAttente} onSave={(v) => saveText("suivreAttente", v)} className="max-w-sm text-slate-500" />
       </main>
     );
   }
 
   const banner = (
-    <div className="mb-4 rounded-full bg-brand-blue-light/70 px-4 py-2 text-center text-xs font-medium text-brand-navy">
-      {texts.suivreBanniere}
-    </div>
+    <EditableText
+      as="div"
+      value={texts.suivreBanniere}
+      onSave={(v) => saveText("suivreBanniere", v)}
+      className="mb-4 rounded-full bg-brand-blue-light/70 px-4 py-2 text-center text-xs font-medium text-brand-navy"
+    />
   );
 
   if (state.phase === "termine") {
