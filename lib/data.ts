@@ -15,7 +15,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Question, Salle, QuizConfig, Team, LiveState, CHEF_LOCK_TIMEOUT_MS } from "./types";
+import { Question, Salle, QuizConfig, Team, LiveState, CHEF_LOCK_TIMEOUT_MS, GameStatus } from "./types";
 
 const QUESTIONS_COL = "questions";
 const TEAMS_COL = "teams";
@@ -73,16 +73,32 @@ export async function renumeroterEtapes(orderedIds: string[]): Promise<void> {
 export async function getQuizConfig(): Promise<QuizConfig> {
   const snap = await getDoc(doc(db, CONFIG_DOC));
   if (!snap.exists()) {
-    return { histoire: "", texts: {} };
+    return { histoire: "", texts: {}, gameStatus: "actif" };
   }
   const data = snap.data() as QuizConfig;
-  return { histoire: data.histoire ?? "", texts: data.texts ?? {} };
+  return {
+    histoire: data.histoire ?? "",
+    texts: data.texts ?? {},
+    gameStatus: data.gameStatus ?? "actif",
+  };
 }
 
 // merge: true pour ne jamais écraser un champ (ex. l'histoire) quand on ne
 // sauvegarde que les fragments, ou l'inverse.
 export async function saveQuizConfig(config: Partial<QuizConfig>): Promise<void> {
   await setDoc(doc(db, CONFIG_DOC), config, { merge: true });
+}
+
+// Abonnement en temps réel à gameStatus (pause d'urgence de l'organisateur).
+// Contrairement à getQuizConfig() (lecture ponctuelle), ceci permet de
+// bloquer immédiatement une équipe déjà en train de jouer dès que
+// l'organisateur appuie sur pause, sans attendre un rechargement de page.
+// Retourne la fonction de désabonnement.
+export function ecouterGameStatus(callback: (status: GameStatus) => void): () => void {
+  return onSnapshot(doc(db, CONFIG_DOC), (snap) => {
+    const data = snap.exists() ? (snap.data() as QuizConfig) : null;
+    callback(data?.gameStatus ?? "actif");
+  });
 }
 
 // --- Vider le scénario actuel ---

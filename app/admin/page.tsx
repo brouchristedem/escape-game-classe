@@ -24,6 +24,7 @@ import {
   versSecondes,
   depuisSecondes,
   GameTexts,
+  GameStatus,
   DEFAULT_GAME_TEXTS,
   fusionnerTextes,
 } from "@/lib/types";
@@ -113,6 +114,12 @@ function AdminPanel() {
   const [siteTexts, setSiteTexts] = useState<GameTexts>(fusionnerTextes());
   const [savingTexts, setSavingTexts] = useState(false);
 
+  // Bouton pause d'urgence : bloque le circuit chez toutes les équipes en
+  // même temps (voir PauseOverlay côté /jouer), sans toucher à leur
+  // progression, pour pouvoir tout arrêter en cas de bug.
+  const [gameStatus, setGameStatus] = useState<GameStatus>("actif");
+  const [togglingStatus, setTogglingStatus] = useState(false);
+
   const [viding, setViding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -127,6 +134,7 @@ function AdminPanel() {
       setQuestions(qs);
       setHistoire(config.histoire ?? "");
       setSiteTexts(fusionnerTextes(config.texts));
+      setGameStatus(config.gameStatus ?? "actif");
     } catch (e) {
       console.error(e);
       const detail = e instanceof Error ? e.message : String(e);
@@ -383,6 +391,20 @@ function AdminPanel() {
     }
   }
 
+  async function togglerGameStatus() {
+    const prochain: GameStatus = gameStatus === "pause" ? "actif" : "pause";
+    if (prochain === "pause" && !confirm("Mettre le jeu en pause pour toutes les équipes, maintenant ?")) return;
+    setTogglingStatus(true);
+    try {
+      await saveQuizConfig({ gameStatus: prochain });
+      setGameStatus(prochain);
+    } catch (e) {
+      alert("Échec : " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setTogglingStatus(false);
+    }
+  }
+
   async function lancerImportFichier() {
     if (!importFile) {
       alert("Choisissez d'abord un fichier .docx ou .pdf.");
@@ -427,6 +449,30 @@ function AdminPanel() {
     <main className="min-h-screen bg-white text-brand-navy px-4 sm:px-8 py-8">
       <h1 className="text-2xl font-bold mb-1">Espace organisateur</h1>
       <p className="text-slate-500 text-sm mb-6">Escape Game IUA Classe X</p>
+
+      <div
+        className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4 ring-2 ${
+          gameStatus === "pause" ? "bg-red-50 ring-red-300" : "bg-slate-50 ring-slate-200"
+        }`}
+      >
+        <div>
+          <p className={`font-semibold ${gameStatus === "pause" ? "text-red-600" : "text-brand-navy"}`}>
+            {gameStatus === "pause" ? "⏸️ Jeu en pause — bloqué chez toutes les équipes" : "▶️ Jeu actif"}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            En cas de bug, met en pause le circuit chez tout le monde en même temps, sans perte de progression.
+          </p>
+        </div>
+        <button
+          onClick={togglerGameStatus}
+          disabled={togglingStatus}
+          className={`rounded-full px-6 py-2.5 font-semibold text-white shadow-md transition disabled:opacity-60 ${
+            gameStatus === "pause" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
+          }`}
+        >
+          {gameStatus === "pause" ? "Reprendre le jeu" : "Mettre en pause"}
+        </button>
+      </div>
 
       <div className="flex gap-2 mb-3 flex-wrap">
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
@@ -988,6 +1034,11 @@ function AdminPanel() {
             <TextField label="Placeholder réponse (lecture seule)" value={siteTexts.suivrePlaceholderReponse} onChange={(v) => setSiteText("suivrePlaceholderReponse", v)} />
             <TextField label="Titre fragment débloqué" value={siteTexts.suivreFragmentTitre} onChange={(v) => setSiteText("suivreFragmentTitre", v)} />
             <TextField label="Texte d'attente (chef continue quand il est prêt)" value={siteTexts.suivreAttenteContinuer} onChange={(v) => setSiteText("suivreAttenteContinuer", v)} />
+          </TextGroup>
+
+          <TextGroup title="Écran de pause d'urgence (bouton « Mettre en pause » ci-dessus)">
+            <TextField label="Titre" value={siteTexts.pauseTitre} onChange={(v) => setSiteText("pauseTitre", v)} />
+            <TextAreaField label="Message" value={siteTexts.pauseMessage} onChange={(v) => setSiteText("pauseMessage", v)} rows={3} />
           </TextGroup>
 
           <TextGroup title="Messages aléatoires après chaque énigme">

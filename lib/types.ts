@@ -11,6 +11,13 @@ export type TypeEnigme = "qcm" | "libre" | "code" | "info";
 
 export type UniteTemps = "secondes" | "minutes" | "heures";
 
+// État global du jeu, contrôlé par l'organisateur depuis l'admin (bouton
+// pause d'urgence). "pause" bloque le circuit normal chez toutes les
+// équipes en même temps (un écran de blocage s'affiche par-dessus l'énigme
+// en cours) sans faire perdre leur progression : dès le retour à "actif",
+// chaque équipe reprend exactement là où elle en était.
+export type GameStatus = "actif" | "pause";
+
 export interface Team {
   id: string;
   nom: string; // nom de l'équipe (au lieu d'un numéro)
@@ -41,6 +48,7 @@ export interface Question {
 export interface QuizConfig {
   histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
   texts?: Partial<GameTexts>; // tous les autres textes du site, éditables depuis l'admin
+  gameStatus?: GameStatus; // absent = "actif" (rétrocompatible avec les parties déjà en cours)
 }
 
 // --- Tous les textes affichés sur les pages joueur (hors énoncés d'énigmes,
@@ -96,6 +104,9 @@ export interface GameTexts {
   suivrePlaceholderReponse: string;
   suivreFragmentTitre: string;
   suivreAttenteContinuer: string;
+
+  pauseTitre: string;
+  pauseMessage: string;
 
   messagesReussite: string[];
   messagesEchec: string[];
@@ -156,6 +167,10 @@ export const DEFAULT_GAME_TEXTS: GameTexts = {
   suivrePlaceholderReponse: "Le chef d'équipe répond ici...",
   suivreFragmentTitre: "Un fragment vient d'être débloqué !",
   suivreAttenteContinuer: "Le chef d'équipe passe à la suite quand il est prêt.",
+
+  pauseTitre: "Jeu en pause",
+  pauseMessage:
+    "L'organisateur a temporairement mis le jeu en pause. Ne quittez pas cette page, ça va reprendre très vite — votre progression est conservée.",
 
   messagesReussite: ["GREEN FLAG", "C'EST TCHÔ", "JOLIIIIIE"],
   messagesEchec: ["ÈCHOUWEY", "RED FLAG"],

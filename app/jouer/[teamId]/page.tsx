@@ -14,6 +14,7 @@ import {
   addQuestion,
   deleteQuestion,
   renumeroterEtapes,
+  ecouterGameStatus,
 } from "@/lib/data";
 import {
   Question,
@@ -23,11 +24,13 @@ import {
   LiveState,
   fusionnerTextes,
   GameTexts,
+  GameStatus,
 } from "@/lib/types";
 import { getSessionId, aDejaDemarreCetteSession, marquerSessionDemarree } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
+import PauseOverlay from "@/app/components/PauseOverlay";
 import { useAdminMode } from "@/lib/adminMode";
 
 type Phase = "loading" | "error" | "playing" | "termine";
@@ -56,7 +59,25 @@ export default function JouerEquipe() {
   const [needsRetryClick, setNeedsRetryClick] = useState(false);
   const [essaiKey, setEssaiKey] = useState(0);
   const [chefRefuse, setChefRefuse] = useState(false);
+  const [gameStatus, setGameStatus] = useState<GameStatus>("actif");
+  // Ref à jour à chaque rendu : le setInterval du chrono (créé une fois par
+  // question, voir l'effet ci-dessous) doit lire la valeur la plus récente
+  // de gameStatus sans redémarrer le chrono à chaque changement de pause.
+  const gameStatusRef = useRef<GameStatus>("actif");
+  useEffect(() => {
+    gameStatusRef.current = gameStatus;
+  }, [gameStatus]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Écoute en temps réel le bouton pause d'urgence de l'organisateur : bloque
+  // le circuit chez toutes les équipes en même temps sans toucher à leur
+  // progression (aucun état de jeu n'est modifié, juste un écran par-dessus).
+  // L'organisateur en mode édition n'est jamais bloqué par sa propre pause.
+  useEffect(() => {
+    if (editMode) return;
+    const unsub = ecouterGameStatus(setGameStatus);
+    return unsub;
+  }, [editMode]);
 
   useEffect(() => {
     if (!teamId) {
@@ -146,6 +167,9 @@ export default function JouerEquipe() {
     }
     setTimeLeft(question.tempsLimite);
     timerRef.current = setInterval(() => {
+      // Jeu en pause : le chrono ne décompte pas, pour ne pas pénaliser une
+      // équipe pendant un arrêt décidé par l'organisateur.
+      if (gameStatusRef.current === "pause") return;
       setTimeLeft((t) => {
         if (t === null) return null;
         if (t <= 1) {
@@ -436,7 +460,11 @@ export default function JouerEquipe() {
   const progress = ((index + (feedback?.ok ? 1 : 0)) / questions.length) * 100;
 
   return (
-    <main className="min-h-screen flex flex-col px-6 py-8 bg-white max-w-xl mx-auto w-full">
+    <>
+      {gameStatus === "pause" && !editMode && (
+        <PauseOverlay titre={texts.pauseTitre} message={texts.pauseMessage} />
+      )}
+      <main className="min-h-screen flex flex-col px-6 py-8 bg-white max-w-xl mx-auto w-full">
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-slate-500 mb-2">
           <span className="font-medium text-brand-navy">{team?.nom}</span>
@@ -754,7 +782,8 @@ export default function JouerEquipe() {
           )}
         </div>
       )}
-    </main>
+      </main>
+    </>
   );
 }
 
