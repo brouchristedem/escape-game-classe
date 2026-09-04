@@ -107,12 +107,13 @@ export default function JouerEquipe() {
         // plus tard) doit toujours repartir de la première énigme, même si
         // Firestore garde un état plus avancé pour le suivi en direct.
         const dernierEtat = await getLiveState(teamId);
-        if (dernierEtat?.phase === "termine") {
+        const reprendCetteSession = aDejaDemarreCetteSession(teamId);
+        if (reprendCetteSession && dernierEtat?.phase === "termine") {
           setPhase("termine");
           return;
         }
         if (
-          aDejaDemarreCetteSession(teamId) &&
+          reprendCetteSession &&
           dernierEtat &&
           dernierEtat.index > 0 &&
           dernierEtat.index < qs.length
