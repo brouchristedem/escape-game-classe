@@ -24,7 +24,7 @@ import {
   fusionnerTextes,
   GameTexts,
 } from "@/lib/types";
-import { getSessionId } from "@/lib/session";
+import { getSessionId, aDejaDemarreCetteSession, marquerSessionDemarree } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
@@ -100,16 +100,27 @@ export default function JouerEquipe() {
         }
         setQuestions(qs);
 
-        // Reprend la partie là où elle en était (ex. après un rechargement
-        // de page) au lieu de repartir de la première énigme : on relit le
-        // dernier état publié par ce chef d'équipe pour cette équipe.
+        // Reprend la partie là où elle en était uniquement en cas de vrai
+        // rechargement de page dans ce même onglet (ex. F5) : on relit le
+        // dernier état publié par ce chef d'équipe pour cette équipe. En
+        // revanche, une nouvelle visite (onglet fermé/rouvert, lien rouvert
+        // plus tard) doit toujours repartir de la première énigme, même si
+        // Firestore garde un état plus avancé pour le suivi en direct.
         const dernierEtat = await getLiveState(teamId);
         if (dernierEtat?.phase === "termine") {
           setPhase("termine");
           return;
         }
-        if (dernierEtat && dernierEtat.index > 0 && dernierEtat.index < qs.length) {
+        if (
+          aDejaDemarreCetteSession(teamId) &&
+          dernierEtat &&
+          dernierEtat.index > 0 &&
+          dernierEtat.index < qs.length
+        ) {
           setIndex(dernierEtat.index);
+        }
+        if (!previewOrganisateur) {
+          marquerSessionDemarree(teamId);
         }
         setPhase("playing");
       } catch (e) {
