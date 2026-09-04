@@ -653,23 +653,26 @@ export default function JouerEquipe() {
             onSave={(v) => saveGlobalText("jeuTexteFragmentTitre", v)}
             className="font-semibold text-brand-navy"
           />
-          <p className="my-2 text-lg font-bold text-brand-blue">
-            {fragmentTexte || (editMode ? "" : "")}
-          </p>
-          <div className={editMode ? "mt-3 pt-3 border-t border-brand-blue/20 text-left" : ""}>
-            {editMode && (
+          {!editMode && (
+            <p className="my-2 text-lg font-bold text-brand-blue whitespace-pre-line">
+              {fragmentTexte}
+            </p>
+          )}
+          {editMode && (
+            <div className="mt-3 pt-3 border-t border-brand-blue/20 text-left">
               <p className="text-[10px] font-semibold text-brand-navy/60 uppercase tracking-wide mb-1">
-                Fragment affiché après cette énigme (texte libre, facultatif)
+                Fragment affiché après cette énigme (texte libre, facultatif — Maj+Entrée pour une nouvelle ligne)
               </p>
-            )}
-            <EditableText
-              as="p"
-              value={question.fragmentTexte ?? ""}
-              onSave={saveFragmentText}
-              placeholder="Écrire le fragment à afficher après cette énigme..."
-              className="font-bold text-brand-blue"
-            />
-          </div>
+              <EditableText
+                as="p"
+                multiline
+                value={question.fragmentTexte ?? ""}
+                onSave={saveFragmentText}
+                placeholder="Écrire le fragment à afficher après cette énigme..."
+                className="font-bold text-brand-blue whitespace-pre-line"
+              />
+            </div>
+          )}
         </div>
       )}
 
