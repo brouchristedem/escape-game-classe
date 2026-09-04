@@ -192,6 +192,15 @@ export async function publierLiveState(teamId: string, state: LiveState): Promis
 // décalées (fréquent sur des téléphones d'étudiants), le verrou pouvait
 // sembler expiré alors qu'il ne l'était pas (ou l'inverse), permettant à
 // deux chefs de se connecter par intermittence.
+// Relit le dernier état publié pour une équipe (ex. après un rechargement de
+// page) afin de reprendre le jeu là où il en était plutôt que de repartir de
+// la première énigme.
+export async function getLiveState(teamId: string): Promise<LiveState | null> {
+  const snap = await getDoc(doc(db, LIVE_STATE_COL, teamId));
+  if (!snap.exists()) return null;
+  return snap.data() as LiveState;
+}
+
 export async function claimerChef(
   teamId: string,
   sessionId: string

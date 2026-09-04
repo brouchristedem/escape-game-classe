@@ -7,6 +7,7 @@ import {
   getQuizConfig,
   saveQuizConfig,
   getTeam,
+  getLiveState,
   publierLiveState,
   claimerChef,
   updateQuestion,
@@ -98,6 +99,18 @@ export default function JouerEquipe() {
           return;
         }
         setQuestions(qs);
+
+        // Reprend la partie là où elle en était (ex. après un rechargement
+        // de page) au lieu de repartir de la première énigme : on relit le
+        // dernier état publié par ce chef d'équipe pour cette équipe.
+        const dernierEtat = await getLiveState(teamId);
+        if (dernierEtat?.phase === "termine") {
+          setPhase("termine");
+          return;
+        }
+        if (dernierEtat && dernierEtat.index > 0 && dernierEtat.index < qs.length) {
+          setIndex(dernierEtat.index);
+        }
         setPhase("playing");
       } catch (e) {
         setErreurDetail(e instanceof Error ? e.message : String(e));
