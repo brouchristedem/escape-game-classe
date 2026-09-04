@@ -6,6 +6,7 @@ import { ecouterLiveState, getTeam, getQuizConfig, saveQuizConfig } from "@/lib/
 import { LiveState, Team, fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
+import RichText from "@/app/components/RichText";
 
 export default function SuivreEquipe() {
   const params = useParams();
@@ -64,40 +65,8 @@ export default function SuivreEquipe() {
         <div className="relative z-10 flex flex-col items-center max-w-md w-full">
           {banner}
           <p className="text-brand-blue font-semibold mb-2">{team?.nom}</p>
-          <h1 className="text-2xl font-extrabold mb-6 text-brand-navy">{texts.finTitre}</h1>
-
-          {state.resultatFragment === "attente" && (
-            <>
-              <p className="text-slate-600 mb-3">{texts.finTexteReconstituer}</p>
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                {state.lettresMelangees.map((l, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center justify-center h-11 w-11 rounded-xl bg-brand-blue-light ring-1 ring-brand-blue/30 text-brand-navy font-bold text-lg"
-                  >
-                    {l}
-                  </span>
-                ))}
-              </div>
-              <input
-                value={state.saisieFragment}
-                readOnly
-                disabled
-                placeholder={texts.suivrePlaceholderSaisie}
-                className="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-brand-blue-light/70 outline-none text-brand-navy text-center font-medium"
-              />
-            </>
-          )}
-
-          {(state.resultatFragment === "trouve" || state.resultatFragment === "revele") && (
-            <>
-              <p className="text-2xl mb-2">{state.resultatFragment === "trouve" ? "🎉" : ""}</p>
-              <p className="text-slate-600 mb-3">Votre fragment de la phrase finale :</p>
-              <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-                {state.fragment}
-              </div>
-            </>
-          )}
+          <h1 className="text-2xl font-extrabold mb-4 text-brand-navy">{texts.finTitre}</h1>
+          <p className="text-slate-500 max-w-sm">{texts.finSousTitre}</p>
         </div>
       </main>
     );
@@ -131,10 +100,14 @@ export default function SuivreEquipe() {
       </div>
 
       <div className="rounded-3xl bg-white ring-1 ring-black/5 shadow-[0_4px_24px_rgba(20,163,221,0.08)] p-6 sm:p-7 mb-6">
-        <h1 className="text-xl font-semibold leading-snug text-brand-navy">{state.questionTexte}</h1>
+        {state.questionType === "info" ? (
+          <RichText text={state.questionTexte} className="text-xl font-semibold leading-snug text-brand-navy" />
+        ) : (
+          <h1 className="text-xl font-semibold leading-snug text-brand-navy">{state.questionTexte}</h1>
+        )}
       </div>
 
-      {state.questionType === "qcm" ? (
+      {state.questionType === "info" ? null : state.questionType === "qcm" ? (
         <div className="flex flex-col gap-3">
           {(state.propositions ?? []).map((prop, i) => {
             const isDisabled = state.disabledOptions.includes(i);
@@ -174,11 +147,11 @@ export default function SuivreEquipe() {
         </div>
       )}
 
-      {state.feedbackOk && state.dernieresLettres && (
+      {state.feedbackOk && state.fragmentTexte && (
         <div className="mt-6 rounded-2xl bg-gradient-to-r from-brand-blue-light to-white ring-2 ring-brand-blue/40 px-5 py-4 text-center shadow-sm">
           <p className="text-2xl mb-1">🏆</p>
-          <p className="font-semibold text-brand-navy">{texts.suivreLettreTitre}</p>
-          <p className="my-2 text-2xl font-extrabold tracking-widest text-brand-blue">{state.dernieresLettres}</p>
+          <p className="font-semibold text-brand-navy">{texts.suivreFragmentTitre}</p>
+          <p className="my-2 text-lg font-bold text-brand-blue">{state.fragmentTexte}</p>
         </div>
       )}
 
@@ -192,7 +165,7 @@ export default function SuivreEquipe() {
         </div>
       )}
 
-      {state.attempts === 1 && !state.feedbackText && (
+      {state.questionType !== "info" && state.attempts === 1 && !state.feedbackText && (
         <p className="mt-6 text-center text-brand-blue text-sm font-medium">{texts.jeuTexteDerniereTentative}</p>
       )}
 

@@ -7,7 +7,6 @@ import {
   getQuizConfig,
   saveQuizConfig,
   getTeam,
-  updateTeam,
   publierLiveState,
   claimerChef,
   updateQuestion,
@@ -19,10 +18,6 @@ import {
   Question,
   Team,
   normaliserReponse,
-  normaliserFragment,
-  calculerPlanDeblocage,
-  PlanDeblocage,
-  toutesLesLettresMelangees,
   messagePourEnigme,
   LiveState,
   fusionnerTextes,
@@ -31,6 +26,7 @@ import {
 import { getSessionId } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
+import RichText from "@/app/components/RichText";
 import { useAdminMode } from "@/lib/adminMode";
 
 type Phase = "loading" | "error" | "playing" | "termine";
@@ -53,15 +49,9 @@ export default function JouerEquipe() {
   const [feedback, setFeedback] = useState<{ text: string; ok: boolean } | null>(null);
   const [awaitingContinue, setAwaitingContinue] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [fragment, setFragment] = useState("");
-  const [fragmentsAll, setFragmentsAll] = useState<string[]>([]);
-  const [plan, setPlan] = useState<PlanDeblocage | null>(null);
-  const [toutesLettres, setToutesLettres] = useState<string[]>([]);
-  const [lettresCollectees, setLettresCollectees] = useState<string[]>([]);
-  const [dernieresLettres, setDernieresLettres] = useState<string | null>(null);
-  const [saisieFragment, setSaisieFragment] = useState("");
-  const [tentativesFragment, setTentativesFragment] = useState(0);
-  const [resultatFragment, setResultatFragment] = useState<"attente" | "trouve" | "revele">("attente");
+  // Fragment libre (Question.fragmentTexte) débloqué par la dernière bonne
+  // réponse ; affiché avec le design "trophée" juste après la réponse.
+  const [fragmentTexte, setFragmentTexte] = useState<string | null>(null);
   const [needsRetryClick, setNeedsRetryClick] = useState(false);
   const [essaiKey, setEssaiKey] = useState(0);
   const [chefRefuse, setChefRefuse] = useState(false);
@@ -108,23 +98,6 @@ export default function JouerEquipe() {
           return;
         }
         setQuestions(qs);
-        const idx = t.fragmentIndex;
-        const fragmentTexte = idx !== null && idx !== undefined ? config.fragments[idx] || "" : "";
-        setFragment(fragmentTexte);
-        setFragmentsAll(config.fragments);
-        // Seules les vraies énigmes (pas les pages "code") débloquent des
-        // lettres du fragment ; on construit le plan uniquement sur ces
-        // positions puis on le reprojette sur l'index complet des étapes.
-        const indicesEnigmes = qs
-          .map((q, i) => (q.type === "code" ? -1 : i))
-          .filter((i) => i !== -1);
-        const planReduit = calculerPlanDeblocage(fragmentTexte, indicesEnigmes.length, t.id);
-        const parQuestionComplet: (string | null)[] = new Array(qs.length).fill(null);
-        indicesEnigmes.forEach((qIdx, k) => {
-          parQuestionComplet[qIdx] = planReduit.parQuestion[k];
-        });
-        setPlan({ parQuestion: parQuestionComplet });
-        setToutesLettres(toutesLesLettresMelangees(fragmentTexte, t.id));
         setPhase("playing");
       } catch (e) {
         setErreurDetail(e instanceof Error ? e.message : String(e));
@@ -136,12 +109,13 @@ export default function JouerEquipe() {
 
   const question = questions[index];
   const isCodePage = question?.type === "code";
+  const isInfoPage = question?.type === "info";
 
-  // Timer par question (jamais pour une page "code")
+  // Timer par question (jamais pour une page "code" ou "info")
   useEffect(() => {
     if (phase !== "playing" || !question) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    if (isCodePage || !question.tempsLimite) {
+    if (isCodePage || isInfoPage || !question.tempsLimite) {
       setTimeLeft(null);
       return;
     }
@@ -186,11 +160,7 @@ export default function JouerEquipe() {
       awaitingContinue,
       attempts,
       timeLeft,
-      dernieresLettres,
-      lettresMelangees: toutesLettres,
-      saisieFragment,
-      resultatFragment,
-      fragment,
+      fragmentTexte,
       updatedAt: Date.now(),
       chefSessionId: getSessionId(),
     };
@@ -217,11 +187,7 @@ export default function JouerEquipe() {
     awaitingContinue,
     attempts,
     timeLeft,
-    dernieresLettres,
-    toutesLettres,
-    saisieFragment,
-    resultatFragment,
-    fragment,
+    fragmentTexte,
   ]);
 
   function goNextQuestion() {
@@ -231,7 +197,7 @@ export default function JouerEquipe() {
     setDisabledOptions([]);
     setReponseLibre("");
     setAttempts(0);
-    setDernieresLettres(null);
+    setFragmentTexte(null);
     setNeedsRetryClick(false);
     setEssaiKey(0);
     if (index + 1 >= questions.length) {
@@ -264,7 +230,7 @@ export default function JouerEquipe() {
     setDisabledOptions([]);
     setReponseLibre("");
     setAttempts(0);
-    setDernieresLettres(null);
+    setFragmentTexte(null);
     setNeedsRetryClick(false);
     setEssaiKey(0);
     setIndex(cible);
@@ -282,38 +248,31 @@ export default function JouerEquipe() {
     await saveQuizConfig({ texts: next });
   }
 
-  // Modifie le fragment (part de la phrase finale) de cette équipe,
-  // directement depuis le circuit en mode édition. Si l'équipe n'avait pas
-  // encore d'index de fragment (anciennes données), on lui en crée un.
+  // Modifie le fragment libre affiché après une bonne réponse à CETTE
+  // énigme précise, directement depuis le circuit en mode édition.
   async function saveFragmentText(value: string) {
-    if (!team) return;
-    let idx = team.fragmentIndex;
-    const next = [...fragmentsAll];
-    if (idx === null || idx === undefined) {
-      idx = next.length;
-      await updateTeam(team.id, { fragmentIndex: idx });
-      setTeam((t) => (t ? { ...t, fragmentIndex: idx! } : t));
-    }
-    while (next.length <= idx) next.push("");
-    next[idx] = value;
-    setFragmentsAll(next);
-    setFragment(value);
-    await saveQuizConfig({ fragments: next });
+    await saveQuestionField("fragmentTexte", value);
   }
 
-  // Insère une nouvelle étape (énigme libre ou page code) juste après
-  // l'étape actuellement affichée, renumérote le circuit, puis affiche
-  // directement la nouvelle étape pour que l'organisateur la remplisse —
-  // sans jamais passer par /admin.
-  async function inserer(type: "libre" | "code") {
+  // Insère une nouvelle étape (énigme libre, page code ou page vierge
+  // info) juste après l'étape actuellement affichée, renumérote le
+  // circuit, puis affiche directement la nouvelle étape pour que
+  // l'organisateur la remplisse — sans jamais passer par /admin.
+  async function inserer(type: "libre" | "code" | "info") {
     if (!team || !question) return;
     const ordreProvisoire = question.ordre + 0.5;
+    const texteParDefaut =
+      type === "code"
+        ? "Nouvelle page : entrez le code pour continuer."
+        : type === "info"
+        ? "Nouvelle page vierge à rédiger."
+        : "Nouvelle énigme à rédiger.";
     const nouvelle = {
       salle: team.salle,
       ordre: ordreProvisoire,
       type,
-      texte: type === "code" ? "Nouvelle page : entrez le code pour continuer." : "Nouvelle énigme à rédiger.",
-      reponse: "",
+      texte: texteParDefaut,
+      ...(type === "info" ? {} : { reponse: "" }),
       feedbackCorrect: "",
       feedbackIncorrect: "",
       tempsLimite: null as number | null,
@@ -348,24 +307,8 @@ export default function JouerEquipe() {
     setIndex((i) => Math.min(i, Math.max(qs.length - 1, 0)));
   }
 
-  function validerFragment() {
-    if (!saisieFragment.trim()) return;
-    const correct = normaliserFragment(saisieFragment) === normaliserFragment(fragment);
-    if (correct) {
-      setResultatFragment("trouve");
-      return;
-    }
-    const nextTentatives = tentativesFragment + 1;
-    setTentativesFragment(nextTentatives);
-    if (nextTentatives >= 2) {
-      setResultatFragment("revele");
-    } else {
-      setSaisieFragment("");
-    }
-  }
-
   function handleTimeout() {
-    if (!question || isCodePage) return;
+    if (!question || isCodePage || isInfoPage) return;
     setAttempts((a) => a + 1);
     // Temps écoulé : on ne fait jamais avancer automatiquement, l'équipe réessaie
     // jusqu'à trouver la bonne réponse.
@@ -373,18 +316,17 @@ export default function JouerEquipe() {
     setNeedsRetryClick(true);
   }
 
+  // Page "info" : aucune réponse à donner, on passe directement à la suite.
+  function continuerPageInfo() {
+    goNextQuestion();
+  }
+
   function traiterReponse(correct: boolean) {
     if (!question) return;
     if (timerRef.current) clearInterval(timerRef.current);
 
     if (correct) {
-      const lettresDebloquees = plan?.parQuestion[index] ?? null;
-      if (lettresDebloquees) {
-        setLettresCollectees((l) => [...l, lettresDebloquees]);
-        setDernieresLettres(lettresDebloquees);
-      } else {
-        setDernieresLettres(null);
-      }
+      setFragmentTexte(question.fragmentTexte?.trim() ? question.fragmentTexte : null);
       setFeedback({
         text: isCodePage
           ? question.feedbackCorrect || messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec)
@@ -456,78 +398,8 @@ export default function JouerEquipe() {
               ← Revenir au circuit
             </button>
           )}
-          <EditableText as="h1" value={texts.finTitre} onSave={(v) => saveGlobalText("finTitre", v)} className="text-2xl font-extrabold mb-6 text-brand-navy" />
-
-          {(resultatFragment === "attente" || editMode) && (
-            <>
-              <EditableText as="p" multiline value={texts.finTexteReconstituer} onSave={(v) => saveGlobalText("finTexteReconstituer", v)} className="text-slate-600 mb-3" />
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                {toutesLettres.length > 0 ? (
-                  toutesLettres.map((l, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center justify-center h-11 w-11 rounded-xl bg-brand-blue-light ring-1 ring-brand-blue/30 text-brand-navy font-bold text-lg"
-                    >
-                      {l}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-sm text-slate-400">{texts.finAucuneLettre}</span>
-                )}
-              </div>
-              <div className="w-full flex flex-col gap-3">
-                <input
-                  value={saisieFragment}
-                  onChange={(e) => setSaisieFragment(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && validerFragment()}
-                  disabled={editMode}
-                  placeholder={texts.finPlaceholderSaisie}
-                  className="px-5 py-4 rounded-2xl border-2 border-transparent bg-brand-blue-light/70 focus:border-brand-blue outline-none text-brand-navy text-center font-medium transition-all duration-200"
-                />
-                <button
-                  onClick={validerFragment}
-                  disabled={!saisieFragment.trim() || editMode}
-                  className="self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-md shadow-brand-blue/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
-                >
-                  {texts.finLabelValiderFragment}
-                </button>
-                {editMode && (
-                  <div className="rounded-2xl bg-amber-50 ring-1 ring-amber-200 p-4 flex flex-col gap-2 text-left">
-                    <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Texte du bouton</label>
-                    <EditableText as="p" value={texts.finLabelValiderFragment} onSave={(v) => saveGlobalText("finLabelValiderFragment", v)} className="text-sm text-slate-700" />
-                    <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-1">Texte « dernière tentative »</label>
-                    <EditableText as="p" value={texts.finTexteDerniereTentative} onSave={(v) => saveGlobalText("finTexteDerniereTentative", v)} className="text-sm text-slate-700" />
-                  </div>
-                )}
-                {tentativesFragment === 1 && !editMode && (
-                  <p className="text-sm text-brand-blue font-medium">{texts.finTexteDerniereTentative}</p>
-                )}
-              </div>
-            </>
-          )}
-
-          {(resultatFragment === "trouve" || editMode) && (
-            <>
-              <p className="text-2xl mb-2">🎉</p>
-              <EditableText as="p" multiline value={texts.finTexteTrouve} onSave={(v) => saveGlobalText("finTexteTrouve", v)} className="text-slate-600 mb-3" />
-              <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-                <EditableText as="span" value={fragment} onSave={saveFragmentText} placeholder="(fragment)" />
-              </div>
-            </>
-          )}
-
-          {(resultatFragment === "revele" || editMode) && (
-            <>
-              <EditableText as="p" multiline value={texts.finTexteRevele} onSave={(v) => saveGlobalText("finTexteRevele", v)} className="text-slate-600 mb-3" />
-              <div className="bg-gradient-to-r from-brand-blue-light to-white ring-1 ring-brand-blue/30 text-brand-navy font-bold text-2xl px-8 py-5 rounded-2xl mb-8 shadow-sm">
-                <EditableText as="span" value={fragment} onSave={saveFragmentText} placeholder="(fragment)" />
-              </div>
-            </>
-          )}
-
-          {(resultatFragment !== "attente" || editMode) && (
-            <EditableText as="p" multiline value={texts.finTexteDirectionAmphi} onSave={(v) => saveGlobalText("finTexteDirectionAmphi", v)} className="text-slate-500 max-w-sm" />
-          )}
+          <EditableText as="h1" value={texts.finTitre} onSave={(v) => saveGlobalText("finTitre", v)} className="text-2xl font-extrabold mb-4 text-brand-navy" />
+          <EditableText as="p" multiline value={texts.finSousTitre} onSave={(v) => saveGlobalText("finSousTitre", v)} className="text-slate-500 max-w-sm" />
         </div>
       </main>
     );
@@ -543,7 +415,7 @@ export default function JouerEquipe() {
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-slate-500 mb-2">
           <span className="font-medium text-brand-navy">{team?.nom}</span>
-          <span>{isCodePage ? "Page suivante" : `Énigme ${index + 1} / ${questions.length}`}</span>
+          <span>{isCodePage || isInfoPage ? "Page suivante" : `Énigme ${index + 1} / ${questions.length}`}</span>
           {timeLeft !== null && (
             <span
               className={`font-semibold rounded-full px-2.5 py-0.5 transition-colors ${
@@ -563,16 +435,43 @@ export default function JouerEquipe() {
       </div>
 
       <div className="rounded-3xl bg-white ring-1 ring-black/5 shadow-[0_4px_24px_rgba(20,163,221,0.08)] p-6 sm:p-7 mb-6">
-        <EditableText
-          as="h1"
-          multiline
-          value={question.texte}
-          onSave={(v) => saveQuestionField("texte", v)}
-          className="text-xl font-semibold leading-snug text-brand-navy"
-        />
+        {isInfoPage && !editMode ? (
+          <RichText text={question.texte} className="text-xl font-semibold leading-snug text-brand-navy" />
+        ) : (
+          <EditableText
+            as="h1"
+            multiline
+            value={question.texte}
+            onSave={(v) => saveQuestionField("texte", v)}
+            className="text-xl font-semibold leading-snug text-brand-navy"
+          />
+        )}
       </div>
 
-      {isCodePage ? (
+      {isInfoPage ? (
+        <div className="flex flex-col gap-4">
+          {!editMode && (
+            <button
+              onClick={continuerPageInfo}
+              className="group self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              <EditableText as="span" value={texts.infoPageBouton} onSave={(v) => saveGlobalText("infoPageBouton", v)} className="text-white" />
+              <span className="ml-2 transition-transform duration-200 inline-block group-hover:translate-x-1">→</span>
+            </button>
+          )}
+          {editMode && (
+            <div className="rounded-2xl bg-amber-50 ring-1 ring-amber-200 p-4 flex flex-col gap-2">
+              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                Texte du bouton
+              </label>
+              <EditableText as="p" value={texts.infoPageBouton} onSave={(v) => saveGlobalText("infoPageBouton", v)} className="text-sm text-slate-700" />
+              <p className="text-[11px] text-amber-700/70 mt-1">
+                Entourez un mot de **doubles étoiles** dans le texte ci-dessus pour l&apos;afficher en gras.
+              </p>
+            </div>
+          )}
+        </div>
+      ) : isCodePage ? (
         <div className="flex flex-col gap-3">
           <input
             value={reponseLibre}
@@ -736,44 +635,41 @@ export default function JouerEquipe() {
           <button onClick={() => inserer("code")} className="text-brand-blue underline">
             + Insérer une page code après cette étape
           </button>
+          <button onClick={() => inserer("info")} className="text-brand-blue underline">
+            + Insérer une page vierge après cette étape
+          </button>
           <button onClick={supprimerEtapeActuelle} className="text-red-500 underline">
             Supprimer cette étape
           </button>
         </div>
       )}
 
-      {(editMode || (feedback && feedback.ok && dernieresLettres)) && (
+      {!isCodePage && !isInfoPage && (editMode || (feedback && feedback.ok && fragmentTexte)) && (
         <div className="mt-6 rounded-2xl bg-gradient-to-r from-brand-blue-light to-white ring-2 ring-brand-blue/40 px-5 py-4 text-center shadow-sm">
           <p className="text-2xl mb-1">🏆</p>
           <EditableText
             as="p"
-            value={texts.jeuTexteLettreDebloqueeTitre}
-            onSave={(v) => saveGlobalText("jeuTexteLettreDebloqueeTitre", v)}
+            value={texts.jeuTexteFragmentTitre}
+            onSave={(v) => saveGlobalText("jeuTexteFragmentTitre", v)}
             className="font-semibold text-brand-navy"
           />
-          <p className="my-2 text-2xl font-extrabold tracking-widest text-brand-blue">
-            {dernieresLettres || "AB"}
+          <p className="my-2 text-lg font-bold text-brand-blue">
+            {fragmentTexte || (editMode ? "" : "")}
           </p>
-          <EditableText
-            as="p"
-            value={texts.jeuTexteLettreDebloqueeNote}
-            onSave={(v) => saveGlobalText("jeuTexteLettreDebloqueeNote", v)}
-            className="text-sm text-slate-500"
-          />
-          {editMode && (
-            <div className="mt-3 pt-3 border-t border-brand-blue/20 text-left">
+          <div className={editMode ? "mt-3 pt-3 border-t border-brand-blue/20 text-left" : ""}>
+            {editMode && (
               <p className="text-[10px] font-semibold text-brand-navy/60 uppercase tracking-wide mb-1">
-                Fragment complet de cette équipe (texte final)
+                Fragment affiché après cette énigme (texte libre, facultatif)
               </p>
-              <EditableText
-                as="p"
-                value={fragment}
-                onSave={saveFragmentText}
-                placeholder="Écrire le fragment de cette équipe..."
-                className="font-bold text-brand-blue"
-              />
-            </div>
-          )}
+            )}
+            <EditableText
+              as="p"
+              value={question.fragmentTexte ?? ""}
+              onSave={saveFragmentText}
+              placeholder="Écrire le fragment à afficher après cette énigme..."
+              className="font-bold text-brand-blue"
+            />
+          </div>
         </div>
       )}
 
@@ -787,7 +683,7 @@ export default function JouerEquipe() {
         </div>
       )}
 
-      {(needsRetryClick || editMode) && (
+      {!isInfoPage && (needsRetryClick || editMode) && (
         <button
           onClick={handleRetry}
           className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
@@ -796,7 +692,7 @@ export default function JouerEquipe() {
         </button>
       )}
 
-      {awaitingContinue && !editMode && (
+      {!isInfoPage && awaitingContinue && !editMode && (
         <button
           onClick={goNextQuestion}
           className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brand-blue to-brand-navy px-8 py-3.5 font-semibold text-white shadow-lg shadow-brand-blue/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"

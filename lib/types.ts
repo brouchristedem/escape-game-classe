@@ -3,9 +3,11 @@ export type Salle = string;
 
 // "code" = page intercalaire ajoutée librement dans le circuit par
 // l'organisateur : un texte affiché en haut + un code à saisir pour débloquer
-// la suite (pas de tentatives limitées, pas de temps limite, pas de lettre de
-// fragment débloquée).
-export type TypeEnigme = "qcm" | "libre" | "code";
+// la suite (pas de tentatives limitées, pas de temps limite).
+// "info" = page vierge purement informative : un texte libre (avec **gras**
+// possible) affiché à l'écran, avec un simple bouton pour continuer (pas de
+// code à saisir, pas de temps limite).
+export type TypeEnigme = "qcm" | "libre" | "code" | "info";
 
 export type UniteTemps = "secondes" | "minutes" | "heures";
 
@@ -13,7 +15,6 @@ export interface Team {
   id: string;
   nom: string; // nom de l'équipe (au lieu d'un numéro)
   salle: Salle; // salle attribuée par l'organisateur
-  fragmentIndex: number | null; // index dans QuizConfig.fragments, null = pas encore attribué
 }
 
 export interface Question {
@@ -21,19 +22,23 @@ export interface Question {
   salle: Salle;
   ordre: number;
   type: TypeEnigme;
-  texte: string; // énoncé de l'énigme, ou texte affiché en haut d'une page "code"
+  texte: string; // énoncé de l'énigme, texte en haut d'une page "code", ou texte d'une page "info" (accepte **gras**)
   // Champs spécifiques QCM
   propositions?: [string, string, string, string];
   correctIndex?: 0 | 1 | 2 | 3;
-  // Champ spécifique réponse libre ET page "code" (le code attendu est stocké ici)
+  // Champ spécifique réponse libre ET page "code" (le code attendu est stocké ici) ; ignoré pour "info"
   reponse?: string; // réponse/code attendu (comparaison insensible à la casse/accents)
   feedbackCorrect: string;
   feedbackIncorrect: string;
-  tempsLimite: number | null; // toujours stocké en secondes, null = pas de limite ; ignoré pour type "code"
+  tempsLimite: number | null; // toujours stocké en secondes, null = pas de limite ; ignoré pour "code" et "info"
+  // Fragment libre (texte choisi par l'organisateur, sans lien avec les
+  // autres) affiché juste après une bonne réponse à CETTE énigme précise,
+  // avec le même design que l'ancien écran "lettre débloquée". Vide/absent =
+  // aucun fragment sur cette étape. Uniquement pertinent pour "qcm"/"libre".
+  fragmentTexte?: string;
 }
 
 export interface QuizConfig {
-  fragments: string[]; // longueur = nombre de fragments choisi par l'organisateur
   histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
   texts?: Partial<GameTexts>; // tous les autres textes du site, éditables depuis l'admin
 }
@@ -74,29 +79,22 @@ export interface GameTexts {
   jeuTexteMauvaiseReponse: string;
   jeuTexteDerniereTentative: string;
   jeuTexteBonneReponseLabel: string;
-  jeuTexteLettreDebloqueeTitre: string;
-  jeuTexteLettreDebloqueeNote: string;
+  jeuTexteFragmentTitre: string;
   jeuPlaceholderReponseLibre: string;
 
   codePagePlaceholder: string;
   codePageBouton: string;
 
+  infoPageBouton: string;
+
   finTitre: string;
-  finTexteReconstituer: string;
-  finAucuneLettre: string;
-  finPlaceholderSaisie: string;
-  finLabelValiderFragment: string;
-  finTexteDerniereTentative: string;
-  finTexteTrouve: string;
-  finTexteRevele: string;
-  finTexteDirectionAmphi: string;
+  finSousTitre: string;
 
   suivreBanniere: string;
   suivreAttente: string;
   suivreChargementLabel: string;
   suivrePlaceholderReponse: string;
-  suivrePlaceholderSaisie: string;
-  suivreLettreTitre: string;
+  suivreFragmentTitre: string;
   suivreAttenteContinuer: string;
 
   messagesReussite: string[];
@@ -140,31 +138,23 @@ export const DEFAULT_GAME_TEXTS: GameTexts = {
   jeuTexteMauvaiseReponse: "Mauvaise réponse.",
   jeuTexteDerniereTentative: "Dernière tentative pour cette énigme.",
   jeuTexteBonneReponseLabel: "Bonne réponse :",
-  jeuTexteLettreDebloqueeTitre: "Bravo, vous avez débloqué une partie de votre fragment !",
-  jeuTexteLettreDebloqueeNote: "Notez-la bien, elle vous servira à la fin.",
+  jeuTexteFragmentTitre: "Bravo, vous avez débloqué un fragment !",
   jeuPlaceholderReponseLibre: "Votre réponse...",
 
   codePagePlaceholder: "Entrez le code...",
   codePageBouton: "Valider le code",
 
+  infoPageBouton: "Continuer",
+
   finTitre: "Bravo, votre escape game est terminé !",
-  finTexteReconstituer: "Voici toutes les lettres de votre fragment, mélangées. À vous de le reconstituer :",
-  finAucuneLettre: "Aucune lettre à afficher.",
-  finPlaceholderSaisie: "Reconstituez votre fragment...",
-  finLabelValiderFragment: "Valider",
-  finTexteDerniereTentative: "Dernière tentative !",
-  finTexteTrouve: "Trouvé ! Votre fragment de la phrase finale :",
-  finTexteRevele: "Pas trouvé cette fois, mais voici votre fragment de la phrase finale :",
-  finTexteDirectionAmphi:
-    "Direction l'amphi, épreuve finale ! Le Porte-parole garde ce fragment affiché jusqu'à ce qu'il soit posé au tableau.",
+  finSousTitre: "Merci d'avoir joué. Direction l'amphi pour la suite !",
 
   suivreBanniere: "👀 Vous suivez l'écran du chef d'équipe en direct — lecture seule",
   suivreAttente:
     "Le chef d'équipe n'a pas encore démarré l'escape game. Cet écran se mettra à jour automatiquement dès qu'il commencera.",
   suivreChargementLabel: "Connexion à l'écran du chef d'équipe...",
   suivrePlaceholderReponse: "Le chef d'équipe répond ici...",
-  suivrePlaceholderSaisie: "Le chef d'équipe saisit ici...",
-  suivreLettreTitre: "Une partie du fragment vient d'être débloquée !",
+  suivreFragmentTitre: "Un fragment vient d'être débloqué !",
   suivreAttenteContinuer: "Le chef d'équipe passe à la suite quand il est prêt.",
 
   messagesReussite: ["GREEN FLAG", "C'EST TCHÔ", "JOLIIIIIE"],
@@ -195,11 +185,9 @@ export interface LiveState {
   awaitingContinue: boolean;
   attempts: number;
   timeLeft: number | null;
-  dernieresLettres: string | null;
-  lettresMelangees: string[];
-  saisieFragment: string;
-  resultatFragment: "attente" | "trouve" | "revele";
-  fragment: string;
+  // Fragment libre débloqué par la dernière bonne réponse (voir
+  // Question.fragmentTexte), null si cette étape n'en débloque aucun.
+  fragmentTexte: string | null;
   // Écrit côté serveur (voir serverTimestamp() dans lib/data.ts) pour éviter
   // toute dépendance à l'horloge locale d'un appareil ; peut apparaître
   // brièvement comme un objet Timestamp Firestore une fois lu depuis la base.
@@ -243,68 +231,6 @@ export function normaliserReponse(texte: string): string {
     .replace(/^(l'|le |la |les |un |une |des )/, "");
 }
 
-// Normalise un fragment de phrase (contrairement à normaliserReponse, ne
-// retire pas l'article initial : on compare la phrase entière telle quelle,
-// juste insensible à la casse, aux accents et aux espaces superflus).
-export function normaliserFragment(texte: string): string {
-  return texte
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ");
-}
-
-// --- Mécanique de déblocage progressif du fragment ---
-// À chaque bonne réponse, l'équipe débloque une ou plusieurs lettres de son
-// fragment (dans le désordre). Certaines énigmes ne débloquent rien. Le plan
-// de déblocage est calculé de façon déterministe à partir de l'identifiant de
-// l'équipe, pour rester stable même si la page est rechargée en cours de jeu.
-
-function hashSeed(str: string): number {
-  let h = 1779033703 ^ str.length;
-  for (let i = 0; i < str.length; i++) {
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return h >>> 0;
-}
-
-function mulberry32(seed: number): () => number {
-  let a = seed;
-  return function () {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function seededShuffle<T>(arr: T[], rng: () => number): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-// Caractères "révélables" d'un fragment (lettres et chiffres, sans espaces ni
-// ponctuation, qui restent visibles tels quels dans le résultat final).
-export function extraireLettres(fragment: string): string[] {
-  return Array.from(fragment).filter((c) => /[A-Za-zÀ-ÖØ-öø-ÿ0-9]/.test(c));
-}
-
-// Toutes les lettres du fragment, mélangées de façon déterministe (même
-// mélange que le plan de déblocage). Utilisé pour afficher la totalité des
-// lettres sur la page de reconstitution, même celles qui n'ont pas été
-// débloquées pendant le jeu.
-export function toutesLesLettresMelangees(fragment: string, seedKey: string): string[] {
-  const rng = mulberry32(hashSeed(seedKey));
-  return seededShuffle(extraireLettres(fragment), rng);
-}
-
 // --- Messages alternés selon la position de l'énigme (0-based) ---
 // Les listes sont éditables depuis l'admin (GameTexts.messagesReussite /
 // messagesEchec) ; on retombe sur les valeurs par défaut si la liste
@@ -318,52 +244,4 @@ export function messagePourEnigme(
   const listeReussite = messagesReussite.length ? messagesReussite : DEFAULT_GAME_TEXTS.messagesReussite;
   const listeEchec = messagesEchec.length ? messagesEchec : DEFAULT_GAME_TEXTS.messagesEchec;
   return correct ? listeReussite[index % listeReussite.length] : listeEchec[index % listeEchec.length];
-}
-
-export interface PlanDeblocage {
-  // Pour chaque énigme (même index que le tableau de questions), les lettres
-  // débloquées si l'équipe répond correctement, ou null si rien n'est débloqué.
-  parQuestion: (string | null)[];
-}
-
-export function calculerPlanDeblocage(
-  fragment: string,
-  nbQuestions: number,
-  seedKey: string
-): PlanDeblocage {
-  const parQuestion: (string | null)[] = new Array(nbQuestions).fill(null);
-  if (nbQuestions === 0) return { parQuestion };
-
-  const rng = mulberry32(hashSeed(seedKey));
-  const lettresMelangees = seededShuffle(extraireLettres(fragment), rng);
-  const n = lettresMelangees.length;
-  if (n === 0) return { parQuestion };
-
-  if (n <= nbQuestions) {
-    // On choisit n énigmes (sur nbQuestions) qui débloqueront une lettre
-    // chacune ; les autres ne débloquent rien.
-    const indicesChoisis = seededShuffle(
-      Array.from({ length: nbQuestions }, (_, i) => i),
-      rng
-    )
-      .slice(0, n)
-      .sort((a, b) => a - b);
-    indicesChoisis.forEach((qIdx, li) => {
-      parQuestion[qIdx] = lettresMelangees[li];
-    });
-  } else {
-    // Plus de lettres que d'énigmes : on répartit plusieurs lettres par
-    // énigme, aussi équitablement que possible ; ici, aucune énigme ne
-    // débloque "rien" puisqu'il faut caser toutes les lettres.
-    let li = 0;
-    for (let q = 0; q < nbQuestions; q++) {
-      const restQuestions = nbQuestions - q;
-      const restLettres = n - li;
-      const count = Math.ceil(restLettres / restQuestions);
-      parQuestion[q] = lettresMelangees.slice(li, li + count).join("");
-      li += count;
-    }
-  }
-
-  return { parQuestion };
 }

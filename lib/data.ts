@@ -73,10 +73,10 @@ export async function renumeroterEtapes(orderedIds: string[]): Promise<void> {
 export async function getQuizConfig(): Promise<QuizConfig> {
   const snap = await getDoc(doc(db, CONFIG_DOC));
   if (!snap.exists()) {
-    return { fragments: [], histoire: "", texts: {} };
+    return { histoire: "", texts: {} };
   }
   const data = snap.data() as QuizConfig;
-  return { fragments: data.fragments ?? [], histoire: data.histoire ?? "", texts: data.texts ?? {} };
+  return { histoire: data.histoire ?? "", texts: data.texts ?? {} };
 }
 
 // merge: true pour ne jamais écraser un champ (ex. l'histoire) quand on ne
@@ -86,35 +86,31 @@ export async function saveQuizConfig(config: Partial<QuizConfig>): Promise<void>
 }
 
 // --- Vider le scénario actuel ---
-// Supprime toutes les énigmes/pages du circuit et remet à zéro la phrase
-// finale (fragments) et le texte de l'histoire, pour repartir d'une page
-// blanche avant d'importer son propre scénario. Les équipes ne sont pas
-// touchées (gérées séparément dans l'onglet "Équipes & salles").
+// Supprime toutes les énigmes/pages du circuit et remet à zéro le texte de
+// l'histoire, pour repartir d'une page blanche avant d'importer son propre
+// scénario. Les équipes ne sont pas touchées (gérées séparément dans
+// l'onglet "Équipes & salles").
 export async function viderScenario(): Promise<void> {
   const existingQuestions = await getAllQuestions();
   await Promise.all(existingQuestions.map((q) => deleteQuestion(q.id)));
-  await saveQuizConfig({ fragments: [], histoire: "" });
+  await saveQuizConfig({ histoire: "" });
 }
 
 // --- Import d'un scénario personnalisé (texte extrait d'un Word ou PDF) ---
 // Remplace toutes les énigmes existantes par celles du document fourni.
-// L'histoire et les fragments ne sont écrasés que si le document en
-// contient (sinon les valeurs déjà enregistrées sont conservées).
+// L'histoire n'est écrasée que si le document en contient une (sinon la
+// valeur déjà enregistrée est conservée).
 // Crée aussi automatiquement une équipe par salle du document qui n'a pas
 // encore d'équipe (les équipes existantes ne sont jamais touchées).
 export async function importerScenario(parsed: {
   histoire: string | null;
-  fragments: string[] | null;
   questions: Omit<Question, "id">[];
 }): Promise<{ enigmes: number; equipesCreees: number }> {
   const existingQuestions = await getAllQuestions();
   await Promise.all(existingQuestions.map((q) => deleteQuestion(q.id)));
   await Promise.all(parsed.questions.map((q) => addQuestion(q)));
 
-  const config: Partial<QuizConfig> = {};
-  if (parsed.histoire !== null) config.histoire = parsed.histoire;
-  if (parsed.fragments !== null) config.fragments = parsed.fragments;
-  if (Object.keys(config).length > 0) await saveQuizConfig(config);
+  if (parsed.histoire !== null) await saveQuizConfig({ histoire: parsed.histoire });
 
   // Une équipe par salle du document, seulement pour les salles qui n'ont
   // pas déjà une équipe (on ne duplique jamais, on ne touche pas à
@@ -123,11 +119,7 @@ export async function importerScenario(parsed: {
   const equipesExistantes = await getAllTeams();
   const sallesDejaAttribuees = new Set(equipesExistantes.map((t) => t.salle));
   const nouvellesSalles = sallesDuDocument.filter((s) => !sallesDejaAttribuees.has(s));
-  await Promise.all(
-    nouvellesSalles.map((salle, i) =>
-      addTeam({ nom: salle, salle, fragmentIndex: equipesExistantes.length + i })
-    )
-  );
+  await Promise.all(nouvellesSalles.map((salle) => addTeam({ nom: salle, salle })));
 
   const questionsApres = await getAllQuestions();
   return { enigmes: questionsApres.length, equipesCreees: nouvellesSalles.length };

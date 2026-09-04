@@ -42,6 +42,7 @@ const emptyQuestionForm = {
   feedbackIncorrect: "",
   tempsValeur: "" as string | number,
   tempsUnite: "secondes" as UniteTemps,
+  fragmentTexte: "",
 };
 
 const emptyTeamForm = {
@@ -112,10 +113,6 @@ function AdminPanel() {
   const [siteTexts, setSiteTexts] = useState<GameTexts>(fusionnerTextes());
   const [savingTexts, setSavingTexts] = useState(false);
 
-  const [fragments, setFragments] = useState<string[]>([]);
-  const [savingFragmentId, setSavingFragmentId] = useState<string | null>(null);
-  const [savedFragmentId, setSavedFragmentId] = useState<string | null>(null);
-
   const [viding, setViding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -130,7 +127,6 @@ function AdminPanel() {
       setQuestions(qs);
       setHistoire(config.histoire ?? "");
       setSiteTexts(fusionnerTextes(config.texts));
-      setFragments(config.fragments ?? []);
     } catch (e) {
       console.error(e);
       const detail = e instanceof Error ? e.message : String(e);
@@ -174,11 +170,9 @@ function AdminPanel() {
       // Toutes les équipes partagent le même circuit d'énigmes en ligne (une
       // seule salle) : ce n'est plus une salle par équipe, puisque les salles
       // physiques ne sont plus attribuées équipe par équipe mais visitées au
-      // fil du jeu par le candidat de chaque équipe. Seul le fragment est
-      // encore attribué automatiquement ; modifiable ensuite en parcourant le
-      // circuit de cette équipe en mode édition.
+      // fil du jeu par le candidat de chaque équipe.
       const salle = sallesConnues.length > 0 ? sallesConnues[0] : "";
-      await addTeam({ nom: teamForm.nom.trim(), salle, fragmentIndex: teams.length });
+      await addTeam({ nom: teamForm.nom.trim(), salle });
     }
     resetTeamForm();
     reload();
@@ -196,30 +190,7 @@ function AdminPanel() {
     reload();
   }
 
-  // Enregistre le fragment (part de la phrase finale) d'une équipe depuis
-  // l'admin. Si l'équipe n'a pas encore d'index de fragment (anciennes
-  // données), on lui en attribue un. C'est la seule source de vérité : la
-  // page officielle /jouer/[teamId] lit ce même tableau QuizConfig.fragments.
-  async function saveFragment(team: Team, value: string) {
-    let idx = team.fragmentIndex;
-    const next = [...fragments];
-    if (idx === null || idx === undefined) {
-      idx = next.length;
-      await updateTeam(team.id, { fragmentIndex: idx });
-      setTeams((ts) => ts.map((t) => (t.id === team.id ? { ...t, fragmentIndex: idx! } : t)));
-    }
-    while (next.length <= idx) next.push("");
-    next[idx] = value;
-    setSavingFragmentId(team.id);
-    setSavedFragmentId(null);
-    await saveQuizConfig({ fragments: next });
-    setFragments(next);
-    setSavingFragmentId(null);
-    setSavedFragmentId(team.id);
-    setTimeout(() => setSavedFragmentId((cur) => (cur === team.id ? null : cur)), 2000);
-  }
-
-  // ---------- Circuit du jeu (énigmes + pages code, dans l'ordre) ----------
+  // ---------- Circuit du jeu (énigmes, pages code et pages info, dans l'ordre) ----------
 
   const etapesSalle = useMemo(
     () => questions.filter((q) => q.salle === salleFiltre).sort((a, b) => a.ordre - b.ordre),
@@ -243,6 +214,7 @@ function AdminPanel() {
       feedbackIncorrect: q.feedbackIncorrect,
       tempsValeur: q.tempsLimite ?? "",
       tempsUnite: "secondes",
+      fragmentTexte: q.fragmentTexte ?? "",
     });
     setEditingQId(q.id);
     setSalleFiltre(q.salle);
@@ -251,7 +223,7 @@ function AdminPanel() {
 
   async function submitQForm() {
     if (!qForm.salle.trim() || !qForm.texte.trim()) {
-      alert(qForm.type === "code" ? "Merci de remplir la salle et le texte de la page." : "Merci de remplir la salle et l'énigme.");
+      alert(qForm.type === "code" || qForm.type === "info" ? "Merci de remplir la salle et le texte de la page." : "Merci de remplir la salle et l'énigme.");
       return;
     }
     if (qForm.type === "qcm" && qForm.propositions.some((p) => !p.trim())) {
@@ -263,7 +235,7 @@ function AdminPanel() {
       return;
     }
     const tempsLimite =
-      qForm.type === "code" || qForm.tempsValeur === ""
+      qForm.type === "code" || qForm.type === "info" || qForm.tempsValeur === ""
         ? null
         : versSecondes(Number(qForm.tempsValeur), qForm.tempsUnite);
 
@@ -274,6 +246,7 @@ function AdminPanel() {
       feedbackCorrect: qForm.feedbackCorrect.trim(),
       feedbackIncorrect: qForm.feedbackIncorrect.trim(),
       tempsLimite,
+      ...((qForm.type === "qcm" || qForm.type === "libre") ? { fragmentTexte: qForm.fragmentTexte.trim() } : {}),
     };
 
     setSavingStep(true);
@@ -282,6 +255,8 @@ function AdminPanel() {
         const payload =
           qForm.type === "qcm"
             ? { ...base, propositions: qForm.propositions.map((p) => p.trim()) as [string, string, string, string], correctIndex: qForm.correctIndex }
+            : qForm.type === "info"
+            ? base
             : { ...base, reponse: qForm.reponse.trim() };
         await updateQuestion(editingQId, payload);
         await reload();
@@ -292,6 +267,8 @@ function AdminPanel() {
         const payload =
           qForm.type === "qcm"
             ? { ...base, ordre, propositions: qForm.propositions.map((p) => p.trim()) as [string, string, string, string], correctIndex: qForm.correctIndex }
+            : qForm.type === "info"
+            ? { ...base, ordre }
             : { ...base, ordre, reponse: qForm.reponse.trim() };
         await addQuestion(payload);
         await reload();
@@ -325,24 +302,32 @@ function AdminPanel() {
     }
   }
 
-  // Insère une nouvelle étape (énigme ou page code) juste après `apres`
-  // (ou en tête si apres === null), renumérote automatiquement le circuit,
-  // puis ouvre l'étape créée dans le formulaire pour que l'organisateur la
-  // remplisse tout de suite.
+  // Insère une nouvelle étape (énigme, page code ou page vierge info) juste
+  // après `apres` (ou en tête si apres === null), renumérote automatiquement
+  // le circuit, puis ouvre l'étape créée dans le formulaire pour que
+  // l'organisateur la remplisse tout de suite.
   async function inserer(apres: Question | null, type: TypeEnigme) {
     setSavingStep(true);
     try {
       const ordreProvisoire = apres ? apres.ordre + 0.5 : (etapesSalle[0]?.ordre ?? 1) - 0.5;
+      const texteParDefaut =
+        type === "code"
+          ? "Nouvelle page : entrez le code pour continuer."
+          : type === "info"
+          ? "Nouvelle page vierge à rédiger."
+          : "Nouvelle énigme à rédiger.";
       const base = {
         salle: salleFiltre,
         ordre: ordreProvisoire,
         type,
-        texte: type === "code" ? "Nouvelle page : entrez le code pour continuer." : "Nouvelle énigme à rédiger.",
+        texte: texteParDefaut,
         feedbackCorrect: "",
         feedbackIncorrect: "",
         tempsLimite: null,
         ...(type === "qcm"
           ? { propositions: ["", "", "", ""] as [string, string, string, string], correctIndex: 0 as 0 | 1 | 2 | 3 }
+          : type === "info"
+          ? {}
           : { reponse: "" }),
       };
       const newId = await addQuestion(base);
@@ -417,8 +402,6 @@ function AdminPanel() {
       if (
         !confirm(
           `${parsed.questions.length} énigme(s)/page(s) détectée(s)${
-            parsed.fragments ? `, ${parsed.fragments.length} fragment(s)` : ""
-          }${
             parsed.histoire ? ", et un texte d'histoire" : ""
           }. Ceci remplacera toutes les énigmes existantes du circuit. Continuer ?`
         )
@@ -479,9 +462,7 @@ function AdminPanel() {
             />
             {!editingTeamId && (
               <p className="text-slate-500 text-xs mb-4">
-                Toutes les équipes partagent le même circuit d&apos;énigmes en ligne. Le fragment (sa part de la
-                phrase finale) est attribué automatiquement à la création, et se modifie ci-contre, sur chaque
-                équipe.
+                Toutes les équipes partagent le même circuit d&apos;énigmes en ligne.
               </p>
             )}
 
@@ -515,12 +496,6 @@ function AdminPanel() {
                       </button>
                     </div>
                   </div>
-                  <TeamFragmentField
-                    initialValue={t.fragmentIndex !== null && t.fragmentIndex !== undefined ? fragments[t.fragmentIndex] ?? "" : ""}
-                    saving={savingFragmentId === t.id}
-                    saved={savedFragmentId === t.id}
-                    onSave={(value) => saveFragment(t, value)}
-                  />
                 </div>
               ))}
             </div>
@@ -561,17 +536,30 @@ function AdminPanel() {
               <TypeButton active={qForm.type === "code"} onClick={() => setQForm({ ...qForm, type: "code" })}>
                 Page code (verrou)
               </TypeButton>
+              <TypeButton active={qForm.type === "info"} onClick={() => setQForm({ ...qForm, type: "info" })}>
+                Page vierge (info)
+              </TypeButton>
             </div>
 
             <label className="block text-sm text-slate-500 mb-1">
-              {qForm.type === "code" ? "Texte affiché en haut de la page" : "Énigme"}
+              {qForm.type === "code"
+                ? "Texte affiché en haut de la page"
+                : qForm.type === "info"
+                ? "Texte affiché à l'écran"
+                : "Énigme"}
             </label>
             <textarea
               value={qForm.texte}
               onChange={(e) => setQForm({ ...qForm, texte: e.target.value })}
-              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
-              rows={qForm.type === "code" ? 3 : 2}
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-1 w-full"
+              rows={qForm.type === "code" || qForm.type === "info" ? 3 : 2}
             />
+            {qForm.type === "info" && (
+              <p className="text-slate-500 text-xs mb-3">
+                Entourez un mot de **doubles étoiles** pour l&apos;afficher en gras (ex. « **URGENT** »). Aucun code
+                n&apos;est demandé sur cette page, juste un bouton pour continuer.
+              </p>
+            )}
 
             {qForm.type === "qcm" && (
               <>
@@ -630,27 +618,65 @@ function AdminPanel() {
               </>
             )}
 
-            <label className="block text-sm text-slate-500 mb-1">
-              {qForm.type === "code" ? "Message affiché si le code est correct (facultatif)" : "Texte affiché si bonne réponse"}
-            </label>
-            <input
-              value={qForm.feedbackCorrect}
-              onChange={(e) => setQForm({ ...qForm, feedbackCorrect: e.target.value })}
-              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
-              placeholder="Bravo, c'est la bonne réponse !"
-            />
+            {(qForm.type === "qcm" || qForm.type === "libre") && (
+              <>
+                <label className="block text-sm text-slate-500 mb-1">
+                  Fragment affiché après une bonne réponse (facultatif)
+                </label>
+                <textarea
+                  value={qForm.fragmentTexte}
+                  onChange={(e) => setQForm({ ...qForm, fragmentTexte: e.target.value })}
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-1 w-full"
+                  rows={2}
+                  placeholder="Ex. Le premier mot du code final est « TREMPLIN »."
+                />
+                <p className="text-slate-500 text-xs mb-3">
+                  Laissez vide si cette énigme ne débloque aucun fragment. Ce texte n&apos;a aucun lien avec les
+                  fragments des autres énigmes.
+                </p>
+              </>
+            )}
 
-            <label className="block text-sm text-slate-500 mb-1">
-              {qForm.type === "code" ? "Message affiché si le code est incorrect" : "Texte affiché si mauvaise réponse"}
-            </label>
-            <input
-              value={qForm.feedbackIncorrect}
-              onChange={(e) => setQForm({ ...qForm, feedbackIncorrect: e.target.value })}
-              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
-              placeholder="Ce n'est pas ça, réessayez !"
-            />
+            {qForm.type !== "code" && qForm.type !== "info" && (
+              <>
+                <label className="block text-sm text-slate-500 mb-1">Texte affiché si bonne réponse</label>
+                <input
+                  value={qForm.feedbackCorrect}
+                  onChange={(e) => setQForm({ ...qForm, feedbackCorrect: e.target.value })}
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
+                  placeholder="Bravo, c'est la bonne réponse !"
+                />
 
-            {qForm.type !== "code" && (
+                <label className="block text-sm text-slate-500 mb-1">Texte affiché si mauvaise réponse</label>
+                <input
+                  value={qForm.feedbackIncorrect}
+                  onChange={(e) => setQForm({ ...qForm, feedbackIncorrect: e.target.value })}
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
+                  placeholder="Ce n'est pas ça, réessayez !"
+                />
+              </>
+            )}
+
+            {qForm.type === "code" && (
+              <>
+                <label className="block text-sm text-slate-500 mb-1">Message affiché si le code est correct (facultatif)</label>
+                <input
+                  value={qForm.feedbackCorrect}
+                  onChange={(e) => setQForm({ ...qForm, feedbackCorrect: e.target.value })}
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
+                  placeholder="Bravo, c'est la bonne réponse !"
+                />
+                <label className="block text-sm text-slate-500 mb-1">Message affiché si le code est incorrect</label>
+                <input
+                  value={qForm.feedbackIncorrect}
+                  onChange={(e) => setQForm({ ...qForm, feedbackIncorrect: e.target.value })}
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
+                  placeholder="Ce n'est pas ça, réessayez !"
+                />
+              </>
+            )}
+
+            {qForm.type !== "code" && qForm.type !== "info" && (
               <>
                 <label className="block text-sm text-slate-500 mb-1">Temps limite (laisser vide = aucun)</label>
                 <div className="flex gap-2 mb-4">
@@ -713,12 +739,15 @@ function AdminPanel() {
             </div>
 
             {salleFiltre && (
-              <div className="flex gap-2 mb-4 text-xs">
+              <div className="flex gap-2 mb-4 text-xs flex-wrap">
                 <button onClick={() => inserer(null, "libre")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
                   + Énigme en tête de circuit
                 </button>
                 <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
                   + Page code en tête de circuit
+                </button>
+                <button onClick={() => inserer(null, "info")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
+                  + Page vierge en tête de circuit
                 </button>
               </div>
             )}
@@ -730,15 +759,26 @@ function AdminPanel() {
             <div className="flex flex-col gap-3">
               {etapesSalle.map((q, i) => (
                 <div key={q.id}>
-                  <div className={`rounded-xl p-4 ${q.type === "code" ? "bg-amber-50 ring-1 ring-amber-200" : "bg-brand-blue-light"}`}>
+                  <div
+                    className={`rounded-xl p-4 ${
+                      q.type === "code"
+                        ? "bg-amber-50 ring-1 ring-amber-200"
+                        : q.type === "info"
+                        ? "bg-violet-50 ring-1 ring-violet-200"
+                        : "bg-brand-blue-light"
+                    }`}
+                  >
                     <div className="flex justify-between items-start gap-2">
                       <p className="font-medium text-sm text-brand-navy">
                         <span className="text-[10px] uppercase tracking-wide font-semibold mr-2 px-1.5 py-0.5 rounded bg-white/70">
-                          {q.type === "code" ? `Page code ${i + 1}` : `Énigme ${i + 1}`}
+                          {q.type === "code" ? `Page code ${i + 1}` : q.type === "info" ? `Page vierge ${i + 1}` : `Énigme ${i + 1}`}
                         </span>
                         {q.texte}
                         {q.type === "qcm" && <span className="ml-2 text-[10px] uppercase tracking-wide text-brand-blue font-semibold">QCM</span>}
                         {q.type === "libre" && <span className="ml-2 text-[10px] uppercase tracking-wide text-brand-blue font-semibold">Libre</span>}
+                        {q.fragmentTexte && (
+                          <span className="ml-2 text-[10px] uppercase tracking-wide text-amber-600 font-semibold">🏆 Fragment</span>
+                        )}
                       </p>
                       <div className="flex gap-2 shrink-0 text-xs items-center">
                         <button onClick={() => deplacerEtape(q, -1)} disabled={i === 0 || savingStep} className="text-brand-navy disabled:text-slate-300" title="Monter">
@@ -764,22 +804,28 @@ function AdminPanel() {
                           </li>
                         ))}
                       </ul>
-                    ) : (
+                    ) : q.type === "info" ? null : (
                       <p className="text-slate-500 text-xs mt-2">
                         {q.type === "code" ? "Code attendu : " : "Réponse attendue : "}
                         {q.reponse}
                       </p>
                     )}
+                    {q.fragmentTexte && (
+                      <p className="text-amber-700 text-xs mt-1">🏆 Fragment débloqué : {q.fragmentTexte}</p>
+                    )}
                     {q.tempsLimite && (
                       <p className="text-slate-500 text-xs mt-1">Temps limite : {formatTemps(q.tempsLimite)}</p>
                     )}
                   </div>
-                  <div className="flex gap-3 text-[11px] mt-1 mb-1 pl-1">
+                  <div className="flex gap-3 text-[11px] mt-1 mb-1 pl-1 flex-wrap">
                     <button onClick={() => inserer(q, "libre")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
                       + Insérer une énigme après
                     </button>
                     <button onClick={() => inserer(q, "code")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
                       + Insérer une page code après
+                    </button>
+                    <button onClick={() => inserer(q, "info")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
+                      + Insérer une page vierge après
                     </button>
                   </div>
                 </div>
@@ -792,16 +838,15 @@ function AdminPanel() {
       {!loading && tab === "scenario" && (
         <section className="max-w-2xl">
           <p className="text-slate-600 mb-2 text-sm">
-            Le fragment de chaque équipe (sa part de la phrase finale) se modifie directement en parcourant le
-            circuit de cette équipe en mode édition, dans l&apos;encadré &quot;lettre débloquée&quot; ou sur l&apos;écran
-            final.
+            Le fragment affiché après une énigme se modifie directement dans le formulaire de cette énigme, dans
+            l&apos;onglet &quot;Circuit&quot;.
           </p>
 
           <div className="bg-brand-blue-light rounded-2xl p-5 mb-6">
             <h2 className="font-semibold mb-2 text-brand-navy">Vider le scénario actuel</h2>
             <p className="text-slate-600 text-sm mb-3">
-              Supprime toutes les énigmes du circuit, la phrase finale et le texte de l&apos;histoire, pour repartir
-              d&apos;une page blanche avant d&apos;importer votre propre scénario. Les équipes ne sont pas touchées.
+              Supprime toutes les énigmes du circuit et le texte de l&apos;histoire, pour repartir d&apos;une page
+              blanche avant d&apos;importer votre propre scénario. Les équipes ne sont pas touchées.
             </p>
             <button
               onClick={lancerVidage}
@@ -914,8 +959,7 @@ function AdminPanel() {
             <TextField label="Texte « Mauvaise réponse »" value={siteTexts.jeuTexteMauvaiseReponse} onChange={(v) => setSiteText("jeuTexteMauvaiseReponse", v)} />
             <TextField label="Texte « Dernière tentative »" value={siteTexts.jeuTexteDerniereTentative} onChange={(v) => setSiteText("jeuTexteDerniereTentative", v)} />
             <TextField label="Étiquette « Bonne réponse : »" value={siteTexts.jeuTexteBonneReponseLabel} onChange={(v) => setSiteText("jeuTexteBonneReponseLabel", v)} />
-            <TextField label="Titre écran lettre débloquée" value={siteTexts.jeuTexteLettreDebloqueeTitre} onChange={(v) => setSiteText("jeuTexteLettreDebloqueeTitre", v)} />
-            <TextField label="Note écran lettre débloquée" value={siteTexts.jeuTexteLettreDebloqueeNote} onChange={(v) => setSiteText("jeuTexteLettreDebloqueeNote", v)} />
+            <TextField label="Titre écran fragment débloqué" value={siteTexts.jeuTexteFragmentTitre} onChange={(v) => setSiteText("jeuTexteFragmentTitre", v)} />
             <TextField label="Placeholder réponse libre" value={siteTexts.jeuPlaceholderReponseLibre} onChange={(v) => setSiteText("jeuPlaceholderReponseLibre", v)} />
           </TextGroup>
 
@@ -924,16 +968,17 @@ function AdminPanel() {
             <TextField label="Bouton" value={siteTexts.codePageBouton} onChange={(v) => setSiteText("codePageBouton", v)} />
           </TextGroup>
 
-          <TextGroup title="Écran final (reconstitution du fragment)">
+          <TextGroup title="Pages vierges / informatives">
+            <TextField label="Bouton « Continuer »" value={siteTexts.infoPageBouton} onChange={(v) => setSiteText("infoPageBouton", v)} />
+            <p className="text-slate-500 text-xs">
+              Le texte de chaque page vierge se rédige directement dans le circuit (onglet « Circuit »), entourez un
+              mot de **doubles étoiles** pour l&apos;afficher en gras.
+            </p>
+          </TextGroup>
+
+          <TextGroup title="Écran final">
             <TextField label="Titre" value={siteTexts.finTitre} onChange={(v) => setSiteText("finTitre", v)} />
-            <TextAreaField label="Texte « reconstituez votre fragment »" value={siteTexts.finTexteReconstituer} onChange={(v) => setSiteText("finTexteReconstituer", v)} rows={2} />
-            <TextField label="Texte si aucune lettre" value={siteTexts.finAucuneLettre} onChange={(v) => setSiteText("finAucuneLettre", v)} />
-            <TextField label="Placeholder de saisie" value={siteTexts.finPlaceholderSaisie} onChange={(v) => setSiteText("finPlaceholderSaisie", v)} />
-            <TextField label="Bouton « Valider »" value={siteTexts.finLabelValiderFragment} onChange={(v) => setSiteText("finLabelValiderFragment", v)} />
-            <TextField label="Texte « dernière tentative »" value={siteTexts.finTexteDerniereTentative} onChange={(v) => setSiteText("finTexteDerniereTentative", v)} />
-            <TextField label="Texte « fragment trouvé »" value={siteTexts.finTexteTrouve} onChange={(v) => setSiteText("finTexteTrouve", v)} />
-            <TextAreaField label="Texte « fragment révélé »" value={siteTexts.finTexteRevele} onChange={(v) => setSiteText("finTexteRevele", v)} rows={2} />
-            <TextAreaField label="Texte « direction l'amphi »" value={siteTexts.finTexteDirectionAmphi} onChange={(v) => setSiteText("finTexteDirectionAmphi", v)} rows={2} />
+            <TextAreaField label="Sous-titre" value={siteTexts.finSousTitre} onChange={(v) => setSiteText("finSousTitre", v)} rows={2} />
           </TextGroup>
 
           <TextGroup title="Page « suivre » (lecture seule pour l'équipe)">
@@ -941,8 +986,7 @@ function AdminPanel() {
             <TextAreaField label="Texte d'attente (chef pas encore démarré)" value={siteTexts.suivreAttente} onChange={(v) => setSiteText("suivreAttente", v)} rows={2} />
             <TextField label="Message de chargement" value={siteTexts.suivreChargementLabel} onChange={(v) => setSiteText("suivreChargementLabel", v)} />
             <TextField label="Placeholder réponse (lecture seule)" value={siteTexts.suivrePlaceholderReponse} onChange={(v) => setSiteText("suivrePlaceholderReponse", v)} />
-            <TextField label="Placeholder saisie fragment (lecture seule)" value={siteTexts.suivrePlaceholderSaisie} onChange={(v) => setSiteText("suivrePlaceholderSaisie", v)} />
-            <TextField label="Titre lettre débloquée" value={siteTexts.suivreLettreTitre} onChange={(v) => setSiteText("suivreLettreTitre", v)} />
+            <TextField label="Titre fragment débloqué" value={siteTexts.suivreFragmentTitre} onChange={(v) => setSiteText("suivreFragmentTitre", v)} />
             <TextField label="Texte d'attente (chef continue quand il est prêt)" value={siteTexts.suivreAttenteContinuer} onChange={(v) => setSiteText("suivreAttenteContinuer", v)} />
           </TextGroup>
 
@@ -1014,52 +1058,6 @@ function TypeButton({ active, onClick, children }: { active: boolean; onClick: (
     >
       {children}
     </button>
-  );
-}
-
-function TeamFragmentField({
-  initialValue,
-  saving,
-  saved,
-  onSave,
-}: {
-  initialValue: string;
-  saving: boolean;
-  saved: boolean;
-  onSave: (value: string) => void;
-}) {
-  const [draft, setDraft] = useState(initialValue);
-
-  useEffect(() => {
-    setDraft(initialValue);
-  }, [initialValue]);
-
-  const dirty = draft !== initialValue;
-
-  return (
-    <div>
-      <label className="block text-[11px] font-semibold text-brand-navy/60 uppercase tracking-wide mb-1">
-        Fragment (part de la phrase finale)
-      </label>
-      <textarea
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        rows={2}
-        placeholder="Écrire le fragment de cette équipe..."
-        className="bg-white border border-slate-200 rounded-lg px-3 py-2 w-full text-sm"
-      />
-      <div className="flex items-center gap-3 mt-2">
-        <button
-          onClick={() => onSave(draft)}
-          disabled={!dirty || saving}
-          className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-4 py-1.5 rounded-full text-xs transition disabled:opacity-50"
-        >
-          {saving ? "Enregistrement..." : "Enregistrer le fragment"}
-        </button>
-        {!dirty && saved && <span className="text-xs text-green-600 font-medium">✓ Enregistré</span>}
-        {dirty && <span className="text-xs text-amber-600">Modifications non enregistrées</span>}
-      </div>
-    </div>
   );
 }
 
