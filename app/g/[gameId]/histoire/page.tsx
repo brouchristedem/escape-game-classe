@@ -60,7 +60,7 @@ export default function Histoire({ params }: { params: Promise<{ gameId: string 
       <div className="relative z-10 flex flex-col items-center max-w-lg w-full">
         <Image
           src="/logos/logo-iua-x-classe.png"
-          alt="IUA Classe X"
+          alt="Logo du jeu"
           width={536}
           height={285}
           className="mb-8 w-40 sm:w-48 h-auto"

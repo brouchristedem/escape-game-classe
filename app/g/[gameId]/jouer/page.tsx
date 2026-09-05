@@ -8,6 +8,7 @@ import { getSessionId } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import { useAdminMode } from "@/lib/adminMode";
+import { lireCache } from "@/lib/offlineCache";
 
 export default function ChoixEquipe({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = use(params);
@@ -26,6 +27,16 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
       .then(([ts, config]) => {
         setTeams(ts);
         setTexts(fusionnerTextes(config.texts));
+      })
+      .catch(() => {
+        // Pas de connexion : on retombe sur la dernière copie locale de ce
+        // jeu (voir lib/offlineCache.ts), écrite lors d'une précédente
+        // partie en ligne sur cet appareil.
+        const cache = lireCache(gameId);
+        if (cache) {
+          setTeams(cache.teams);
+          setTexts(fusionnerTextes(cache.config.texts));
+        }
       })
       .finally(() => setLoading(false));
   }, [gameId]);
@@ -46,11 +57,16 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
     // on ne prend pas la main de chef d'équipe (ça ne doit jamais bloquer
     // ni déloger une vraie équipe en train de jouer).
     if (!editMode) {
-      const { ok } = await claimerChef(gameId, selected, getSessionId());
-      if (!ok) {
-        setNavigating(false);
-        setErreurChef(true);
-        return;
+      try {
+        const { ok } = await claimerChef(gameId, selected, getSessionId());
+        if (!ok) {
+          setNavigating(false);
+          setErreurChef(true);
+          return;
+        }
+      } catch {
+        // Pas de connexion : la page suivante retente elle-même et bascule
+        // en mode hors-ligne si besoin (voir jouer/[teamId]/page.tsx).
       }
     }
     setTimeout(() => router.push(`/g/${gameId}/jouer/${selected}`), 500);

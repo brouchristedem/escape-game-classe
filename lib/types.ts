@@ -45,6 +45,33 @@ export interface Question {
   fragmentTexte?: string;
 }
 
+// Chrono général du jeu, commun à toutes les équipes : affiché à l'écran
+// partout, contrôlé par l'organisateur qui peut ajouter/retrancher du temps
+// en direct (voir TempsGeneralAjustement pour la notification en temps réel).
+export interface TempsGeneral {
+  finTimestamp: number | null; // Date.now() de fin, null = pas de chrono actif
+}
+
+// Dernier ajustement (+/-) du chrono général, utilisé uniquement pour
+// déclencher une notification chez les équipes ("+10 min ajoutées"). Le champ
+// `at` change à chaque ajustement même si `deltaSecondes` est identique, pour
+// que les équipes qui regardent l'écran voient toujours la notification.
+export interface TempsGeneralAjustement {
+  deltaSecondes: number;
+  at: number;
+}
+
+// Message ponctuel affiché par-dessus l'écran de jeu de toutes les équipes,
+// déclenché à tout moment par l'organisateur (ex. "Une personne est en
+// prison"), pendant une durée choisie, SANS arrêter la progression des
+// équipes (contrairement à l'ancienne page vierge insérée dans le circuit).
+export interface BroadcastMessage {
+  id: string; // change à chaque envoi, pour réafficher même un texte identique
+  texte: string;
+  dureeSecondes: number;
+  envoyeAt: number;
+}
+
 export interface QuizConfig {
   nom?: string; // nom du jeu, affiché dans la liste des jeux de l'organisateur
   createdAt?: number; // date de création (Date.now()), pour trier la liste des jeux
@@ -54,6 +81,9 @@ export interface QuizConfig {
   histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
   texts?: Partial<GameTexts>; // tous les autres textes du site, éditables depuis l'admin
   gameStatus?: GameStatus; // absent = "actif" (rétrocompatible avec les parties déjà en cours)
+  tempsGeneral?: TempsGeneral;
+  tempsGeneralAjustement?: TempsGeneralAjustement | null;
+  broadcast?: BroadcastMessage | null;
 }
 
 // Résumé d'un jeu affiché dans la liste des jeux de l'organisateur
@@ -126,7 +156,7 @@ export interface GameTexts {
 }
 
 export const DEFAULT_GAME_TEXTS: GameTexts = {
-  accueilTitre: "ESCAPE GAME DE L'IUA CLASSE X",
+  accueilTitre: "ESCAPE GAME",
   accueilSousTitre: "Le jeu commence maintenant",
   accueilDescription:
     "Vous avez reçu une mission.\nVous ne connaissez pas encore la suite.\nÀ vous de la découvrir.",

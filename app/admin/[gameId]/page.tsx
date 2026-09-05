@@ -16,6 +16,10 @@ import {
   deleteTeam,
   viderScenario,
   importerScenario,
+  demarrerTempsGeneral,
+  arreterTempsGeneral,
+  ajusterTempsGeneral,
+  envoyerBroadcast,
 } from "@/lib/data";
 import {
   Question,
@@ -28,6 +32,7 @@ import {
   GameStatus,
   DEFAULT_GAME_TEXTS,
   fusionnerTextes,
+  TempsGeneral,
 } from "@/lib/types";
 import { SCENARIO_FORMAT_GUIDE, extraireTexteFichier, parseScenario } from "@/lib/scenarioParser";
 import { useAuth } from "@/lib/auth";
@@ -49,6 +54,12 @@ const emptyQuestionForm = {
 const emptyTeamForm = {
   nom: "",
 };
+
+// Toutes les équipes partagent désormais un seul circuit d'énigmes en ligne :
+// la notion de salle par équipe n'existe plus côté organisateur (elle reste
+// seulement en interne, dans le modèle de données, pour ne pas casser les
+// parties déjà enregistrées).
+const SALLE_UNIQUE = "circuit";
 
 export default function Admin({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = use(params);
@@ -108,7 +119,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
   const [qForm, setQForm] = useState({ ...emptyQuestionForm });
   const [editingQId, setEditingQId] = useState<string | null>(null);
-  const [salleFiltre, setSalleFiltre] = useState<string>("");
   const [savingStep, setSavingStep] = useState(false);
 
   const [histoire, setHistoire] = useState("");
@@ -122,6 +132,17 @@ function AdminPanel({ gameId }: { gameId: string }) {
   // progression, pour pouvoir tout arrêter en cas de bug.
   const [gameStatus, setGameStatus] = useState<GameStatus>("actif");
   const [togglingStatus, setTogglingStatus] = useState(false);
+
+  // Chrono général affiché chez toutes les équipes, ajustable en temps réel.
+  const [tempsGeneral, setTempsGeneral] = useState<TempsGeneral>({ finTimestamp: null });
+  const [dureeDepart, setDureeDepart] = useState<string>("30");
+  const [savingTemps, setSavingTemps] = useState(false);
+
+  // Message ponctuel diffusé par-dessus l'écran de toutes les équipes.
+  const [broadcastTexte, setBroadcastTexte] = useState("");
+  const [broadcastDuree, setBroadcastDuree] = useState<string>("30");
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [broadcastEnvoye, setBroadcastEnvoye] = useState(false);
 
   const [viding, setViding] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -138,6 +159,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       setHistoire(config.histoire ?? "");
       setSiteTexts(fusionnerTextes(config.texts));
       setGameStatus(config.gameStatus ?? "actif");
+      setTempsGeneral(config.tempsGeneral ?? { finTimestamp: null });
     } catch (e) {
       console.error(e);
       const detail = e instanceof Error ? e.message : String(e);
@@ -152,16 +174,18 @@ function AdminPanel({ gameId }: { gameId: string }) {
   }, []);
 
   // Salles connues = union des salles des équipes et des étapes existantes
+  // (conservé en interne pour la compatibilité des anciennes données ;
+  // l'organisateur ne voit plus jamais ce concept).
   const sallesConnues = useMemo(() => {
     const s = new Set<string>();
     teams.forEach((t) => t.salle && s.add(t.salle));
     questions.forEach((q) => q.salle && s.add(q.salle));
     return Array.from(s).sort();
   }, [teams, questions]);
-
-  useEffect(() => {
-    if (!salleFiltre && sallesConnues.length > 0) setSalleFiltre(sallesConnues[0]);
-  }, [sallesConnues, salleFiltre]);
+  // Toutes les étapes vivent désormais dans une seule salle interne : si
+  // d'anciennes données utilisaient encore plusieurs salles, on les regroupe
+  // simplement toutes dans le même circuit affiché.
+  const salleActive = sallesConnues[0] ?? SALLE_UNIQUE;
 
   // ---------- Équipes ----------
 
@@ -178,12 +202,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
     if (editingTeamId) {
       await updateTeam(gameId, editingTeamId, { nom: teamForm.nom.trim() });
     } else {
-      // Toutes les équipes partagent le même circuit d'énigmes en ligne (une
-      // seule salle) : ce n'est plus une salle par équipe, puisque les salles
-      // physiques ne sont plus attribuées équipe par équipe mais visitées au
-      // fil du jeu par le candidat de chaque équipe.
-      const salle = sallesConnues.length > 0 ? sallesConnues[0] : "";
-      await addTeam(gameId, { nom: teamForm.nom.trim(), salle });
+      // Toutes les équipes partagent le même circuit d'énigmes en ligne.
+      await addTeam(gameId, { nom: teamForm.nom.trim(), salle: salleActive });
     }
     resetTeamForm();
     reload();
@@ -201,15 +221,15 @@ function AdminPanel({ gameId }: { gameId: string }) {
     reload();
   }
 
-  // ---------- Circuit du jeu (énigmes, pages code et pages info, dans l'ordre) ----------
+  // ---------- Circuit du jeu (énigmes et pages code, dans l'ordre) ----------
 
   const etapesSalle = useMemo(
-    () => questions.filter((q) => q.salle === salleFiltre).sort((a, b) => a.ordre - b.ordre),
-    [questions, salleFiltre]
+    () => questions.filter((q) => q.salle === salleActive).sort((a, b) => a.ordre - b.ordre),
+    [questions, salleActive]
   );
 
   function resetQForm(type: TypeEnigme = "qcm") {
-    setQForm({ ...emptyQuestionForm, salle: salleFiltre, type });
+    setQForm({ ...emptyQuestionForm, salle: salleActive, type });
     setEditingQId(null);
   }
 
@@ -228,13 +248,12 @@ function AdminPanel({ gameId }: { gameId: string }) {
       fragmentTexte: q.fragmentTexte ?? "",
     });
     setEditingQId(q.id);
-    setSalleFiltre(q.salle);
     setTab("circuit");
   }
 
   async function submitQForm() {
-    if (!qForm.salle.trim() || !qForm.texte.trim()) {
-      alert(qForm.type === "code" || qForm.type === "info" ? "Merci de remplir la salle et le texte de la page." : "Merci de remplir la salle et l'énigme.");
+    if (!qForm.texte.trim()) {
+      alert(qForm.type === "code" ? "Merci de remplir le texte de la page." : "Merci de remplir l'énigme.");
       return;
     }
     if (qForm.type === "qcm" && qForm.propositions.some((p) => !p.trim())) {
@@ -328,7 +347,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           ? "Nouvelle page vierge à rédiger."
           : "Nouvelle énigme à rédiger.";
       const base = {
-        salle: salleFiltre,
+        salle: salleActive,
         ordre: ordreProvisoire,
         type,
         texte: texteParDefaut,
@@ -408,6 +427,61 @@ function AdminPanel({ gameId }: { gameId: string }) {
     }
   }
 
+  // ---------- Chrono général (commun à toutes les équipes) ----------
+
+  async function lancerTempsGeneral() {
+    const minutes = Number(dureeDepart);
+    if (!minutes || minutes <= 0) {
+      alert("Indiquez une durée en minutes.");
+      return;
+    }
+    setSavingTemps(true);
+    try {
+      await demarrerTempsGeneral(gameId, minutes * 60);
+      setTempsGeneral({ finTimestamp: Date.now() + minutes * 60 * 1000 });
+    } finally {
+      setSavingTemps(false);
+    }
+  }
+
+  async function ajusterTemps(minutes: number) {
+    setSavingTemps(true);
+    try {
+      await ajusterTempsGeneral(gameId, minutes * 60);
+      setTempsGeneral((t) => (t.finTimestamp ? { finTimestamp: t.finTimestamp + minutes * 60 * 1000 } : t));
+    } finally {
+      setSavingTemps(false);
+    }
+  }
+
+  async function stopperTempsGeneral() {
+    setSavingTemps(true);
+    try {
+      await arreterTempsGeneral(gameId);
+      setTempsGeneral({ finTimestamp: null });
+    } finally {
+      setSavingTemps(false);
+    }
+  }
+
+  // ---------- Message ponctuel diffusé à toutes les équipes ----------
+
+  async function diffuserMessage() {
+    if (!broadcastTexte.trim()) {
+      alert("Écrivez le message à afficher.");
+      return;
+    }
+    const secondes = Number(broadcastDuree) || 30;
+    setSendingBroadcast(true);
+    try {
+      await envoyerBroadcast(gameId, broadcastTexte.trim(), secondes);
+      setBroadcastEnvoye(true);
+      setTimeout(() => setBroadcastEnvoye(false), 3000);
+    } finally {
+      setSendingBroadcast(false);
+    }
+  }
+
   async function lancerImportFichier() {
     if (!importFile) {
       alert("Choisissez d'abord un fichier .docx ou .pdf.");
@@ -451,7 +525,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
   return (
     <main className="min-h-screen bg-white text-brand-navy px-4 sm:px-8 py-8">
       <h1 className="text-2xl font-bold mb-1">Espace organisateur</h1>
-      <p className="text-slate-500 text-sm mb-6">Escape Game IUA Classe X</p>
+      <p className="text-slate-500 text-sm mb-6">Escape Game</p>
 
       <div
         className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4 ring-2 ${
@@ -477,9 +551,72 @@ function AdminPanel({ gameId }: { gameId: string }) {
         </button>
       </div>
 
+      <div className="mb-6 grid sm:grid-cols-2 gap-4">
+        <div className="rounded-2xl px-5 py-4 ring-2 ring-slate-200 bg-slate-50">
+          <p className="font-semibold text-brand-navy mb-1">⏱️ Chrono général (toutes les équipes)</p>
+          {tempsGeneral.finTimestamp ? (
+            <>
+              <p className="text-xs text-slate-500 mb-3">
+                Affiché à l&apos;écran chez toutes les équipes. Ajustez en direct si besoin.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => ajusterTemps(10)} disabled={savingTemps} className="bg-brand-blue text-white text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">+10 min</button>
+                <button onClick={() => ajusterTemps(-10)} disabled={savingTemps} className="bg-brand-blue text-white text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">-10 min</button>
+                <button onClick={() => ajusterTemps(1)} disabled={savingTemps} className="bg-white ring-1 ring-slate-200 text-brand-navy text-sm px-3 py-1.5 rounded-full disabled:opacity-50">+1 min</button>
+                <button onClick={() => ajusterTemps(-1)} disabled={savingTemps} className="bg-white ring-1 ring-slate-200 text-brand-navy text-sm px-3 py-1.5 rounded-full disabled:opacity-50">-1 min</button>
+                <button onClick={stopperTempsGeneral} disabled={savingTemps} className="text-red-500 underline text-sm">Arrêter</button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                value={dureeDepart}
+                onChange={(e) => setDureeDepart(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 w-20 text-sm"
+              />
+              <span className="text-sm text-slate-500">minutes</span>
+              <button onClick={lancerTempsGeneral} disabled={savingTemps} className="bg-brand-blue hover:bg-brand-navy text-white text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
+                Démarrer
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl px-5 py-4 ring-2 ring-violet-200 bg-violet-50">
+          <p className="font-semibold text-brand-navy mb-1">📢 Message ponctuel (toutes les équipes)</p>
+          <p className="text-xs text-slate-500 mb-3">
+            S&apos;affiche par-dessus l&apos;écran de toutes les équipes pendant la durée choisie, sans arrêter leur
+            progression (ex. « Une personne de votre équipe est en prison »).
+          </p>
+          <textarea
+            value={broadcastTexte}
+            onChange={(e) => setBroadcastTexte(e.target.value)}
+            rows={2}
+            placeholder="Message à afficher..."
+            className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-2 w-full text-sm"
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={1}
+              value={broadcastDuree}
+              onChange={(e) => setBroadcastDuree(e.target.value)}
+              className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 w-20 text-sm"
+            />
+            <span className="text-sm text-slate-500">secondes</span>
+            <button onClick={diffuserMessage} disabled={sendingBroadcast} className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
+              {sendingBroadcast ? "Envoi..." : "Diffuser maintenant"}
+            </button>
+            {broadcastEnvoye && <span className="text-xs text-green-600 font-medium">Envoyé ✓</span>}
+          </div>
+        </div>
+      </div>
+
       <div className="flex gap-2 mb-3 flex-wrap">
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
-        <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes &amp; salles</TabButton>
+        <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes</TabButton>
         <TabButton active={tab === "scenario"} onClick={() => setTab("scenario")}>Scénario</TabButton>
         <TabButton active={tab === "histoire"} onClick={() => setTab("histoire")}>Histoire</TabButton>
         <TabButton active={tab === "textes"} onClick={() => setTab("textes")}>Textes du site</TabButton>
@@ -560,20 +697,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
               {editingQId ? "Modifier cette étape" : "Ajouter une étape à la fin"}
             </h2>
 
-            <label className="block text-sm text-slate-500 mb-1">Salle</label>
-            <input
-              value={qForm.salle}
-              onChange={(e) => setQForm({ ...qForm, salle: e.target.value })}
-              list="salles-existantes-q"
-              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
-              placeholder="Ex. Amphi B, Salle 204, TD1..."
-            />
-            <datalist id="salles-existantes-q">
-              {sallesConnues.map((s) => (
-                <option key={s} value={s} />
-              ))}
-            </datalist>
-
             <label className="block text-sm text-slate-500 mb-1">Type d&apos;étape</label>
             <div className="flex gap-2 mb-3 flex-wrap">
               <TypeButton active={qForm.type === "qcm"} onClick={() => setQForm({ ...qForm, type: "qcm" })}>
@@ -584,9 +707,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
               </TypeButton>
               <TypeButton active={qForm.type === "code"} onClick={() => setQForm({ ...qForm, type: "code" })}>
                 Page code (verrou)
-              </TypeButton>
-              <TypeButton active={qForm.type === "info"} onClick={() => setQForm({ ...qForm, type: "info" })}>
-                Page vierge (info)
               </TypeButton>
             </div>
 
@@ -686,24 +806,11 @@ function AdminPanel({ gameId }: { gameId: string }) {
               </>
             )}
 
-            {qForm.type !== "code" && qForm.type !== "info" && (
-              <>
-                <label className="block text-sm text-slate-500 mb-1">Texte affiché si bonne réponse</label>
-                <input
-                  value={qForm.feedbackCorrect}
-                  onChange={(e) => setQForm({ ...qForm, feedbackCorrect: e.target.value })}
-                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
-                  placeholder="Bravo, c'est la bonne réponse !"
-                />
-
-                <label className="block text-sm text-slate-500 mb-1">Texte affiché si mauvaise réponse</label>
-                <input
-                  value={qForm.feedbackIncorrect}
-                  onChange={(e) => setQForm({ ...qForm, feedbackIncorrect: e.target.value })}
-                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-3 w-full"
-                  placeholder="Ce n'est pas ça, réessayez !"
-                />
-              </>
+            {qForm.type !== "code" && (
+              <p className="text-slate-500 text-xs mb-3">
+                Les messages de réussite/échec affichés après cette énigme se gèrent globalement dans l&apos;onglet
+                « Textes du site ».
+              </p>
             )}
 
             {qForm.type === "code" && (
@@ -725,31 +832,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
               </>
             )}
 
-            {qForm.type !== "code" && qForm.type !== "info" && (
-              <>
-                <label className="block text-sm text-slate-500 mb-1">Temps limite (laisser vide = aucun)</label>
-                <div className="flex gap-2 mb-4">
-                  <input
-                    type="number"
-                    min={1}
-                    value={qForm.tempsValeur}
-                    onChange={(e) => setQForm({ ...qForm, tempsValeur: e.target.value })}
-                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 flex-1"
-                    placeholder="Ex. 30"
-                  />
-                  <select
-                    value={qForm.tempsUnite}
-                    onChange={(e) => setQForm({ ...qForm, tempsUnite: e.target.value as UniteTemps })}
-                    className="bg-white border border-slate-200 rounded-lg px-3 py-2"
-                  >
-                    <option value="secondes">secondes</option>
-                    <option value="minutes">minutes</option>
-                    <option value="heures">heures</option>
-                  </select>
-                </div>
-              </>
-            )}
-
             <div className="flex gap-3 mt-4">
               <button
                 onClick={submitQForm}
@@ -768,41 +850,17 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
           {/* Circuit ordonné */}
           <section>
-            {sallesConnues.length === 0 && (
-              <p className="text-slate-500 text-sm mb-4">
-                Aucune salle pour l&apos;instant — créez une équipe ou tapez un nom de salle dans le formulaire.
-              </p>
-            )}
-            <div className="flex gap-2 mb-4 flex-wrap">
-              {sallesConnues.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSalleFiltre(s)}
-                  className={`px-4 py-1.5 rounded-full text-sm transition ${
-                    salleFiltre === s ? "bg-brand-blue text-white" : "bg-brand-blue-light text-brand-navy"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+            <div className="flex gap-2 mb-4 text-xs flex-wrap">
+              <button onClick={() => inserer(null, "libre")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
+                + Énigme en tête de circuit
+              </button>
+              <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
+                + Page code en tête de circuit
+              </button>
             </div>
 
-            {salleFiltre && (
-              <div className="flex gap-2 mb-4 text-xs flex-wrap">
-                <button onClick={() => inserer(null, "libre")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
-                  + Énigme en tête de circuit
-                </button>
-                <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
-                  + Page code en tête de circuit
-                </button>
-                <button onClick={() => inserer(null, "info")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
-                  + Page vierge en tête de circuit
-                </button>
-              </div>
-            )}
-
-            {salleFiltre && etapesSalle.length === 0 && (
-              <p className="text-slate-500 text-sm">Aucune étape pour cette salle pour l&apos;instant.</p>
+            {etapesSalle.length === 0 && (
+              <p className="text-slate-500 text-sm">Aucune étape pour l&apos;instant.</p>
             )}
 
             <div className="flex flex-col gap-3">
@@ -872,9 +930,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
                     </button>
                     <button onClick={() => inserer(q, "code")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
                       + Insérer une page code après
-                    </button>
-                    <button onClick={() => inserer(q, "info")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
-                      + Insérer une page vierge après
                     </button>
                   </div>
                 </div>
@@ -948,7 +1003,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             onChange={(e) => setHistoire(e.target.value)}
             rows={10}
             className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-3 py-2 mb-4 w-full"
-            placeholder="Bienvenue à l'IUA, Classe X..."
+            placeholder="Bienvenue, vous avez une mission..."
           />
 
           <button

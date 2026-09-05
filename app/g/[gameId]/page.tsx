@@ -45,7 +45,7 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
         <div className="mb-8 rounded-3xl bg-white/80 backdrop-blur px-8 py-6 shadow-[0_8px_30px_rgba(20,163,221,0.12)] ring-1 ring-black/5">
           <Image
             src="/logos/logo-iua-x-classe.png"
-            alt="IUA Classe X"
+            alt="Logo du jeu"
             width={536}
             height={285}
             className="w-56 sm:w-64 h-auto mx-auto"

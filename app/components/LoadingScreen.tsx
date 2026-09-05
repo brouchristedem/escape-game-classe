@@ -9,7 +9,7 @@ export default function LoadingScreen({ label = "Chargement..." }: { label?: str
       <div className="relative z-10 flex flex-col items-center">
         <Image
           src="/logos/logo-iua-x-classe.png"
-          alt="IUA Classe X"
+          alt="Logo du jeu"
           width={536}
           height={285}
           className="mb-8 w-36 sm:w-40 h-auto opacity-90 animate-pulse"

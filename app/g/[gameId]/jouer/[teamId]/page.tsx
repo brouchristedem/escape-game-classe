@@ -15,6 +15,9 @@ import {
   deleteQuestion,
   renumeroterEtapes,
   ecouterGameStatus,
+  ecouterTempsEtBroadcast,
+  getAllTeams,
+  getAllQuestions,
 } from "@/lib/data";
 import {
   Question,
@@ -25,13 +28,18 @@ import {
   fusionnerTextes,
   GameTexts,
   GameStatus,
+  TempsGeneral,
+  TempsGeneralAjustement,
+  BroadcastMessage,
 } from "@/lib/types";
 import { getSessionId, aDejaDemarreCetteSession, marquerSessionDemarree } from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
 import PauseOverlay from "@/app/components/PauseOverlay";
+import GlobalOverlays from "@/app/components/GlobalOverlays";
 import { useAdminMode, editModePersiste } from "@/lib/adminMode";
+import { sauvegarderCache, lireCache, sauvegarderProgressionHorsLigne, lireProgressionHorsLigne } from "@/lib/offlineCache";
 
 type Phase = "loading" | "error" | "playing" | "termine";
 
@@ -61,6 +69,16 @@ export default function JouerEquipe() {
   const [essaiKey, setEssaiKey] = useState(0);
   const [chefRefuse, setChefRefuse] = useState(false);
   const [gameStatus, setGameStatus] = useState<GameStatus>("actif");
+  // Mode hors-ligne : activé si le chargement initial depuis Firestore a
+  // échoué et qu'une copie locale (voir lib/offlineCache.ts) a pu être
+  // utilisée à la place. Dans ce mode, on n'essaie plus de contacter
+  // Firestore (chrono/pause/diffusion en direct, verrou de chef, suivi
+  // d'équipe) : seule la progression dans le circuit continue de fonctionner,
+  // enregistrée localement.
+  const [horsLigne, setHorsLigne] = useState(false);
+  const [tempsGeneral, setTempsGeneral] = useState<TempsGeneral>({ finTimestamp: null });
+  const [tempsGeneralAjustement, setTempsGeneralAjustement] = useState<TempsGeneralAjustement | null>(null);
+  const [broadcast, setBroadcast] = useState<BroadcastMessage | null>(null);
   // Ref à jour à chaque rendu : le setInterval du chrono (créé une fois par
   // question, voir l'effet ci-dessous) doit lire la valeur la plus récente
   // de gameStatus sans redémarrer le chrono à chaque changement de pause.
@@ -75,10 +93,22 @@ export default function JouerEquipe() {
   // progression (aucun état de jeu n'est modifié, juste un écran par-dessus).
   // L'organisateur en mode édition n'est jamais bloqué par sa propre pause.
   useEffect(() => {
-    if (editMode) return;
+    if (editMode || horsLigne) return;
     const unsub = ecouterGameStatus(gameId!, setGameStatus);
     return unsub;
-  }, [editMode, gameId]);
+  }, [editMode, horsLigne, gameId]);
+
+  // Chrono général et message ponctuel diffusé par l'organisateur : jamais
+  // en mode édition ni en mode hors-ligne (pas de connexion Firestore).
+  useEffect(() => {
+    if (editMode || horsLigne) return;
+    const unsub = ecouterTempsEtBroadcast(gameId!, (v) => {
+      setTempsGeneral(v.tempsGeneral);
+      setTempsGeneralAjustement(v.tempsGeneralAjustement);
+      setBroadcast(v.broadcast);
+    });
+    return unsub;
+  }, [editMode, horsLigne, gameId]);
 
   useEffect(() => {
     if (!teamId) {
@@ -98,6 +128,13 @@ export default function JouerEquipe() {
         // qu'un confort de navigation, la vraie protection reste les règles
         // Firestore).
         const previewOrganisateur = editModePersiste(gameId!);
+
+        // Pas de connexion détectée dès le départ : on saute directement en
+        // mode hors-ligne sans attendre l'échec (plus rapide, pas de gel de
+        // plusieurs secondes le temps que Firestore abandonne).
+        const horsLigneDepart = typeof navigator !== "undefined" && navigator.onLine === false;
+        if (horsLigneDepart) throw new Error("hors-ligne");
+
         if (!previewOrganisateur) {
           const { ok } = await claimerChef(gameId!, teamId, getSessionId());
           if (!ok) {
@@ -113,7 +150,12 @@ export default function JouerEquipe() {
           return;
         }
         setTeam(t);
-        const [qs, config] = await Promise.all([getQuestionsForSalle(gameId!, t.salle), getQuizConfig(gameId!)]);
+        const [qs, config, toutesEquipes, toutesQuestions] = await Promise.all([
+          getQuestionsForSalle(gameId!, t.salle),
+          getQuizConfig(gameId!),
+          getAllTeams(gameId!),
+          getAllQuestions(gameId!),
+        ]);
         setTexts(fusionnerTextes(config.texts));
         if (qs.length === 0) {
           setErreurDetail(`Aucune énigme trouvée pour la salle "${t.salle}".`);
@@ -121,6 +163,14 @@ export default function JouerEquipe() {
           return;
         }
         setQuestions(qs);
+
+        // Copie locale pour pouvoir rejouer sans connexion plus tard (voir
+        // lib/offlineCache.ts). Best effort : ne bloque jamais le jeu en ligne.
+        const questionsParSalle: Record<string, Question[]> = {};
+        toutesQuestions.forEach((q) => {
+          (questionsParSalle[q.salle] ??= []).push(q);
+        });
+        sauvegarderCache(gameId!, { config, teams: toutesEquipes, questionsParSalle });
 
         // Reprend la partie là où elle en était uniquement en cas de vrai
         // rechargement de page dans ce même onglet (ex. F5) : on relit le
@@ -147,12 +197,42 @@ export default function JouerEquipe() {
         }
         setPhase("playing");
       } catch (e) {
-        setErreurDetail(e instanceof Error ? e.message : String(e));
-        setPhase("error");
+        // Connexion indisponible (ou requête Firestore en échec) : on
+        // retombe sur la dernière copie locale de ce jeu, si elle existe,
+        // pour permettre de jouer sans connexion.
+        const cache = lireCache(gameId!);
+        const equipe = cache?.teams.find((tm) => tm.id === teamId) ?? null;
+        if (!cache || !equipe) {
+          setErreurDetail(e instanceof Error ? e.message : String(e));
+          setPhase("error");
+          return;
+        }
+        setHorsLigne(true);
+        setTeam(equipe);
+        setTexts(fusionnerTextes(cache.config.texts));
+        const qs = cache.questionsParSalle[equipe.salle] ?? [];
+        if (qs.length === 0) {
+          setErreurDetail("Aucune énigme en cache pour cette équipe.");
+          setPhase("error");
+          return;
+        }
+        setQuestions(qs);
+        const indexSauvegarde = lireProgressionHorsLigne(gameId!, teamId);
+        if (indexSauvegarde !== null && indexSauvegarde > 0 && indexSauvegarde < qs.length) {
+          setIndex(indexSauvegarde);
+        }
+        setPhase("playing");
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sauvegarde la progression localement en mode hors-ligne (pas de
+  // Firestore liveState disponible pour reprendre après un rechargement).
+  useEffect(() => {
+    if (!horsLigne || !teamId) return;
+    sauvegarderProgressionHorsLigne(gameId!, teamId, index);
+  }, [horsLigne, gameId, teamId, index]);
 
   const question = questions[index];
   const isCodePage = question?.type === "code";
@@ -194,7 +274,8 @@ export default function JouerEquipe() {
     if (phase !== "playing" && phase !== "termine") return;
     // En mode édition, l'organisateur navigue sans publier son état : on ne
     // veut pas écraser l'écran en direct d'une vraie équipe qui joue.
-    if (editMode) return;
+    // En mode hors-ligne, aucune connexion Firestore n'est disponible.
+    if (editMode || horsLigne) return;
     const state: LiveState = {
       phase,
       index,
@@ -227,6 +308,7 @@ export default function JouerEquipe() {
   }, [
     teamId,
     phase,
+    horsLigne,
     index,
     questions.length,
     question,
@@ -378,8 +460,10 @@ export default function JouerEquipe() {
     if (correct) {
       setFragmentTexte(question.fragmentTexte?.trim() ? question.fragmentTexte : null);
       setFeedback({
+        // Page "code" : messages entièrement indépendants des Messages de
+        // réussite/échec (onglet "Textes du site") — jamais de repli dessus.
         text: isCodePage
-          ? question.feedbackCorrect || messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec)
+          ? question.feedbackCorrect || "Bravo, c'est le bon code !"
           : messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec),
         ok: true,
       });
@@ -464,6 +548,16 @@ export default function JouerEquipe() {
     <>
       {gameStatus === "pause" && !editMode && (
         <PauseOverlay titre={texts.pauseTitre} message={texts.pauseMessage} />
+      )}
+      {!horsLigne && !editMode && (
+        <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
+      )}
+      {horsLigne && (
+        <div className="fixed top-0 inset-x-0 z-40 flex justify-center px-4 pt-3 pointer-events-none">
+          <span className="pointer-events-auto bg-slate-800 text-white text-xs font-medium rounded-full px-4 py-1.5 shadow-md">
+            📡 Mode hors-ligne — votre progression est enregistrée sur cet appareil
+          </span>
+        </div>
       )}
       <main className="min-h-screen flex flex-col px-6 py-8 bg-white max-w-xl mx-auto w-full">
       <div className="mb-6">

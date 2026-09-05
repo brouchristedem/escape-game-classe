@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ecouterLiveState, getTeam, getQuizConfig, saveQuizConfig } from "@/lib/data";
-import { LiveState, Team, fusionnerTextes, GameTexts } from "@/lib/types";
+import { ecouterLiveState, getTeam, getQuizConfig, saveQuizConfig, ecouterTempsEtBroadcast } from "@/lib/data";
+import { LiveState, Team, fusionnerTextes, GameTexts, TempsGeneral, TempsGeneralAjustement, BroadcastMessage } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
+import GlobalOverlays from "@/app/components/GlobalOverlays";
 
 export default function SuivreEquipe() {
   const params = useParams();
@@ -17,6 +18,9 @@ export default function SuivreEquipe() {
   const [state, setState] = useState<LiveState | null>(null);
   const [texts, setTexts] = useState<GameTexts>(fusionnerTextes());
   const [loading, setLoading] = useState(true);
+  const [tempsGeneral, setTempsGeneral] = useState<TempsGeneral>({ finTimestamp: null });
+  const [tempsGeneralAjustement, setTempsGeneralAjustement] = useState<TempsGeneralAjustement | null>(null);
+  const [broadcast, setBroadcast] = useState<BroadcastMessage | null>(null);
 
   useEffect(() => {
     if (!teamId || !gameId) return;
@@ -26,7 +30,15 @@ export default function SuivreEquipe() {
       setState(s);
       setLoading(false);
     });
-    return unsubscribe;
+    const unsubTemps = ecouterTempsEtBroadcast(gameId, (v) => {
+      setTempsGeneral(v.tempsGeneral);
+      setTempsGeneralAjustement(v.tempsGeneralAjustement);
+      setBroadcast(v.broadcast);
+    });
+    return () => {
+      unsubscribe();
+      unsubTemps();
+    };
   }, [gameId, teamId]);
 
   async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
@@ -77,6 +89,7 @@ export default function SuivreEquipe() {
 
   return (
     <main className="min-h-screen flex flex-col px-6 py-8 bg-white max-w-xl mx-auto w-full">
+      <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
       {banner}
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-slate-500 mb-2">

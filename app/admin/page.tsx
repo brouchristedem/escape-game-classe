@@ -89,6 +89,24 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
   const [loading, setLoading] = useState(true);
   const [nouveauNom, setNouveauNom] = useState("");
   const [creating, setCreating] = useState(false);
+  const [origin, setOrigin] = useState("");
+  const [copieId, setCopieId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
+
+  async function copierLien(gameId: string) {
+    const lien = `${origin}/g/${gameId}`;
+    try {
+      await navigator.clipboard.writeText(lien);
+      setCopieId(gameId);
+      setTimeout(() => setCopieId(null), 2000);
+    } catch {
+      // Best effort : si le presse-papier est indisponible, le lien reste
+      // cliquable juste à côté.
+    }
+  }
 
   async function reload() {
     setLoading(true);
@@ -131,7 +149,9 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
         </button>
       </div>
       <p className="text-sm text-slate-500 mb-8">
-        Chaque jeu a son propre circuit, ses équipes et son propre lien à partager — totalement indépendant des autres.
+        Ce lien (racine du site) est votre espace organisateur, pas la page des joueurs. Chaque jeu créé ci-dessous a
+        son propre lien joueur (ci-dessous, sous son nom) à partager avec les équipes — totalement indépendant des
+        autres jeux.
       </p>
 
       <div className="flex gap-2 mb-8">
@@ -139,7 +159,7 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
           value={nouveauNom}
           onChange={(e) => setNouveauNom(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && creer()}
-          placeholder="Nom du nouveau jeu (ex. Semaine d'intégration Classe X)"
+          placeholder="Nom du nouveau jeu (ex. Semaine d'intégration)"
           className="flex-1 border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-brand-blue"
         />
         <button
@@ -158,12 +178,28 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
       ) : (
         <div className="flex flex-col gap-3">
           {jeux.map((j) => (
-            <div key={j.id} className="flex items-center justify-between rounded-2xl ring-1 ring-black/5 px-5 py-4">
-              <div>
+            <div key={j.id} className="flex items-center justify-between rounded-2xl ring-1 ring-black/5 px-5 py-4 gap-4">
+              <div className="min-w-0">
                 <p className="font-semibold text-brand-navy">{j.nom}</p>
-                <p className="text-xs text-slate-400">Lien joueur : /g/{j.id}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <a
+                    href={`/g/${j.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-brand-blue underline truncate"
+                    title="Ouvrir le lien joueur dans un nouvel onglet"
+                  >
+                    {origin || ""}/g/{j.id}
+                  </a>
+                  <button
+                    onClick={() => copierLien(j.id)}
+                    className="text-xs text-slate-400 hover:text-brand-blue shrink-0"
+                  >
+                    {copieId === j.id ? "Copié ✓" : "Copier"}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 shrink-0">
                 <Link href={`/admin/${j.id}`} className="text-sm font-semibold text-brand-blue">
                   Administrer →
                 </Link>

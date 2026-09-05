@@ -15,7 +15,19 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Question, Salle, QuizConfig, Team, LiveState, CHEF_LOCK_TIMEOUT_MS, GameStatus, GameMeta } from "./types";
+import {
+  Question,
+  Salle,
+  QuizConfig,
+  Team,
+  LiveState,
+  CHEF_LOCK_TIMEOUT_MS,
+  GameStatus,
+  GameMeta,
+  TempsGeneral,
+  TempsGeneralAjustement,
+  BroadcastMessage,
+} from "./types";
 
 // --- Structure multi-tenant ---
 // Chaque jeu vit sous games/{gameId}. Le document games/{gameId} lui-même
@@ -146,6 +158,9 @@ export async function getQuizConfig(gameId: string): Promise<QuizConfig> {
     histoire: data.histoire ?? "",
     texts: data.texts ?? {},
     gameStatus: data.gameStatus ?? "actif",
+    tempsGeneral: data.tempsGeneral ?? { finTimestamp: null },
+    tempsGeneralAjustement: data.tempsGeneralAjustement ?? null,
+    broadcast: data.broadcast ?? null,
   };
 }
 
@@ -164,6 +179,55 @@ export function ecouterGameStatus(gameId: string, callback: (status: GameStatus)
   return onSnapshot(gameDoc(gameId), (snap) => {
     const data = snap.exists() ? (snap.data() as QuizConfig) : null;
     callback(data?.gameStatus ?? "actif");
+  });
+}
+
+// --- Chrono général (commun à toutes les équipes) et messages ponctuels ---
+// Un seul abonnement pour les deux, pour éviter de multiplier les lectures
+// Firestore en temps réel sur les pages de jeu.
+export function ecouterTempsEtBroadcast(
+  gameId: string,
+  callback: (v: { tempsGeneral: TempsGeneral; tempsGeneralAjustement: TempsGeneralAjustement | null; broadcast: BroadcastMessage | null }) => void
+): () => void {
+  return onSnapshot(gameDoc(gameId), (snap) => {
+    const data = snap.exists() ? (snap.data() as QuizConfig) : null;
+    callback({
+      tempsGeneral: data?.tempsGeneral ?? { finTimestamp: null },
+      tempsGeneralAjustement: data?.tempsGeneralAjustement ?? null,
+      broadcast: data?.broadcast ?? null,
+    });
+  });
+}
+
+// Démarre (ou remplace) le chrono général pour toutes les équipes.
+export async function demarrerTempsGeneral(gameId: string, dureeSecondes: number): Promise<void> {
+  await saveQuizConfig(gameId, { tempsGeneral: { finTimestamp: Date.now() + dureeSecondes * 1000 } });
+}
+
+// Arrête le chrono général (masqué chez toutes les équipes).
+export async function arreterTempsGeneral(gameId: string): Promise<void> {
+  await saveQuizConfig(gameId, { tempsGeneral: { finTimestamp: null } });
+}
+
+// Ajoute (ou retranche, avec un delta négatif) du temps au chrono général en
+// cours, et publie une notification ("+10 min ajoutées") vue par toutes les
+// équipes. Si aucun chrono n'est actif, ne fait rien.
+export async function ajusterTempsGeneral(gameId: string, deltaSecondes: number): Promise<void> {
+  const config = await getQuizConfig(gameId);
+  const finActuelle = config.tempsGeneral?.finTimestamp;
+  if (!finActuelle) return;
+  await saveQuizConfig(gameId, {
+    tempsGeneral: { finTimestamp: finActuelle + deltaSecondes * 1000 },
+    tempsGeneralAjustement: { deltaSecondes, at: Date.now() },
+  });
+}
+
+// Diffuse un message ponctuel par-dessus l'écran de toutes les équipes,
+// pendant la durée indiquée, sans toucher à leur progression dans le
+// circuit.
+export async function envoyerBroadcast(gameId: string, texte: string, dureeSecondes: number): Promise<void> {
+  await saveQuizConfig(gameId, {
+    broadcast: { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, texte, dureeSecondes, envoyeAt: Date.now() },
   });
 }
 
