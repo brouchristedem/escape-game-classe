@@ -37,6 +37,7 @@ type Phase = "loading" | "error" | "playing" | "termine";
 
 export default function JouerEquipe() {
   const params = useParams();
+  const gameId = Array.isArray(params.gameId) ? params.gameId[0] : params.gameId;
   const teamId = Array.isArray(params.teamId) ? params.teamId[0] : params.teamId;
   const { editMode } = useAdminMode();
 
@@ -75,9 +76,9 @@ export default function JouerEquipe() {
   // L'organisateur en mode édition n'est jamais bloqué par sa propre pause.
   useEffect(() => {
     if (editMode) return;
-    const unsub = ecouterGameStatus(setGameStatus);
+    const unsub = ecouterGameStatus(gameId!, setGameStatus);
     return unsub;
-  }, [editMode]);
+  }, [editMode, gameId]);
 
   useEffect(() => {
     if (!teamId) {
@@ -98,7 +99,7 @@ export default function JouerEquipe() {
           sessionStorage.getItem("admin_ok") === "1" &&
           sessionStorage.getItem("admin_edit_mode") === "1";
         if (!previewOrganisateur) {
-          const { ok } = await claimerChef(teamId, getSessionId());
+          const { ok } = await claimerChef(gameId!, teamId, getSessionId());
           if (!ok) {
             setChefRefuse(true);
             setPhase("error");
@@ -106,13 +107,13 @@ export default function JouerEquipe() {
           }
         }
 
-        const t = await getTeam(teamId);
+        const t = await getTeam(gameId!, teamId);
         if (!t) {
           setPhase("error");
           return;
         }
         setTeam(t);
-        const [qs, config] = await Promise.all([getQuestionsForSalle(t.salle), getQuizConfig()]);
+        const [qs, config] = await Promise.all([getQuestionsForSalle(gameId!, t.salle), getQuizConfig(gameId!)]);
         setTexts(fusionnerTextes(config.texts));
         if (qs.length === 0) {
           setErreurDetail(`Aucune énigme trouvée pour la salle "${t.salle}".`);
@@ -127,7 +128,7 @@ export default function JouerEquipe() {
         // revanche, une nouvelle visite (onglet fermé/rouvert, lien rouvert
         // plus tard) doit toujours repartir de la première énigme, même si
         // Firestore garde un état plus avancé pour le suivi en direct.
-        const dernierEtat = await getLiveState(teamId);
+        const dernierEtat = await getLiveState(gameId!, teamId);
         const reprendCetteSession = aDejaDemarreCetteSession(teamId);
         if (reprendCetteSession && dernierEtat?.phase === "termine") {
           setPhase("termine");
@@ -213,13 +214,13 @@ export default function JouerEquipe() {
       updatedAt: Date.now(),
       chefSessionId: getSessionId(),
     };
-    publierLiveState(teamId, state);
+    publierLiveState(gameId!, teamId, state);
 
     // Battement de coeur : même sans changement d'état (le chef d'équipe lit
     // une énigme sans agir), on republie régulièrement pour que sa place ne
     // soit pas considérée libre et reprise par un autre appareil.
     const heartbeat = setInterval(() => {
-      publierLiveState(teamId, { ...state, updatedAt: Date.now() });
+      publierLiveState(gameId!, teamId, { ...state, updatedAt: Date.now() });
     }, 20_000);
     return () => clearInterval(heartbeat);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -287,14 +288,14 @@ export default function JouerEquipe() {
 
   async function saveQuestionField<K extends keyof Question>(key: K, value: Question[K]) {
     if (!question) return;
-    await updateQuestion(question.id, { [key]: value } as Partial<Question>);
+    await updateQuestion(gameId!, question.id, { [key]: value } as Partial<Question>);
     setQuestions((qs) => qs.map((q) => (q.id === question.id ? { ...q, [key]: value } : q)));
   }
 
   async function saveGlobalText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
     const next = { ...texts, [key]: value };
     setTexts(next);
-    await saveQuizConfig({ texts: next });
+    await saveQuizConfig(gameId!, { texts: next });
   }
 
   // Modifie le fragment libre affiché après une bonne réponse à CETTE
@@ -326,10 +327,10 @@ export default function JouerEquipe() {
       feedbackIncorrect: "",
       tempsLimite: null as number | null,
     };
-    const newId = await addQuestion(nouvelle);
+    const newId = await addQuestion(gameId!, nouvelle);
     const tousTries = [...questions, { ...nouvelle, id: newId } as Question].sort((a, b) => a.ordre - b.ordre);
-    await renumeroterEtapes(tousTries.map((q) => q.id));
-    const qs = await getQuestionsForSalle(team.salle);
+    await renumeroterEtapes(gameId!, tousTries.map((q) => q.id));
+    const qs = await getQuestionsForSalle(gameId!, team.salle);
     setQuestions(qs);
     const nouvelIndex = qs.findIndex((q) => q.id === newId);
     if (nouvelIndex !== -1) {
@@ -346,10 +347,10 @@ export default function JouerEquipe() {
   async function supprimerEtapeActuelle() {
     if (!team || !question) return;
     if (!confirm("Supprimer cette étape du circuit ?")) return;
-    await deleteQuestion(question.id);
+    await deleteQuestion(gameId!, question.id);
     const restantes = questions.filter((q) => q.id !== question.id).sort((a, b) => a.ordre - b.ordre);
-    await renumeroterEtapes(restantes.map((q) => q.id));
-    const qs = await getQuestionsForSalle(team.salle);
+    await renumeroterEtapes(gameId!, restantes.map((q) => q.id));
+    const qs = await getQuestionsForSalle(gameId!, team.salle);
     setQuestions(qs);
     setFeedback(null);
     setAwaitingContinue(false);

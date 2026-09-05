@@ -1,27 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Lecture publique des questions et de la config (nécessaire pour jouer),
-    // écriture laissée ouverte car l'espace /admin n'a qu'une protection
-    // par mot de passe côté client (pas d'auth Firebase).
-    // À restreindre si besoin en ajoutant une vraie authentification admin.
-    match /questions/{questionId} {
+    // Structure multi-tenant : chaque jeu vit sous games/{gameId}, avec ses
+    // sous-collections questions/teams/liveState scopées au même gameId.
+    // Écriture encore ouverte car l'espace /admin n'a qu'une protection par
+    // mot de passe côté client (pas d'auth Firebase) — voir Phase 2 du
+    // passage multi-tenant pour une vraie authentification organisateur.
+    match /games/{gameId} {
       allow read: if true;
       allow write: if true;
-    }
-    match /config/{configId} {
-      allow read: if true;
-      allow write: if true;
-    }
-    match /teams/{teamId} {
-      allow read: if true;
-      allow write: if true;
-    }
-    // État en direct de l'écran du chef d'équipe, suivi en lecture seule par
-    // les autres membres de l'équipe depuis /jouer/{teamId}/suivre.
-    match /liveState/{teamId} {
-      allow read: if true;
-      allow write: if true;
+
+      match /questions/{questionId} {
+        allow read: if true;
+        allow write: if true;
+      }
+      match /teams/{teamId} {
+        allow read: if true;
+        allow write: if true;
+      }
+      // État en direct de l'écran du chef d'équipe, suivi en lecture seule
+      // par les autres membres de l'équipe depuis /g/{gameId}/jouer/{teamId}/suivre.
+      match /liveState/{teamId} {
+        allow read: if true;
+        allow write: if true;
+      }
     }
   }
 }

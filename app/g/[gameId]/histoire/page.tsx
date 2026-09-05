@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { getQuizConfig, saveQuizConfig } from "@/lib/data";
 import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
@@ -16,7 +16,8 @@ Ne vous fiez à personne et observez chaque détail. Le temps presse, et Mr X ne
 
 Saurez-vous découvrir qui il est avant qu'il ne soit trop tard ?`;
 
-export default function Histoire() {
+export default function Histoire({ params }: { params: Promise<{ gameId: string }> }) {
+  const { gameId } = use(params);
   const router = useRouter();
   const [texte, setTexte] = useState(HISTOIRE_PAR_DEFAUT);
   const [texts, setTexts] = useState<GameTexts>(fusionnerTextes());
@@ -24,28 +25,28 @@ export default function Histoire() {
   const [navigating, setNavigating] = useState(false);
 
   useEffect(() => {
-    getQuizConfig()
+    getQuizConfig(gameId)
       .then((config) => {
         if (config.histoire && config.histoire.trim()) setTexte(config.histoire);
         setTexts(fusionnerTextes(config.texts));
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [gameId]);
 
   function continuer() {
     setNavigating(true);
-    setTimeout(() => router.push("/jouer"), 550);
+    setTimeout(() => router.push(`/g/${gameId}/jouer`), 550);
   }
 
   async function saveHistoire(v: string) {
     setTexte(v);
-    await saveQuizConfig({ histoire: v });
+    await saveQuizConfig(gameId, { histoire: v });
   }
 
   async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
     const next = { ...texts, [key]: value };
     setTexts(next);
-    await saveQuizConfig({ texts: next });
+    await saveQuizConfig(gameId, { texts: next });
   }
 
   if (loading) return <LoadingScreen label={texts.histoireChargementLabel} />;

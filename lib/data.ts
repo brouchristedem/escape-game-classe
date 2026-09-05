@@ -10,24 +10,81 @@ import {
   onSnapshot,
   query,
   where,
+  orderBy,
   runTransaction,
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Question, Salle, QuizConfig, Team, LiveState, CHEF_LOCK_TIMEOUT_MS, GameStatus } from "./types";
+import { Question, Salle, QuizConfig, Team, LiveState, CHEF_LOCK_TIMEOUT_MS, GameStatus, GameMeta } from "./types";
 
-const QUESTIONS_COL = "questions";
-const TEAMS_COL = "teams";
-const CONFIG_DOC = "config/quiz";
-const LIVE_STATE_COL = "liveState";
+// --- Structure multi-tenant ---
+// Chaque jeu vit sous games/{gameId}. Le document games/{gameId} lui-même
+// porte la config (nom, histoire, texts, gameStatus) ; les questions,
+// équipes et l'état en direct sont des sous-collections scopées à ce même
+// gameId. Ça isole complètement les données d'un organisateur à l'autre :
+// deux jeux ne se voient jamais l'un l'autre.
+const GAMES_COL = "games";
+
+function gameDoc(gameId: string) {
+  return doc(db, GAMES_COL, gameId);
+}
+function questionsCol(gameId: string) {
+  return collection(db, GAMES_COL, gameId, "questions");
+}
+function questionDoc(gameId: string, questionId: string) {
+  return doc(db, GAMES_COL, gameId, "questions", questionId);
+}
+function teamsCol(gameId: string) {
+  return collection(db, GAMES_COL, gameId, "teams");
+}
+function teamDoc(gameId: string, teamId: string) {
+  return doc(db, GAMES_COL, gameId, "teams", teamId);
+}
+function liveStateDoc(gameId: string, teamId: string) {
+  return doc(db, GAMES_COL, gameId, "liveState", teamId);
+}
+
+// --- Gestion des jeux (espace organisateur, vue d'ensemble) ---
+
+export async function listerJeux(): Promise<GameMeta[]> {
+  const snap = await getDocs(query(collection(db, GAMES_COL), orderBy("createdAt", "desc")));
+  return snap.docs.map((d) => {
+    const data = d.data() as Partial<QuizConfig>;
+    return {
+      id: d.id,
+      nom: data.nom ?? "Jeu sans nom",
+      createdAt: typeof data.createdAt === "number" ? data.createdAt : 0,
+    };
+  });
+}
+
+export async function creerJeu(nom: string): Promise<string> {
+  const ref = await addDoc(collection(db, GAMES_COL), {
+    nom: nom.trim() || "Jeu sans nom",
+    histoire: "",
+    texts: {},
+    gameStatus: "actif" as GameStatus,
+    createdAt: Date.now(),
+  });
+  return ref.id;
+}
+
+export async function supprimerJeu(gameId: string): Promise<void> {
+  const [questions, teams] = await Promise.all([getAllQuestions(gameId), getAllTeams(gameId)]);
+  await Promise.all([
+    ...questions.map((q) => deleteQuestion(gameId, q.id)),
+    ...teams.map((t) => deleteTeam(gameId, t.id)),
+    deleteDoc(gameDoc(gameId)),
+  ]);
+}
 
 // Pas de orderBy() côté Firestore ici : combiner where + orderBy sur des
 // champs différents nécessite un index composite à créer manuellement dans
 // la console Firebase. On trie donc côté application pour que ça marche
 // sans configuration supplémentaire.
-export async function getQuestionsForSalle(salle: Salle): Promise<Question[]> {
-  const q = query(collection(db, QUESTIONS_COL), where("salle", "==", salle));
+export async function getQuestionsForSalle(gameId: string, salle: Salle): Promise<Question[]> {
+  const q = query(questionsCol(gameId), where("salle", "==", salle));
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => {
@@ -37,8 +94,8 @@ export async function getQuestionsForSalle(salle: Salle): Promise<Question[]> {
     .sort((a, b) => a.ordre - b.ordre);
 }
 
-export async function getAllQuestions(): Promise<Question[]> {
-  const snap = await getDocs(collection(db, QUESTIONS_COL));
+export async function getAllQuestions(gameId: string): Promise<Question[]> {
+  const snap = await getDocs(questionsCol(gameId));
   return snap.docs
     .map((d) => {
       const data = d.data() as Omit<Question, "id">;
@@ -47,36 +104,37 @@ export async function getAllQuestions(): Promise<Question[]> {
     .sort((a, b) => a.salle.localeCompare(b.salle) || a.ordre - b.ordre);
 }
 
-export async function addQuestion(q: Omit<Question, "id">): Promise<string> {
-  const ref = await addDoc(collection(db, QUESTIONS_COL), q);
+export async function addQuestion(gameId: string, q: Omit<Question, "id">): Promise<string> {
+  const ref = await addDoc(questionsCol(gameId), q);
   return ref.id;
 }
 
-export async function updateQuestion(id: string, q: Partial<Question>): Promise<void> {
-  await updateDoc(doc(db, QUESTIONS_COL, id), q);
+export async function updateQuestion(gameId: string, id: string, q: Partial<Question>): Promise<void> {
+  await updateDoc(questionDoc(gameId, id), q);
 }
 
-export async function deleteQuestion(id: string): Promise<void> {
-  await deleteDoc(doc(db, QUESTIONS_COL, id));
+export async function deleteQuestion(gameId: string, id: string): Promise<void> {
+  await deleteDoc(questionDoc(gameId, id));
 }
 
 // Renumérote automatiquement le "ordre" de toutes les étapes d'une salle
 // (énigmes + pages code) selon l'ordre du tableau fourni (position = ordre).
 // Utilisé par l'admin "Circuit du jeu" après un ajout, une suppression ou un
 // déplacement, pour que la numérotation reste toujours 1, 2, 3... sans trou.
-export async function renumeroterEtapes(orderedIds: string[]): Promise<void> {
+export async function renumeroterEtapes(gameId: string, orderedIds: string[]): Promise<void> {
   await Promise.all(
-    orderedIds.map((id, i) => updateDoc(doc(db, QUESTIONS_COL, id), { ordre: i + 1 }))
+    orderedIds.map((id, i) => updateDoc(questionDoc(gameId, id), { ordre: i + 1 }))
   );
 }
 
-export async function getQuizConfig(): Promise<QuizConfig> {
-  const snap = await getDoc(doc(db, CONFIG_DOC));
+export async function getQuizConfig(gameId: string): Promise<QuizConfig> {
+  const snap = await getDoc(gameDoc(gameId));
   if (!snap.exists()) {
     return { histoire: "", texts: {}, gameStatus: "actif" };
   }
   const data = snap.data() as QuizConfig;
   return {
+    nom: data.nom,
     histoire: data.histoire ?? "",
     texts: data.texts ?? {},
     gameStatus: data.gameStatus ?? "actif",
@@ -85,8 +143,8 @@ export async function getQuizConfig(): Promise<QuizConfig> {
 
 // merge: true pour ne jamais écraser un champ (ex. l'histoire) quand on ne
 // sauvegarde que les fragments, ou l'inverse.
-export async function saveQuizConfig(config: Partial<QuizConfig>): Promise<void> {
-  await setDoc(doc(db, CONFIG_DOC), config, { merge: true });
+export async function saveQuizConfig(gameId: string, config: Partial<QuizConfig>): Promise<void> {
+  await setDoc(gameDoc(gameId), config, { merge: true });
 }
 
 // Abonnement en temps réel à gameStatus (pause d'urgence de l'organisateur).
@@ -94,8 +152,8 @@ export async function saveQuizConfig(config: Partial<QuizConfig>): Promise<void>
 // bloquer immédiatement une équipe déjà en train de jouer dès que
 // l'organisateur appuie sur pause, sans attendre un rechargement de page.
 // Retourne la fonction de désabonnement.
-export function ecouterGameStatus(callback: (status: GameStatus) => void): () => void {
-  return onSnapshot(doc(db, CONFIG_DOC), (snap) => {
+export function ecouterGameStatus(gameId: string, callback: (status: GameStatus) => void): () => void {
+  return onSnapshot(gameDoc(gameId), (snap) => {
     const data = snap.exists() ? (snap.data() as QuizConfig) : null;
     callback(data?.gameStatus ?? "actif");
   });
@@ -106,10 +164,10 @@ export function ecouterGameStatus(callback: (status: GameStatus) => void): () =>
 // l'histoire, pour repartir d'une page blanche avant d'importer son propre
 // scénario. Les équipes ne sont pas touchées (gérées séparément dans
 // l'onglet "Équipes & salles").
-export async function viderScenario(): Promise<void> {
-  const existingQuestions = await getAllQuestions();
-  await Promise.all(existingQuestions.map((q) => deleteQuestion(q.id)));
-  await saveQuizConfig({ histoire: "" });
+export async function viderScenario(gameId: string): Promise<void> {
+  const existingQuestions = await getAllQuestions(gameId);
+  await Promise.all(existingQuestions.map((q) => deleteQuestion(gameId, q.id)));
+  await saveQuizConfig(gameId, { histoire: "" });
 }
 
 // --- Import d'un scénario personnalisé (texte extrait d'un Word ou PDF) ---
@@ -118,55 +176,58 @@ export async function viderScenario(): Promise<void> {
 // valeur déjà enregistrée est conservée).
 // Crée aussi automatiquement une équipe par salle du document qui n'a pas
 // encore d'équipe (les équipes existantes ne sont jamais touchées).
-export async function importerScenario(parsed: {
-  histoire: string | null;
-  questions: Omit<Question, "id">[];
-}): Promise<{ enigmes: number; equipesCreees: number }> {
-  const existingQuestions = await getAllQuestions();
-  await Promise.all(existingQuestions.map((q) => deleteQuestion(q.id)));
-  await Promise.all(parsed.questions.map((q) => addQuestion(q)));
+export async function importerScenario(
+  gameId: string,
+  parsed: {
+    histoire: string | null;
+    questions: Omit<Question, "id">[];
+  }
+): Promise<{ enigmes: number; equipesCreees: number }> {
+  const existingQuestions = await getAllQuestions(gameId);
+  await Promise.all(existingQuestions.map((q) => deleteQuestion(gameId, q.id)));
+  await Promise.all(parsed.questions.map((q) => addQuestion(gameId, q)));
 
-  if (parsed.histoire !== null) await saveQuizConfig({ histoire: parsed.histoire });
+  if (parsed.histoire !== null) await saveQuizConfig(gameId, { histoire: parsed.histoire });
 
   // Une équipe par salle du document, seulement pour les salles qui n'ont
   // pas déjà une équipe (on ne duplique jamais, on ne touche pas à
   // l'existant).
   const sallesDuDocument = [...new Set(parsed.questions.map((q) => q.salle).filter(Boolean))];
-  const equipesExistantes = await getAllTeams();
+  const equipesExistantes = await getAllTeams(gameId);
   const sallesDejaAttribuees = new Set(equipesExistantes.map((t) => t.salle));
   const nouvellesSalles = sallesDuDocument.filter((s) => !sallesDejaAttribuees.has(s));
-  await Promise.all(nouvellesSalles.map((salle) => addTeam({ nom: salle, salle })));
+  await Promise.all(nouvellesSalles.map((salle) => addTeam(gameId, { nom: salle, salle })));
 
-  const questionsApres = await getAllQuestions();
+  const questionsApres = await getAllQuestions(gameId);
   return { enigmes: questionsApres.length, equipesCreees: nouvellesSalles.length };
 }
 
 // --- Équipes ---
 
-export async function getAllTeams(): Promise<Team[]> {
-  const snap = await getDocs(collection(db, TEAMS_COL));
+export async function getAllTeams(gameId: string): Promise<Team[]> {
+  const snap = await getDocs(teamsCol(gameId));
   return snap.docs
     .map((d) => ({ id: d.id, ...(d.data() as Omit<Team, "id">) }))
     .sort((a, b) => a.nom.localeCompare(b.nom));
 }
 
-export async function getTeam(id: string): Promise<Team | null> {
-  const snap = await getDoc(doc(db, TEAMS_COL, id));
+export async function getTeam(gameId: string, id: string): Promise<Team | null> {
+  const snap = await getDoc(teamDoc(gameId, id));
   if (!snap.exists()) return null;
   return { id: snap.id, ...(snap.data() as Omit<Team, "id">) };
 }
 
-export async function addTeam(t: Omit<Team, "id">): Promise<string> {
-  const ref = await addDoc(collection(db, TEAMS_COL), t);
+export async function addTeam(gameId: string, t: Omit<Team, "id">): Promise<string> {
+  const ref = await addDoc(teamsCol(gameId), t);
   return ref.id;
 }
 
-export async function updateTeam(id: string, t: Partial<Team>): Promise<void> {
-  await updateDoc(doc(db, TEAMS_COL, id), t);
+export async function updateTeam(gameId: string, id: string, t: Partial<Team>): Promise<void> {
+  await updateDoc(teamDoc(gameId, id), t);
 }
 
-export async function deleteTeam(id: string): Promise<void> {
-  await deleteDoc(doc(db, TEAMS_COL, id));
+export async function deleteTeam(gameId: string, id: string): Promise<void> {
+  await deleteDoc(teamDoc(gameId, id));
 }
 
 // --- Suivi en direct (lecture seule) de l'écran du chef d'équipe ---
@@ -184,9 +245,9 @@ function updatedAtEnMillis(value: unknown): number {
 // toujours réécrit avec l'horloge du serveur Firestore (pas celle de
 // l'appareil) : deux téléphones peuvent avoir une horloge locale décalée,
 // ce qui faussait la comparaison de fraîcheur utilisée par claimerChef.
-export async function publierLiveState(teamId: string, state: LiveState): Promise<void> {
+export async function publierLiveState(gameId: string, teamId: string, state: LiveState): Promise<void> {
   try {
-    await setDoc(doc(db, LIVE_STATE_COL, teamId), { ...state, updatedAt: serverTimestamp() });
+    await setDoc(liveStateDoc(gameId, teamId), { ...state, updatedAt: serverTimestamp() });
   } catch (e) {
     // best effort : le suivi en direct n'est pas critique pour le jeu du meneur,
     // mais on log pour pouvoir diagnostiquer (ex. règles Firestore non publiées).
@@ -211,17 +272,18 @@ export async function publierLiveState(teamId: string, state: LiveState): Promis
 // Relit le dernier état publié pour une équipe (ex. après un rechargement de
 // page) afin de reprendre le jeu là où il en était plutôt que de repartir de
 // la première énigme.
-export async function getLiveState(teamId: string): Promise<LiveState | null> {
-  const snap = await getDoc(doc(db, LIVE_STATE_COL, teamId));
+export async function getLiveState(gameId: string, teamId: string): Promise<LiveState | null> {
+  const snap = await getDoc(liveStateDoc(gameId, teamId));
   if (!snap.exists()) return null;
   return snap.data() as LiveState;
 }
 
 export async function claimerChef(
+  gameId: string,
   teamId: string,
   sessionId: string
 ): Promise<{ ok: boolean }> {
-  const ref = doc(db, LIVE_STATE_COL, teamId);
+  const ref = liveStateDoc(gameId, teamId);
   try {
     return await runTransaction(db, async (tx) => {
       const snap = await tx.get(ref);
@@ -249,10 +311,11 @@ export async function claimerChef(
 // Abonnement en lecture seule pour les membres de l'équipe qui suivent le
 // meneur. Retourne la fonction de désabonnement.
 export function ecouterLiveState(
+  gameId: string,
   teamId: string,
   callback: (state: LiveState | null) => void
 ): () => void {
-  return onSnapshot(doc(db, LIVE_STATE_COL, teamId), (snap) => {
+  return onSnapshot(liveStateDoc(gameId, teamId), (snap) => {
     callback(snap.exists() ? (snap.data() as LiveState) : null);
   });
 }

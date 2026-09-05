@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, use } from "react";
 import { getAllTeams, claimerChef, getQuizConfig, saveQuizConfig } from "@/lib/data";
 import { Team, fusionnerTextes, GameTexts } from "@/lib/types";
 import { getSessionId } from "@/lib/session";
@@ -9,7 +9,8 @@ import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import { useAdminMode } from "@/lib/adminMode";
 
-export default function ChoixEquipe() {
+export default function ChoixEquipe({ params }: { params: Promise<{ gameId: string }> }) {
+  const { gameId } = use(params);
   const router = useRouter();
   const { editMode } = useAdminMode();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -21,13 +22,13 @@ export default function ChoixEquipe() {
   const continueRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    Promise.all([getAllTeams(), getQuizConfig()])
+    Promise.all([getAllTeams(gameId), getQuizConfig(gameId)])
       .then(([ts, config]) => {
         setTeams(ts);
         setTexts(fusionnerTextes(config.texts));
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [gameId]);
 
   function selectionner(id: string) {
     setSelected(id);
@@ -45,26 +46,26 @@ export default function ChoixEquipe() {
     // on ne prend pas la main de chef d'équipe (ça ne doit jamais bloquer
     // ni déloger une vraie équipe en train de jouer).
     if (!editMode) {
-      const { ok } = await claimerChef(selected, getSessionId());
+      const { ok } = await claimerChef(gameId, selected, getSessionId());
       if (!ok) {
         setNavigating(false);
         setErreurChef(true);
         return;
       }
     }
-    setTimeout(() => router.push(`/jouer/${selected}`), 500);
+    setTimeout(() => router.push(`/g/${gameId}/jouer/${selected}`), 500);
   }
 
   async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
     const next = { ...texts, [key]: value };
     setTexts(next);
-    await saveQuizConfig({ texts: next });
+    await saveQuizConfig(gameId, { texts: next });
   }
 
   function commencerSuiveur() {
     if (!selected) return;
     setNavigating(true);
-    setTimeout(() => router.push(`/jouer/${selected}/suivre`), 500);
+    setTimeout(() => router.push(`/g/${gameId}/jouer/${selected}/suivre`), 500);
   }
 
   if (loading) return <LoadingScreen label={texts.equipeChargementLabel} />;

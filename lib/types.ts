@@ -46,9 +46,19 @@ export interface Question {
 }
 
 export interface QuizConfig {
+  nom?: string; // nom du jeu, affiché dans la liste des jeux de l'organisateur
+  createdAt?: number; // date de création (Date.now()), pour trier la liste des jeux
   histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
   texts?: Partial<GameTexts>; // tous les autres textes du site, éditables depuis l'admin
   gameStatus?: GameStatus; // absent = "actif" (rétrocompatible avec les parties déjà en cours)
+}
+
+// Résumé d'un jeu affiché dans la liste des jeux de l'organisateur
+// (espace organisateur racine, avant de choisir un jeu à administrer).
+export interface GameMeta {
+  id: string;
+  nom: string;
+  createdAt: number;
 }
 
 // --- Tous les textes affichés sur les pages joueur (hors énoncés d'énigmes,

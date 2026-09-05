@@ -10,6 +10,7 @@ import RichText from "@/app/components/RichText";
 
 export default function SuivreEquipe() {
   const params = useParams();
+  const gameId = Array.isArray(params.gameId) ? params.gameId[0] : params.gameId;
   const teamId = Array.isArray(params.teamId) ? params.teamId[0] : params.teamId;
 
   const [team, setTeam] = useState<Team | null>(null);
@@ -18,20 +19,20 @@ export default function SuivreEquipe() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!teamId) return;
-    getTeam(teamId).then(setTeam);
-    getQuizConfig().then((config) => setTexts(fusionnerTextes(config.texts)));
-    const unsubscribe = ecouterLiveState(teamId, (s) => {
+    if (!teamId || !gameId) return;
+    getTeam(gameId, teamId).then(setTeam);
+    getQuizConfig(gameId).then((config) => setTexts(fusionnerTextes(config.texts)));
+    const unsubscribe = ecouterLiveState(gameId, teamId, (s) => {
       setState(s);
       setLoading(false);
     });
     return unsubscribe;
-  }, [teamId]);
+  }, [gameId, teamId]);
 
   async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
     const next = { ...texts, [key]: value };
     setTexts(next);
-    await saveQuizConfig({ texts: next });
+    if (gameId) await saveQuizConfig(gameId, { texts: next });
   }
 
   if (loading) return <LoadingScreen label={texts.suivreChargementLabel} />;
