@@ -15,7 +15,7 @@ export default function EspaceOrganisateur() {
 }
 
 function ConnexionOrganisateur() {
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,12 +30,31 @@ function ConnexionOrganisateur() {
     if (!result.ok) setError(result.error ?? "Une erreur est survenue.");
   }
 
+  async function connexionGoogle() {
+    setError("");
+    const result = await signInWithGoogle();
+    if (!result.ok && result.error) setError(result.error);
+  }
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
       <h1 className="text-xl font-semibold mb-1 text-brand-navy">Espace organisateur</h1>
       <p className="text-sm text-slate-400 mb-6">Connectez-vous à votre compte</p>
 
       <div className="flex flex-col gap-3 w-72">
+        <button
+          onClick={connexionGoogle}
+          className="flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 rounded-lg px-4 py-2 text-sm font-medium text-brand-navy transition"
+        >
+          Se connecter avec Google
+        </button>
+
+        <div className="flex items-center gap-2 text-xs text-slate-300 my-1">
+          <div className="h-px flex-1 bg-slate-200" />
+          ou
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
+
         <input
           type="email"
           value={email}
