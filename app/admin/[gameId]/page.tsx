@@ -33,6 +33,7 @@ import {
   DEFAULT_GAME_TEXTS,
   fusionnerTextes,
   TempsGeneral,
+  SALLE_UNIQUE,
 } from "@/lib/types";
 import { SCENARIO_FORMAT_GUIDE, extraireTexteFichier, parseScenario } from "@/lib/scenarioParser";
 import { useAuth } from "@/lib/auth";
@@ -59,7 +60,6 @@ const emptyTeamForm = {
 // la notion de salle par équipe n'existe plus côté organisateur (elle reste
 // seulement en interne, dans le modèle de données, pour ne pas casser les
 // parties déjà enregistrées).
-const SALLE_UNIQUE = "circuit";
 
 export default function Admin({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = use(params);
@@ -512,7 +512,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       setImportMessage(
         `Import réussi : ${resultat.enigmes} énigme(s)/page(s) importée(s)` +
           (resultat.equipesCreees > 0
-            ? `, ${resultat.equipesCreees} équipe(s) créée(s) automatiquement (une par salle).`
+            ? `, ${resultat.equipesCreees} équipe créée automatiquement.`
             : ".")
       );
     } catch (e) {

@@ -48,7 +48,7 @@ ENIGME 1
 ...
 
 Règles :
-- Une ligne "SALLE: ..." commence une nouvelle salle ; tout ce qui suit (énigmes, pages code, pages info) lui appartient jusqu'à la prochaine ligne "SALLE:".
+- Le jeu ne gère qu'un seul circuit commun à toutes les équipes : les lignes "SALLE: ..." sont facultatives et purement pour organiser votre document (elles n'ont plus d'effet sur le jeu, toutes les énigmes du document sont importées dans le même circuit, dans l'ordre où elles apparaissent).
 - Une ligne "ENIGME <numéro>" commence une nouvelle énigme (le numéro sert juste de repère pour vous, l'ordre réel est celui du document).
 - Une ligne "PAGE CODE" commence une page intercalaire (verrou par code, sans tentatives limitées).
 - Une ligne "PAGE INFO" commence une page vierge purement informative (juste un texte et un bouton pour continuer, pas de code à saisir).

@@ -27,6 +27,7 @@ import {
   TempsGeneral,
   TempsGeneralAjustement,
   BroadcastMessage,
+  SALLE_UNIQUE,
 } from "./types";
 
 // --- Structure multi-tenant ---
@@ -246,8 +247,17 @@ export async function viderScenario(gameId: string): Promise<void> {
 // Remplace toutes les énigmes existantes par celles du document fourni.
 // L'histoire n'est écrasée que si le document en contient une (sinon la
 // valeur déjà enregistrée est conservée).
-// Crée aussi automatiquement une équipe par salle du document qui n'a pas
-// encore d'équipe (les équipes existantes ne sont jamais touchées).
+//
+// Le jeu ne gère plus qu'un seul circuit partagé par toutes les équipes :
+// même si le document importé contient encore d'anciennes lignes "SALLE:"
+// (héritées de l'ancien format multi-salles), toutes les énigmes importées
+// sont forcées sur LA MÊME salle unique — celle déjà utilisée par les
+// équipes existantes s'il y en a, sinon SALLE_UNIQUE. Sans ce recalage, les
+// énigmes importées se retrouvaient sur une salle différente de celle
+// affichée dans l'admin et utilisée par les équipes, donc invisibles et
+// injouables.
+// Crée une équipe par défaut seulement si aucune équipe n'existe encore
+// (les équipes existantes ne sont jamais touchées ni dupliquées).
 export async function importerScenario(
   gameId: string,
   parsed: {
@@ -256,22 +266,25 @@ export async function importerScenario(
   }
 ): Promise<{ enigmes: number; equipesCreees: number }> {
   const existingQuestions = await getAllQuestions(gameId);
+  const equipesExistantes = await getAllTeams(gameId);
+
+  const salleCible: Salle = equipesExistantes[0]?.salle ?? SALLE_UNIQUE;
+
   await Promise.all(existingQuestions.map((q) => deleteQuestion(gameId, q.id)));
-  await Promise.all(parsed.questions.map((q) => addQuestion(gameId, q)));
+  await Promise.all(
+    parsed.questions.map((q) => addQuestion(gameId, { ...q, salle: salleCible }))
+  );
 
   if (parsed.histoire !== null) await saveQuizConfig(gameId, { histoire: parsed.histoire });
 
-  // Une équipe par salle du document, seulement pour les salles qui n'ont
-  // pas déjà une équipe (on ne duplique jamais, on ne touche pas à
-  // l'existant).
-  const sallesDuDocument = [...new Set(parsed.questions.map((q) => q.salle).filter(Boolean))];
-  const equipesExistantes = await getAllTeams(gameId);
-  const sallesDejaAttribuees = new Set(equipesExistantes.map((t) => t.salle));
-  const nouvellesSalles = sallesDuDocument.filter((s) => !sallesDejaAttribuees.has(s));
-  await Promise.all(nouvellesSalles.map((salle) => addTeam(gameId, { nom: salle, salle })));
+  let equipesCreees = 0;
+  if (equipesExistantes.length === 0) {
+    await addTeam(gameId, { nom: "Équipe 1", salle: salleCible });
+    equipesCreees = 1;
+  }
 
   const questionsApres = await getAllQuestions(gameId);
-  return { enigmes: questionsApres.length, equipesCreees: nouvellesSalles.length };
+  return { enigmes: questionsApres.length, equipesCreees };
 }
 
 // --- Équipes ---

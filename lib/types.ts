@@ -1,6 +1,13 @@
 // Nom de salle libre, choisi par l'organisateur (ex. "Amphi B", "TD1", "Salle 204").
 export type Salle = string;
 
+// Le jeu ne gère plus qu'un seul circuit partagé par toutes les équipes
+// (l'ancien concept de plusieurs salles avec des énigmes différentes par
+// salle a été abandonné). Cette valeur est la salle interne unique utilisée
+// par défaut pour toutes les équipes et toutes les énigmes tant qu'aucune
+// autre valeur n'existe déjà en base.
+export const SALLE_UNIQUE: Salle = "circuit";
+
 // "code" = page intercalaire ajoutée librement dans le circuit par
 // l'organisateur : un texte affiché en haut + un code à saisir pour débloquer
 // la suite (pas de tentatives limitées, pas de temps limite).
