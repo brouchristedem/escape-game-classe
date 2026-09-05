@@ -31,7 +31,7 @@ import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
 import PauseOverlay from "@/app/components/PauseOverlay";
-import { useAdminMode } from "@/lib/adminMode";
+import { useAdminMode, editModePersiste } from "@/lib/adminMode";
 
 type Phase = "loading" | "error" | "playing" | "termine";
 
@@ -92,12 +92,12 @@ export default function JouerEquipe() {
         // clic depuis la page de sélection d'équipe). Si un autre appareil a
         // déjà la main, on s'arrête là sans démarrer la partie.
         // Exception : l'organisateur en mode édition ne prend jamais la main
-        // (lecture directe de sessionStorage ici pour éviter tout décalage
-        // avec le contexte React au tout premier rendu).
-        const previewOrganisateur =
-          typeof window !== "undefined" &&
-          sessionStorage.getItem("admin_ok") === "1" &&
-          sessionStorage.getItem("admin_edit_mode") === "1";
+        // (lecture directe et synchrone de sessionStorage ici, avant même
+        // que l'auth Firebase ait fini de se résoudre, pour éviter tout
+        // décalage avec le contexte React au tout premier rendu — ce n'est
+        // qu'un confort de navigation, la vraie protection reste les règles
+        // Firestore).
+        const previewOrganisateur = editModePersiste(gameId!);
         if (!previewOrganisateur) {
           const { ok } = await claimerChef(gameId!, teamId, getSessionId());
           if (!ok) {

@@ -1,21 +1,24 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "integration2026";
-const STORAGE_KEY = "admin_ok";
+import { usePathname } from "next/navigation";
+import { useAuth } from "./auth";
+import { getQuizConfig } from "./data";
 
 interface AdminModeContextValue {
-  isAdmin: boolean; // mot de passe organisateur déjà saisi dans cet onglet
+  // Connecté ET organisateur du jeu actuellement affiché (déduit de l'URL,
+  // ex. /g/{gameId}/...). Remplace l'ancien mot de passe partagé côté client
+  // (Phase 2 du passage multi-tenant) : l'accès dépend maintenant d'un vrai
+  // compte Firebase Auth et de la présence de son uid dans les organizers
+  // du jeu concerné (vérifié aussi côté règles Firestore).
+  isAdmin: boolean;
   editMode: boolean; // survol "mode édition" activé sur les pages du jeu
-  unlock: (password: string) => boolean;
   setEditMode: (v: boolean) => void;
 }
 
 const AdminModeContext = createContext<AdminModeContextValue>({
   isAdmin: false,
   editMode: false,
-  unlock: () => false,
   setEditMode: () => {},
 });
 
@@ -23,101 +26,74 @@ export function useAdminMode() {
   return useContext(AdminModeContext);
 }
 
+// Extrait le gameId de l'URL courante si elle correspond à une page joueur
+// d'un jeu (/g/{gameId}/...). Rend null pour toute autre page (accueil,
+// espace organisateur /admin, etc.) : le mode édition inline n'a de sens
+// que sur les pages joueur.
+function gameIdDepuisChemin(pathname: string): string | null {
+  const match = pathname.match(/^\/g\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
+function cleEditMode(gameId: string): string {
+  return `admin_edit_mode_${gameId}`;
+}
+
+// Lecture synchrone (pas d'attente d'auth/Firestore) du mode édition
+// persisté pour un jeu donné. Utilisée par les pages joueur pour décider,
+// dès le tout premier rendu, si l'organisateur en train de parcourir le
+// circuit doit être dispensé de revendiquer le rôle de chef d'équipe — un
+// simple confort de navigation, pas une frontière de sécurité (celle-ci
+// reste les règles Firestore, qui vérifient le vrai compte organisateur).
+export function editModePersiste(gameId: string): boolean {
+  if (typeof window === "undefined") return false;
+  return sessionStorage.getItem(cleEditMode(gameId)) === "1";
+}
+
 export function AdminModeProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { user, loading: authLoading } = useAuth();
+  const gameId = gameIdDepuisChemin(pathname ?? "");
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [editMode, setEditModeState] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(STORAGE_KEY) === "1") setIsAdmin(true);
-    if (sessionStorage.getItem("admin_edit_mode") === "1") setEditModeState(true);
-  }, []);
-
-  function unlock(password: string) {
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem(STORAGE_KEY, "1");
-      setIsAdmin(true);
-      return true;
-    }
-    return false;
-  }
+    setIsAdmin(false);
+    setEditModeState(false);
+    if (!gameId || !user || authLoading) return;
+    let annule = false;
+    getQuizConfig(gameId).then((config) => {
+      if (annule) return;
+      const estOrganisateur = (config.organizers ?? []).includes(user.uid);
+      setIsAdmin(estOrganisateur);
+      if (estOrganisateur) setEditModeState(editModePersiste(gameId));
+    });
+    return () => {
+      annule = true;
+    };
+  }, [gameId, user, authLoading]);
 
   function setEditMode(v: boolean) {
     setEditModeState(v);
-    sessionStorage.setItem("admin_edit_mode", v ? "1" : "0");
+    if (gameId) sessionStorage.setItem(cleEditMode(gameId), v ? "1" : "0");
   }
 
   return (
-    <AdminModeContext.Provider value={{ isAdmin, editMode: isAdmin && editMode, unlock, setEditMode }}>
+    <AdminModeContext.Provider value={{ isAdmin, editMode: isAdmin && editMode, setEditMode }}>
       {children}
-      <AdminModeWidget isAdmin={isAdmin} editMode={editMode} unlock={unlock} setEditMode={setEditMode} />
+      {isAdmin && <AdminModeWidget editMode={editMode} setEditMode={setEditMode} />}
     </AdminModeContext.Provider>
   );
 }
 
 function AdminModeWidget({
-  isAdmin,
   editMode,
-  unlock,
   setEditMode,
 }: {
-  isAdmin: boolean;
   editMode: boolean;
-  unlock: (p: string) => boolean;
   setEditMode: (v: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [pwd, setPwd] = useState("");
-  const [error, setError] = useState("");
-
-  function trySubmit() {
-    if (unlock(pwd)) {
-      setError("");
-      setPwd("");
-      setOpen(false);
-      setEditMode(true);
-    } else {
-      setError("Mot de passe incorrect.");
-    }
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="fixed bottom-4 right-4 z-50 print:hidden">
-        {open ? (
-          <div className="bg-white rounded-2xl shadow-xl ring-1 ring-black/10 p-3 flex flex-col gap-2 w-56">
-            <p className="text-xs text-slate-500">Accès organisateur</p>
-            <input
-              type="password"
-              value={pwd}
-              onChange={(e) => setPwd(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && trySubmit()}
-              placeholder="Mot de passe"
-              autoFocus
-              className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-brand-blue"
-            />
-            {error && <p className="text-red-500 text-xs">{error}</p>}
-            <div className="flex gap-2">
-              <button onClick={trySubmit} className="bg-brand-blue text-white text-xs font-semibold rounded-full px-3 py-1.5">
-                Entrer
-              </button>
-              <button onClick={() => setOpen(false)} className="text-slate-400 text-xs">
-                Annuler
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => setOpen(true)}
-            title="Accès organisateur"
-            className="h-9 w-9 rounded-full bg-white/70 backdrop-blur ring-1 ring-black/10 text-slate-400 hover:text-brand-blue hover:ring-brand-blue/40 transition flex items-center justify-center text-sm"
-          >
-            ⚙
-          </button>
-        )}
-      </div>
-    );
-  }
-
   return (
     <div className="fixed bottom-4 right-4 z-50 print:hidden">
       <button

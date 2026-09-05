@@ -48,6 +48,9 @@ export interface Question {
 export interface QuizConfig {
   nom?: string; // nom du jeu, affiché dans la liste des jeux de l'organisateur
   createdAt?: number; // date de création (Date.now()), pour trier la liste des jeux
+  // UIDs Firebase Auth des organisateurs autorisés à administrer ce jeu
+  // (Phase 2 du passage multi-tenant : remplace le mot de passe unique).
+  organizers?: string[];
   histoire?: string; // texte affiché sur la page d'histoire, avant le choix de l'équipe
   texts?: Partial<GameTexts>; // tous les autres textes du site, éditables depuis l'admin
   gameStatus?: GameStatus; // absent = "actif" (rétrocompatible avec les parties déjà en cours)

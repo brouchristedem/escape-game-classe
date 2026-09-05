@@ -10,7 +10,6 @@ import {
   onSnapshot,
   query,
   where,
-  orderBy,
   runTransaction,
   serverTimestamp,
   Timestamp,
@@ -46,22 +45,30 @@ function liveStateDoc(gameId: string, teamId: string) {
 }
 
 // --- Gestion des jeux (espace organisateur, vue d'ensemble) ---
+// Un organisateur ne voit et ne peut créer que ses propres jeux (voir champ
+// organizers sur le document games/{gameId}, vérifié aussi côté règles
+// Firestore — voir firestore.rules).
 
-export async function listerJeux(): Promise<GameMeta[]> {
-  const snap = await getDocs(query(collection(db, GAMES_COL), orderBy("createdAt", "desc")));
-  return snap.docs.map((d) => {
-    const data = d.data() as Partial<QuizConfig>;
-    return {
-      id: d.id,
-      nom: data.nom ?? "Jeu sans nom",
-      createdAt: typeof data.createdAt === "number" ? data.createdAt : 0,
-    };
-  });
+export async function listerJeux(uid: string): Promise<GameMeta[]> {
+  const snap = await getDocs(
+    query(collection(db, GAMES_COL), where("organizers", "array-contains", uid))
+  );
+  return snap.docs
+    .map((d) => {
+      const data = d.data() as Partial<QuizConfig>;
+      return {
+        id: d.id,
+        nom: data.nom ?? "Jeu sans nom",
+        createdAt: typeof data.createdAt === "number" ? data.createdAt : 0,
+      };
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
 }
 
-export async function creerJeu(nom: string): Promise<string> {
+export async function creerJeu(nom: string, uid: string): Promise<string> {
   const ref = await addDoc(collection(db, GAMES_COL), {
     nom: nom.trim() || "Jeu sans nom",
+    organizers: [uid],
     histoire: "",
     texts: {},
     gameStatus: "actif" as GameStatus,
@@ -135,6 +142,7 @@ export async function getQuizConfig(gameId: string): Promise<QuizConfig> {
   const data = snap.data() as QuizConfig;
   return {
     nom: data.nom,
+    organizers: data.organizers ?? [],
     histoire: data.histoire ?? "",
     texts: data.texts ?? {},
     gameStatus: data.gameStatus ?? "actif",

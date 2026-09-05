@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, use } from "react";
+import Link from "next/link";
 import {
   getAllQuestions,
   addQuestion,
@@ -29,8 +30,7 @@ import {
   fusionnerTextes,
 } from "@/lib/types";
 import { SCENARIO_FORMAT_GUIDE, extraireTexteFichier, parseScenario } from "@/lib/scenarioParser";
-
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "integration2026";
+import { useAuth } from "@/lib/auth";
 
 const emptyQuestionForm = {
   salle: "",
@@ -52,39 +52,41 @@ const emptyTeamForm = {
 
 export default function Admin({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = use(params);
-  const [unlocked, setUnlocked] = useState(false);
-  const [pwd, setPwd] = useState("");
-  const [error, setError] = useState("");
+  const { user, loading: authLoading } = useAuth();
+  const [statut, setStatut] = useState<"verification" | "autorise" | "refuse">("verification");
 
   useEffect(() => {
-    if (sessionStorage.getItem("admin_ok") === "1") setUnlocked(true);
-  }, []);
-
-  function tryUnlock() {
-    if (pwd === ADMIN_PASSWORD) {
-      sessionStorage.setItem("admin_ok", "1");
-      setUnlocked(true);
-    } else {
-      setError("Mot de passe incorrect.");
+    if (authLoading) return;
+    if (!user) {
+      setStatut("refuse");
+      return;
     }
+    let annule = false;
+    getQuizConfig(gameId).then((config) => {
+      if (annule) return;
+      setStatut((config.organizers ?? []).includes(user.uid) ? "autorise" : "refuse");
+    });
+    return () => {
+      annule = true;
+    };
+  }, [gameId, user, authLoading]);
+
+  if (statut === "verification") {
+    return <main className="min-h-screen bg-white" />;
   }
 
-  if (!unlocked) {
+  if (statut === "refuse") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
-        <h1 className="text-xl font-semibold mb-4 text-brand-navy">Espace organisateur</h1>
-        <input
-          type="password"
-          value={pwd}
-          onChange={(e) => setPwd(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && tryUnlock()}
-          placeholder="Mot de passe"
-          className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-4 py-2 mb-3 w-64 text-center text-brand-navy"
-        />
-        <button onClick={tryUnlock} className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition">
-          Entrer
-        </button>
-        {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
+        <h1 className="text-xl font-semibold mb-2 text-brand-navy">Accès refusé</h1>
+        <p className="text-sm text-slate-500 mb-6">
+          {user
+            ? "Ce compte n'est pas organisateur de ce jeu."
+            : "Vous devez être connecté pour administrer ce jeu."}
+        </p>
+        <Link href="/admin" className="text-sm font-semibold text-brand-blue">
+          ← Retour à mes jeux
+        </Link>
       </main>
     );
   }

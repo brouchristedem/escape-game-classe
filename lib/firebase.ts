@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { initializeFirestore, getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,3 +23,8 @@ export const app = appExistaitDeja ? getApp() : initializeApp(firebaseConfig);
 export const db = appExistaitDeja
   ? getFirestore(app)
   : initializeFirestore(app, { ignoreUndefinedProperties: true });
+
+// Authentification organisateur (Phase 2 du passage multi-tenant) : chaque
+// organisateur a un vrai compte Firebase Auth (email/mot de passe), au lieu
+// du mot de passe unique partagé côté client de la Phase 1.
+export const auth = getAuth(app);

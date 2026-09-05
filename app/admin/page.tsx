@@ -4,51 +4,80 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { listerJeux, creerJeu, supprimerJeu } from "@/lib/data";
 import { GameMeta } from "@/lib/types";
-
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "integration2026";
+import { useAuth } from "@/lib/auth";
 
 export default function EspaceOrganisateur() {
-  const [unlocked, setUnlocked] = useState(false);
-  const [pwd, setPwd] = useState("");
-  const [error, setError] = useState("");
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    if (sessionStorage.getItem("admin_ok") === "1") setUnlocked(true);
-  }, []);
-
-  function tryUnlock() {
-    if (pwd === ADMIN_PASSWORD) {
-      sessionStorage.setItem("admin_ok", "1");
-      setUnlocked(true);
-    } else {
-      setError("Mot de passe incorrect.");
-    }
-  }
-
-  if (!unlocked) {
-    return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
-        <h1 className="text-xl font-semibold mb-4 text-brand-navy">Espace organisateur</h1>
-        <input
-          type="password"
-          value={pwd}
-          onChange={(e) => setPwd(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && tryUnlock()}
-          placeholder="Mot de passe"
-          className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-4 py-2 mb-3 w-64 text-center text-brand-navy"
-        />
-        <button onClick={tryUnlock} className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition">
-          Entrer
-        </button>
-        {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
-      </main>
-    );
-  }
-
-  return <ListeJeux />;
+  if (loading) return <main className="min-h-screen bg-white" />;
+  if (!user) return <ConnexionOrganisateur />;
+  return <ListeJeux uid={user.uid} email={user.email ?? ""} />;
 }
 
-function ListeJeux() {
+function ConnexionOrganisateur() {
+  const { signIn, signUp } = useAuth();
+  const [mode, setMode] = useState<"connexion" | "inscription">("connexion");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function valider() {
+    if (!email.trim() || !password) return;
+    setSubmitting(true);
+    setError("");
+    const result = mode === "connexion" ? await signIn(email.trim(), password) : await signUp(email.trim(), password);
+    setSubmitting(false);
+    if (!result.ok) setError(result.error ?? "Une erreur est survenue.");
+  }
+
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
+      <h1 className="text-xl font-semibold mb-1 text-brand-navy">Espace organisateur</h1>
+      <p className="text-sm text-slate-400 mb-6">
+        {mode === "connexion" ? "Connectez-vous à votre compte" : "Créez votre compte organisateur"}
+      </p>
+
+      <div className="flex flex-col gap-3 w-72">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="E-mail"
+          className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-4 py-2 text-brand-navy"
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && valider()}
+          placeholder="Mot de passe"
+          className="bg-brand-blue-light border border-brand-blue-light focus:border-brand-blue outline-none rounded-lg px-4 py-2 text-brand-navy"
+        />
+        <button
+          onClick={valider}
+          disabled={submitting || !email.trim() || !password}
+          className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition disabled:opacity-40"
+        >
+          {submitting ? "..." : mode === "connexion" ? "Se connecter" : "Créer mon compte"}
+        </button>
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        <button
+          onClick={() => {
+            setMode(mode === "connexion" ? "inscription" : "connexion");
+            setError("");
+          }}
+          className="text-xs text-brand-blue underline text-center mt-1"
+        >
+          {mode === "connexion" ? "Pas encore de compte ? Créez-en un" : "Déjà un compte ? Connectez-vous"}
+        </button>
+      </div>
+    </main>
+  );
+}
+
+function ListeJeux({ uid, email }: { uid: string; email: string }) {
+  const { signOut } = useAuth();
   const [jeux, setJeux] = useState<GameMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [nouveauNom, setNouveauNom] = useState("");
@@ -57,7 +86,7 @@ function ListeJeux() {
   async function reload() {
     setLoading(true);
     try {
-      setJeux(await listerJeux());
+      setJeux(await listerJeux(uid));
     } finally {
       setLoading(false);
     }
@@ -65,13 +94,14 @@ function ListeJeux() {
 
   useEffect(() => {
     reload();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid]);
 
   async function creer() {
     if (!nouveauNom.trim() || creating) return;
     setCreating(true);
     try {
-      await creerJeu(nouveauNom);
+      await creerJeu(nouveauNom, uid);
       setNouveauNom("");
       await reload();
     } finally {
@@ -87,7 +117,12 @@ function ListeJeux() {
 
   return (
     <main className="min-h-screen px-6 py-12 bg-white max-w-2xl mx-auto w-full">
-      <h1 className="text-2xl font-extrabold mb-1 text-brand-navy">Mes jeux</h1>
+      <div className="flex items-start justify-between mb-1">
+        <h1 className="text-2xl font-extrabold text-brand-navy">Mes jeux</h1>
+        <button onClick={() => signOut()} className="text-xs text-slate-400 hover:text-slate-600">
+          Déconnexion ({email})
+        </button>
+      </div>
       <p className="text-sm text-slate-500 mb-8">
         Chaque jeu a son propre circuit, ses équipes et son propre lien à partager — totalement indépendant des autres.
       </p>
