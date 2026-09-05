@@ -15,8 +15,7 @@ export default function EspaceOrganisateur() {
 }
 
 function ConnexionOrganisateur() {
-  const { signIn, signUp } = useAuth();
-  const [mode, setMode] = useState<"connexion" | "inscription">("connexion");
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,7 +25,7 @@ function ConnexionOrganisateur() {
     if (!email.trim() || !password) return;
     setSubmitting(true);
     setError("");
-    const result = mode === "connexion" ? await signIn(email.trim(), password) : await signUp(email.trim(), password);
+    const result = await signIn(email.trim(), password);
     setSubmitting(false);
     if (!result.ok) setError(result.error ?? "Une erreur est survenue.");
   }
@@ -34,9 +33,7 @@ function ConnexionOrganisateur() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
       <h1 className="text-xl font-semibold mb-1 text-brand-navy">Espace organisateur</h1>
-      <p className="text-sm text-slate-400 mb-6">
-        {mode === "connexion" ? "Connectez-vous à votre compte" : "Créez votre compte organisateur"}
-      </p>
+      <p className="text-sm text-slate-400 mb-6">Connectez-vous à votre compte</p>
 
       <div className="flex flex-col gap-3 w-72">
         <input
@@ -59,18 +56,9 @@ function ConnexionOrganisateur() {
           disabled={submitting || !email.trim() || !password}
           className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition disabled:opacity-40"
         >
-          {submitting ? "..." : mode === "connexion" ? "Se connecter" : "Créer mon compte"}
+          {submitting ? "..." : "Se connecter"}
         </button>
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-        <button
-          onClick={() => {
-            setMode(mode === "connexion" ? "inscription" : "connexion");
-            setError("");
-          }}
-          className="text-xs text-brand-blue underline text-center mt-1"
-        >
-          {mode === "connexion" ? "Pas encore de compte ? Créez-en un" : "Déjà un compte ? Connectez-vous"}
-        </button>
       </div>
     </main>
   );
