@@ -331,8 +331,20 @@ export async function extraireTexteFichier(file: File): Promise<string> {
     for (let p = 1; p <= pdf.numPages; p++) {
       const page = await pdf.getPage(p);
       const content = await page.getTextContent();
-      const strings = content.items.map((it) => ("str" in it ? it.str : ""));
-      pages.push(strings.join(" "));
+      // pdf.js ne renvoie pas un texte déjà mis en page : chaque item est un
+      // fragment positionné sur la page, sans retour à la ligne implicite.
+      // Chaque item indique lui-même (hasEOL) s'il est suivi d'une fin de
+      // ligne dans le PDF d'origine ; sans ça, tout le texte d'une page se
+      // retrouverait recollé en une seule ligne géante, et aucun mot-clé
+      // (ENIGME, TYPE:, TEXTE:...) ne serait plus jamais reconnu en début de
+      // ligne par le parser.
+      let texte = "";
+      for (const it of content.items) {
+        if (!("str" in it)) continue;
+        texte += it.str;
+        texte += it.hasEOL ? "\n" : " ";
+      }
+      pages.push(texte);
     }
     return pages.join("\n");
   }
