@@ -43,8 +43,15 @@ export default async function AProposDuDeveloppeur({
 
         <div className="mt-8 flex flex-col items-center text-center">
           {photo ? (
-            <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-brand-blue-light">
-              <Image src={photo} alt="Christ Edem" fill className="object-cover" sizes="128px" />
+            <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-brand-blue-light shadow-md">
+              <Image
+                src={photo}
+                alt="Christ Edem BROU"
+                width={480}
+                height={720}
+                className="w-full h-auto"
+                priority
+              />
             </div>
           ) : (
             <div className="w-32 h-32 rounded-full bg-brand-blue-light flex items-center justify-center ring-4 ring-brand-blue-light">
