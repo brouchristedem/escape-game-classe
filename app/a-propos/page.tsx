@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import fs from "fs";
 import path from "path";
+import TarifsCards, { WHATSAPP_NUMERO } from "@/app/components/TarifsCards";
 
 // Photo facultative : dépose un fichier à public/team/christ-edem.jpg (ou .png)
 // et il remplacera automatiquement l'avatar par défaut ci-dessous, sans
@@ -102,16 +103,38 @@ export default async function AProposDuDeveloppeur({
         </section>
 
         <section className="mt-6 flex flex-wrap gap-3 justify-center">
-          {/*
-            TODO (Christ) : ajoute ici tes vrais liens de contact (WhatsApp,
-            LinkedIn, Instagram...) si tu en veux d'autres que l'e-mail.
-          */}
           <a
-            href="mailto:brouchristedem@gmail.com"
+            href={`https://wa.me/${WHATSAPP_NUMERO}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-brand-blue hover:bg-brand-navy text-white font-semibold text-sm px-5 py-2.5 rounded-full transition"
           >
             Me contacter
           </a>
+          <a
+            href="#tarifs"
+            className="bg-brand-blue-light text-brand-navy font-semibold text-sm px-5 py-2.5 rounded-full transition hover:bg-brand-blue/20"
+          >
+            Tarifs
+          </a>
+        </section>
+
+        <section id="tarifs" className="mt-14 pt-10 border-t border-black/5">
+          <h2 className="text-xl font-extrabold text-brand-navy text-center mb-1">Créer votre propre jeu</h2>
+          <p className="text-slate-500 text-sm text-center mb-8 max-w-sm mx-auto">
+            Un prix unique par événement, sans abonnement : vous payez une fois, votre jeu est prêt à jouer.
+          </p>
+          <TarifsCards />
+          <div className="mt-6 flex justify-center">
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("Bonjour, je souhaite créer mon propre jeu sur la plateforme.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-brand-blue hover:bg-brand-navy text-white font-semibold text-sm px-6 py-3 rounded-full transition"
+            >
+              Créer mon jeu
+            </a>
+          </div>
         </section>
       </div>
     </main>
