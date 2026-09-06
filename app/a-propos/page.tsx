@@ -17,15 +17,29 @@ function trouverPhoto(): string | null {
   return null;
 }
 
-export default function AProposDuDeveloppeur() {
+export default async function AProposDuDeveloppeur({
+  searchParams,
+}: {
+  searchParams: Promise<{ jeu?: string }>;
+}) {
   const photo = trouverPhoto();
+  // Si on arrive depuis la page de jeu (lien avec ?jeu=<gameId>), le retour
+  // doit ramener au jeu, jamais à l'espace organisateur : un joueur ne doit
+  // pas voir/pouvoir accéder à cet espace depuis cette page.
+  const { jeu } = await searchParams;
 
   return (
     <main className="min-h-screen bg-white px-6 py-12">
       <div className="max-w-2xl mx-auto">
-        <Link href="/admin" className="text-sm text-brand-blue underline">
-          ← Retour à l&apos;espace organisateur
-        </Link>
+        {jeu ? (
+          <Link href={`/g/${jeu}`} className="text-sm text-brand-blue underline">
+            ← Retour au jeu
+          </Link>
+        ) : (
+          <Link href="/admin" className="text-sm text-brand-blue underline">
+            ← Retour à l&apos;espace organisateur
+          </Link>
+        )}
 
         <div className="mt-8 flex flex-col items-center text-center">
           {photo ? (
@@ -38,43 +52,46 @@ export default function AProposDuDeveloppeur() {
             </div>
           )}
 
-          <h1 className="mt-5 text-2xl font-extrabold text-brand-navy">Christ Edem</h1>
+          <h1 className="mt-5 text-2xl font-extrabold text-brand-navy">Christ Edem BROU</h1>
           <p className="text-brand-blue font-medium text-sm mt-1">
-            Développeur indépendant — Côte d&apos;Ivoire
+            Développeur web, applications &amp; plateformes SaaS · Entrepreneur
           </p>
         </div>
 
         <section className="mt-10 bg-brand-blue-light rounded-2xl p-6 text-slate-700 leading-relaxed space-y-4">
-          {/*
-            TODO (Christ) : remplace ce texte par ta propre présentation —
-            ton parcours, ta motivation, ce que tu proposes. Écris-le comme
-            tu le sentirais à l'oral, pas de style corporate obligatoire.
-          */}
           <p>
-            Bonjour, je m&apos;appelle Christ Edem. Je développe des outils web pour le marché ivoirien et
-            ouest-africain, comme cet escape game digital et{" "}
+            Actuellement en Licence 3 Logistique, je poursuis un parcours à la croisée de deux mondes qui me
+            passionnent : l&apos;informatique, notamment l&apos;intelligence artificielle, et la logistique
+            digitale.
+          </p>
+          <p>
+            Cette plateforme est née d&apos;une envie simple : favoriser des moments d&apos;intégration et de
+            complicité, entre étudiants d&apos;abord, mais aussi entre amis. Elle s&apos;adresse à toute
+            personne souhaitant développer sa culture générale et son esprit d&apos;analyse en bonne
+            compagnie, ainsi qu&apos;à tout organisateur désireux de créer son propre jeu et d&apos;en faire
+            profiter d&apos;autres.
+          </p>
+          <p>Vous souhaitez créer votre propre jeu sur cette plateforme ? Contactez-moi pour en discuter.</p>
+          <p>
+            Je suis également le développeur de{" "}
             <a
-              href="https://moncvpro-ci.com"
+              href="https://moncvpro-ci.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="text-brand-blue underline"
             >
               MON CV PRO CI
             </a>
-            .
-          </p>
-          <p>
-            [Remplace ce paragraphe par ton propre texte de présentation : ton parcours, ce qui t&apos;a donné
-            envie de créer cette plateforme, ce que tu proposes à ceux qui souhaitent l&apos;utiliser pour leur
-            propre événement.]
+            , une application web SaaS permettant de créer des CV professionnels (15 modèles) avec aperçu en
+            temps réel, export PDF et paiement mobile (Wave), déployée en production et utilisée par des
+            clients réels en Côte d&apos;Ivoire.
           </p>
         </section>
 
         <section className="mt-6 flex flex-wrap gap-3 justify-center">
           {/*
             TODO (Christ) : ajoute ici tes vrais liens de contact (WhatsApp,
-            e-mail, LinkedIn, Instagram...). Exemple ci-dessous, à adapter ou
-            supprimer.
+            LinkedIn, Instagram...) si tu en veux d'autres que l'e-mail.
           */}
           <a
             href="mailto:brouchristedem@gmail.com"

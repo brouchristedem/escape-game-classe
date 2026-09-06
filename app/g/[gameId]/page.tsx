@@ -82,7 +82,10 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
 
-        <Link href="/a-propos" className="mt-10 text-xs text-slate-400 hover:text-brand-blue underline">
+        <Link
+          href={`/a-propos?jeu=${gameId}`}
+          className="mt-10 text-xs text-slate-400 hover:text-brand-blue underline"
+        >
           À propos du développeur
         </Link>
       </div>
