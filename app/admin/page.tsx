@@ -79,6 +79,10 @@ function ConnexionOrganisateur() {
         </button>
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
       </div>
+
+      <Link href="/a-propos" className="mt-10 text-xs text-slate-400 hover:text-brand-blue underline">
+        À propos du développeur
+      </Link>
     </main>
   );
 }
@@ -211,6 +215,12 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
           ))}
         </div>
       )}
+
+      <div className="mt-10 text-center">
+        <Link href="/a-propos" className="text-xs text-slate-400 hover:text-brand-blue underline">
+          À propos du développeur
+        </Link>
+      </div>
     </main>
   );
 }
