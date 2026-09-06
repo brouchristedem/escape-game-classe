@@ -30,22 +30,22 @@ export default function TarifsCards() {
           key={p.nom}
           className={`rounded-2xl p-6 flex flex-col ${
             p.recommande
-              ? "bg-brand-navy text-white ring-2 ring-brand-blue shadow-lg scale-[1.03]"
-              : "bg-brand-blue-light/60 ring-1 ring-black/5"
+              ? "bg-gradient-to-b from-brass/25 to-parchment ring-2 ring-brass shadow-lg shadow-brass/10 scale-[1.03]"
+              : "bg-parchment/95 ring-1 ring-brass/15"
           }`}
         >
           {p.recommande && (
-            <span className="self-start text-[10px] font-bold uppercase tracking-wide bg-brand-blue text-white rounded-full px-2.5 py-1 mb-3">
+            <span className="self-start text-[10px] font-bold uppercase tracking-wide bg-brass text-ink rounded-full px-2.5 py-1 mb-3">
               Le plus choisi
             </span>
           )}
-          <h3 className={`font-bold text-lg ${p.recommande ? "text-white" : "text-brand-navy"}`}>{p.nom}</h3>
-          <p className={`text-xs mb-4 ${p.recommande ? "text-white/70" : "text-slate-500"}`}>{p.cible}</p>
-          <p className={`text-3xl font-extrabold mb-5 ${p.recommande ? "text-white" : "text-brand-navy"}`}>{p.prix}</p>
-          <ul className={`space-y-2 text-sm flex-1 ${p.recommande ? "text-white/90" : "text-slate-600"}`}>
+          <h3 className="font-headline font-bold text-lg text-ink">{p.nom}</h3>
+          <p className="text-xs mb-4 text-ink/60">{p.cible}</p>
+          <p className="text-3xl font-extrabold mb-5 text-brass-dark">{p.prix}</p>
+          <ul className="space-y-2 text-sm flex-1 text-ink/80">
             {p.details.map((d) => (
               <li key={d} className="flex items-start gap-2">
-                <span className={p.recommande ? "text-brand-blue-light" : "text-brand-blue"}>✓</span>
+                <span className="text-brass-dark">✓</span>
                 {d}
               </li>
             ))}

@@ -2,7 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import fs from "fs";
 import path from "path";
+import { Bitter, IBM_Plex_Mono } from "next/font/google";
 import { WHATSAPP_NUMERO } from "@/app/components/TarifsCards";
+import GameLogo from "@/app/components/GameLogo";
+
+const bitter = Bitter({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-bitter", display: "swap" });
+const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-plexmono", display: "swap" });
 
 // Photo facultative : dépose un fichier à public/team/christ-edem.jpg (ou .png)
 // et il remplacera automatiquement l'avatar par défaut ci-dessous, sans
@@ -31,15 +36,20 @@ export default async function AProposDuDeveloppeur({
   const retourHref = jeu ? `/g/${jeu}` : "/admin";
 
   return (
-    <main className="min-h-screen bg-white px-6 py-12">
-      <div className="max-w-2xl mx-auto">
-        <Link href={retourHref} className="text-sm text-brand-blue underline">
+    <main className={`${bitter.variable} ${plexMono.variable} relative min-h-screen bg-ink px-6 py-12 overflow-hidden`}>
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+
+      <div className="relative z-10 max-w-2xl mx-auto">
+        <Link href={retourHref} className="text-sm text-brass-light underline">
           ← Retour à l&apos;accueil
         </Link>
 
         <div className="mt-8 flex flex-col items-center text-center">
+          <GameLogo className="w-16 h-auto mb-6 opacity-90" />
+
           {photo ? (
-            <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-brand-blue-light shadow-md">
+            <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-brass/30 shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
               <Image
                 src={photo}
                 alt="Christ Edem BROU"
@@ -50,18 +60,18 @@ export default async function AProposDuDeveloppeur({
               />
             </div>
           ) : (
-            <div className="w-32 h-32 rounded-full bg-brand-blue-light flex items-center justify-center ring-4 ring-brand-blue-light">
-              <span className="text-3xl font-extrabold text-brand-navy">CE</span>
+            <div className="w-32 h-32 rounded-full bg-ink-2 flex items-center justify-center ring-4 ring-brass/30">
+              <span className="font-headline text-3xl font-extrabold text-brass-light">CE</span>
             </div>
           )}
 
-          <h1 className="mt-5 text-2xl font-extrabold text-brand-navy">Christ Edem BROU</h1>
-          <p className="text-brand-blue font-medium text-sm mt-1">
+          <h1 className="font-headline mt-5 text-2xl font-bold text-parchment">Christ Edem BROU</h1>
+          <p className="text-brass-light font-medium text-sm mt-1">
             Développeur web, applications &amp; plateformes SaaS · Entrepreneur
           </p>
         </div>
 
-        <section className="mt-10 bg-brand-blue-light rounded-2xl p-6 text-slate-700 leading-relaxed space-y-4">
+        <section className="mt-10 bg-parchment rounded-2xl ring-1 ring-brass/25 shadow-[0_10px_30px_rgba(0,0,0,0.35)] p-6 text-ink/80 leading-relaxed space-y-4">
           <p>
             Actuellement en Licence 3 Logistique, je poursuis un parcours à la croisée de deux mondes qui me
             passionnent : l&apos;informatique, notamment l&apos;intelligence artificielle, et la logistique
@@ -76,7 +86,7 @@ export default async function AProposDuDeveloppeur({
           </p>
           <p>
             Vous souhaitez créer votre propre jeu sur cette plateforme ?{" "}
-            <Link href="/tarifs" className="text-brand-blue underline">
+            <Link href="/tarifs" className="text-brass-dark underline font-semibold">
               Voir les tarifs
             </Link>
             .
@@ -87,7 +97,7 @@ export default async function AProposDuDeveloppeur({
               href="https://moncvpro-ci.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand-blue underline"
+              className="text-brass-dark underline font-semibold"
             >
               MON CV PRO CI
             </a>
@@ -102,7 +112,7 @@ export default async function AProposDuDeveloppeur({
             href={`https://wa.me/${WHATSAPP_NUMERO}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-brand-blue hover:bg-brand-navy text-white font-semibold text-sm px-5 py-2.5 rounded-full transition"
+            className="bg-gradient-to-r from-brass to-brass-dark text-ink font-semibold text-sm px-5 py-2.5 rounded-full shadow-md shadow-brass/20 transition hover:-translate-y-0.5"
           >
             Me contacter
           </a>
