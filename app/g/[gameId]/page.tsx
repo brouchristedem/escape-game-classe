@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { use } from "react";
@@ -80,6 +81,10 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
           <EditableText as="span" value={texts.accueilBouton} onSave={(v) => saveText("accueilBouton", v)} className="text-white" />
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
+
+        <Link href="/a-propos" className="mt-10 text-xs text-slate-400 hover:text-brand-blue underline">
+          À propos du développeur
+        </Link>
       </div>
     </main>
   );
