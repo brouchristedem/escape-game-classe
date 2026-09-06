@@ -33,7 +33,6 @@ import {
   DEFAULT_GAME_TEXTS,
   fusionnerTextes,
   TempsGeneral,
-  SALLE_UNIQUE,
 } from "@/lib/types";
 import { SCENARIO_FORMAT_GUIDE, extraireTexteFichier, parseScenario } from "@/lib/scenarioParser";
 import { useAuth } from "@/lib/auth";
@@ -56,10 +55,8 @@ const emptyTeamForm = {
   nom: "",
 };
 
-// Toutes les équipes partagent désormais un seul circuit d'énigmes en ligne :
-// la notion de salle par équipe n'existe plus côté organisateur (elle reste
-// seulement en interne, dans le modèle de données, pour ne pas casser les
-// parties déjà enregistrées).
+// Chaque équipe a son propre circuit d'énigmes, indépendant des autres (voir
+// equipeCircuitId plus bas, dans l'onglet "Circuit du jeu").
 
 export default function Admin({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = use(params);
@@ -173,19 +170,12 @@ function AdminPanel({ gameId }: { gameId: string }) {
     reload();
   }, []);
 
-  // Salles connues = union des salles des équipes et des étapes existantes
-  // (conservé en interne pour la compatibilité des anciennes données ;
-  // l'organisateur ne voit plus jamais ce concept).
-  const sallesConnues = useMemo(() => {
-    const s = new Set<string>();
-    teams.forEach((t) => t.salle && s.add(t.salle));
-    questions.forEach((q) => q.salle && s.add(q.salle));
-    return Array.from(s).sort();
-  }, [teams, questions]);
-  // Toutes les étapes vivent désormais dans une seule salle interne : si
-  // d'anciennes données utilisaient encore plusieurs salles, on les regroupe
-  // simplement toutes dans le même circuit affiché.
-  const salleActive = sallesConnues[0] ?? SALLE_UNIQUE;
+  // Équipe actuellement sélectionnée dans l'onglet "Circuit du jeu" : chaque
+  // équipe a son propre circuit d'énigmes, complètement indépendant des
+  // autres. Par défaut, la première équipe (ordre alphabétique, comme dans
+  // l'onglet Équipes).
+  const [equipeCircuitId, setEquipeCircuitId] = useState<string | null>(null);
+  const equipeCircuit = teams.find((t) => t.id === equipeCircuitId) ?? teams[0] ?? null;
 
   // ---------- Équipes ----------
 
@@ -202,8 +192,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
     if (editingTeamId) {
       await updateTeam(gameId, editingTeamId, { nom: teamForm.nom.trim() });
     } else {
-      // Toutes les équipes partagent le même circuit d'énigmes en ligne.
-      await addTeam(gameId, { nom: teamForm.nom.trim(), salle: salleActive });
+      await addTeam(gameId, { nom: teamForm.nom.trim() });
     }
     resetTeamForm();
     reload();
@@ -216,20 +205,26 @@ function AdminPanel({ gameId }: { gameId: string }) {
   }
 
   async function removeTeam(id: string) {
-    if (!confirm("Supprimer cette équipe ?")) return;
+    if (!confirm("Supprimer cette équipe ? Toutes ses énigmes seront supprimées aussi.")) return;
+    const aSupprimer = questions.filter((q) => q.salle === id);
+    await Promise.all(aSupprimer.map((q) => deleteQuestion(gameId, q.id)));
     await deleteTeam(gameId, id);
+    if (equipeCircuitId === id) setEquipeCircuitId(null);
     reload();
   }
 
   // ---------- Circuit du jeu (énigmes et pages code, dans l'ordre) ----------
 
   const etapesSalle = useMemo(
-    () => questions.filter((q) => q.salle === salleActive).sort((a, b) => a.ordre - b.ordre),
-    [questions, salleActive]
+    () =>
+      equipeCircuit
+        ? questions.filter((q) => q.salle === equipeCircuit.salle).sort((a, b) => a.ordre - b.ordre)
+        : [],
+    [questions, equipeCircuit]
   );
 
   function resetQForm(type: TypeEnigme = "qcm") {
-    setQForm({ ...emptyQuestionForm, salle: salleActive, type });
+    setQForm({ ...emptyQuestionForm, salle: equipeCircuit?.salle ?? "", type });
     setEditingQId(null);
   }
 
@@ -337,6 +332,10 @@ function AdminPanel({ gameId }: { gameId: string }) {
   // le circuit, puis ouvre l'étape créée dans le formulaire pour que
   // l'organisateur la remplisse tout de suite.
   async function inserer(apres: Question | null, type: TypeEnigme) {
+    if (!equipeCircuit) {
+      alert("Créez d'abord une équipe dans l'onglet Équipes avant d'ajouter des énigmes.");
+      return;
+    }
     setSavingStep(true);
     try {
       const ordreProvisoire = apres ? apres.ordre + 0.5 : (etapesSalle[0]?.ordre ?? 1) - 0.5;
@@ -347,7 +346,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           ? "Nouvelle page vierge à rédiger."
           : "Nouvelle énigme à rédiger.";
       const base = {
-        salle: salleActive,
+        salle: equipeCircuit.salle,
         ordre: ordreProvisoire,
         type,
         texte: texteParDefaut,
@@ -648,7 +647,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
             />
             {!editingTeamId && (
               <p className="text-slate-500 text-xs mb-4">
-                Toutes les équipes partagent le même circuit d&apos;énigmes en ligne.
+                Chaque équipe a son propre circuit d&apos;énigmes, à créer ensuite dans l&apos;onglet
+                &quot;Circuit du jeu&quot;.
               </p>
             )}
 
@@ -689,8 +689,36 @@ function AdminPanel({ gameId }: { gameId: string }) {
         </div>
       )}
 
-      {!loading && tab === "circuit" && (
-        <div className="grid lg:grid-cols-2 gap-8">
+      {!loading && tab === "circuit" && teams.length === 0 && (
+        <div className="bg-brand-blue-light rounded-2xl p-6 text-center text-brand-navy">
+          Aucune équipe pour l&apos;instant. Créez d&apos;abord une équipe dans l&apos;onglet{" "}
+          <button className="underline font-semibold" onClick={() => setTab("equipes")}>
+            Équipes
+          </button>{" "}
+          pour pouvoir lui ajouter des énigmes.
+        </div>
+      )}
+
+      {!loading && tab === "circuit" && teams.length > 0 && (
+        <>
+          <div className="mb-4 flex items-center gap-3 flex-wrap">
+            <label className="text-sm text-slate-500">Circuit de l&apos;équipe :</label>
+            <select
+              value={equipeCircuit?.id ?? ""}
+              onChange={(e) => setEquipeCircuitId(e.target.value)}
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2"
+            >
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.nom}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs text-slate-400">
+              Chaque équipe a son propre circuit d&apos;énigmes, indépendant des autres.
+            </span>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-8">
           {/* Formulaire */}
           <section className="bg-brand-blue-light rounded-2xl p-5">
             <h2 className="font-semibold mb-4 text-brand-navy">
@@ -936,7 +964,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
               ))}
             </div>
           </section>
-        </div>
+          </div>
+        </>
       )}
 
       {!loading && tab === "scenario" && (

@@ -12,7 +12,7 @@ export const SCENARIO_FORMAT_GUIDE = `Rédigez votre document (Word ou PDF) en t
 HISTOIRE:
 (Le texte affiché aux équipes avant qu'elles ne choisissent leur équipe. Plusieurs lignes possibles.)
 
-SALLE: TD1
+EQUIPE: Nom de la première équipe
 
 ENIGME 1
 TYPE: QCM
@@ -42,13 +42,14 @@ CODE: LECODEATTENDU
 PAGE INFO
 TEXTE: Texte affiché à l'écran, purement informatif. Entourez un mot de **doubles étoiles** pour l'afficher en gras.
 
-SALLE: TD2
+EQUIPE: Nom de la deuxième équipe
 
 ENIGME 1
 ...
 
 Règles :
-- Le jeu ne gère qu'un seul circuit commun à toutes les équipes : les lignes "SALLE: ..." sont facultatives et purement pour organiser votre document (elles n'ont plus d'effet sur le jeu, toutes les énigmes du document sont importées dans le même circuit, dans l'ordre où elles apparaissent).
+- Chaque équipe a son propre circuit d'énigmes, indépendant des autres. Une ligne "EQUIPE: NomDeLEquipe" commence le circuit de cette équipe : tout ce qui suit (énigmes, pages code, pages info) lui appartient jusqu'à la prochaine ligne "EQUIPE:". Si l'équipe n'existe pas encore, elle est créée automatiquement ; si elle existe déjà (même nom), ses énigmes actuelles sont remplacées par celles du document.
+- Si le document ne contient aucune ligne "EQUIPE:", toutes les énigmes forment un seul circuit commun, appliqué à l'équipe existante s'il n'y en a qu'une, ou dupliqué à l'identique sur chaque équipe existante s'il y en a plusieurs (chaque équipe garde ensuite son propre exemplaire).
 - Une ligne "ENIGME <numéro>" commence une nouvelle énigme (le numéro sert juste de repère pour vous, l'ordre réel est celui du document).
 - Une ligne "PAGE CODE" commence une page intercalaire (verrou par code, sans tentatives limitées).
 - Une ligne "PAGE INFO" commence une page vierge purement informative (juste un texte et un bouton pour continuer, pas de code à saisir).
@@ -80,7 +81,7 @@ export interface ParsedScenario {
 }
 
 const RE_HISTOIRE = /^HISTOIRE\s*:?\s*$/i;
-const RE_SALLE = /^SALLE\s*:\s*(.+)$/i;
+const RE_EQUIPE = /^(EQUIPE|SALLE)\s*:\s*(.+)$/i;
 const RE_ENIGME = /^ENIGME\s+\d+\s*:?\s*$/i;
 const RE_PAGE_CODE = /^PAGE\s*CODE\s*:?\s*$/i;
 const RE_PAGE_INFO = /^PAGE\s*INFO\s*:?\s*$/i;
@@ -103,7 +104,7 @@ function estUneLigneRepere(ligneBrute: string): boolean {
   const l = normaliserAccents(ligneBrute.trim());
   return (
     RE_HISTOIRE.test(l) ||
-    RE_SALLE.test(l) ||
+    RE_EQUIPE.test(l) ||
     RE_ENIGME.test(l) ||
     RE_PAGE_CODE.test(l) ||
     RE_PAGE_INFO.test(l) ||
@@ -189,11 +190,11 @@ export function parseScenario(texteBrut: string): ParsedScenario {
       section = "histoire";
       continue;
     }
-    const mSalle = ligne.match(RE_SALLE);
+    const mSalle = ligne.match(RE_EQUIPE);
     if (mSalle) {
       clotureEtape();
       section = null;
-      salleCourante = ligneOriginale.replace(/^SALLE\s*:\s*/i, "").trim();
+      salleCourante = ligneOriginale.replace(/^(EQUIPE|SALLE)\s*:\s*/i, "").trim();
       ordreCourant = 0;
       continue;
     }

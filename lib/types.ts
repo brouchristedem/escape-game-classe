@@ -1,12 +1,9 @@
-// Nom de salle libre, choisi par l'organisateur (ex. "Amphi B", "TD1", "Salle 204").
+// Chaque équipe a son propre circuit d'énigmes, complètement indépendant des
+// autres équipes. `Salle` est l'identifiant interne (côté base de données)
+// de ce circuit — en pratique toujours égal à l'id de l'équipe propriétaire,
+// auto-attribué à la création (voir addTeam). Il n'y a plus de notion de
+// salle partagée entre plusieurs équipes.
 export type Salle = string;
-
-// Le jeu ne gère plus qu'un seul circuit partagé par toutes les équipes
-// (l'ancien concept de plusieurs salles avec des énigmes différentes par
-// salle a été abandonné). Cette valeur est la salle interne unique utilisée
-// par défaut pour toutes les équipes et toutes les énigmes tant qu'aucune
-// autre valeur n'existe déjà en base.
-export const SALLE_UNIQUE: Salle = "circuit";
 
 // "code" = page intercalaire ajoutée librement dans le circuit par
 // l'organisateur : un texte affiché en haut + un code à saisir pour débloquer
@@ -28,12 +25,12 @@ export type GameStatus = "actif" | "pause";
 export interface Team {
   id: string;
   nom: string; // nom de l'équipe (au lieu d'un numéro)
-  salle: Salle; // salle attribuée par l'organisateur
+  salle: Salle; // identifiant interne du circuit d'énigmes de cette équipe (= son propre id)
 }
 
 export interface Question {
   id: string;
-  salle: Salle;
+  salle: Salle; // identifiant de l'équipe propriétaire de cette énigme (= Team.salle de cette équipe)
   ordre: number;
   type: TypeEnigme;
   texte: string; // énoncé de l'énigme, texte en haut d'une page "code", ou texte d'une page "info" (accepte **gras**)

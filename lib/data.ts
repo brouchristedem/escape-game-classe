@@ -27,7 +27,6 @@ import {
   TempsGeneral,
   TempsGeneralAjustement,
   BroadcastMessage,
-  SALLE_UNIQUE,
 } from "./types";
 
 // --- Structure multi-tenant ---
@@ -244,20 +243,19 @@ export async function viderScenario(gameId: string): Promise<void> {
 }
 
 // --- Import d'un scénario personnalisé (texte extrait d'un Word ou PDF) ---
-// Remplace toutes les énigmes existantes par celles du document fourni.
+// Chaque équipe a son propre circuit d'énigmes. Le document peut délimiter
+// les énigmes de chaque équipe avec une ligne "EQUIPE: NomDeLEquipe" (voir
+// scenarioParser) : à l'import, chaque bloc est rattaché à l'équipe du même
+// nom (créée si elle n'existe pas encore), et remplace uniquement les
+// énigmes de CETTE équipe (les autres équipes ne sont jamais touchées).
+// Si le document ne contient aucune ligne "EQUIPE:" (un seul bloc sans nom),
+// ces énigmes sont appliquées à l'équipe existante si une seule existe, ou
+// dupliquées à l'identique sur toutes les équipes existantes s'il y en a
+// plusieurs (chaque équipe garde ensuite son propre exemplaire, modifiable
+// indépendamment), ou donnent lieu à la création d'une équipe par défaut
+// s'il n'en existe encore aucune.
 // L'histoire n'est écrasée que si le document en contient une (sinon la
 // valeur déjà enregistrée est conservée).
-//
-// Le jeu ne gère plus qu'un seul circuit partagé par toutes les équipes :
-// même si le document importé contient encore d'anciennes lignes "SALLE:"
-// (héritées de l'ancien format multi-salles), toutes les énigmes importées
-// sont forcées sur LA MÊME salle unique — celle déjà utilisée par les
-// équipes existantes s'il y en a, sinon SALLE_UNIQUE. Sans ce recalage, les
-// énigmes importées se retrouvaient sur une salle différente de celle
-// affichée dans l'admin et utilisée par les équipes, donc invisibles et
-// injouables.
-// Crée une équipe par défaut seulement si aucune équipe n'existe encore
-// (les équipes existantes ne sont jamais touchées ni dupliquées).
 export async function importerScenario(
   gameId: string,
   parsed: {
@@ -265,26 +263,59 @@ export async function importerScenario(
     questions: Omit<Question, "id">[];
   }
 ): Promise<{ enigmes: number; equipesCreees: number }> {
-  const existingQuestions = await getAllQuestions(gameId);
   const equipesExistantes = await getAllTeams(gameId);
+  const equipesParNom = new Map(equipesExistantes.map((t) => [t.nom.trim().toLowerCase(), t]));
 
-  const salleCible: Salle = equipesExistantes[0]?.salle ?? SALLE_UNIQUE;
+  // Regroupe les énigmes du document par label d'équipe (champ `salle` du
+  // parser = ce qui suit "EQUIPE:"/"SALLE:" dans le document, "" si absent).
+  const groupes = new Map<string, Omit<Question, "id">[]>();
+  for (const q of parsed.questions) {
+    const label = q.salle.trim();
+    if (!groupes.has(label)) groupes.set(label, []);
+    groupes.get(label)!.push(q);
+  }
 
-  await Promise.all(existingQuestions.map((q) => deleteQuestion(gameId, q.id)));
-  await Promise.all(
-    parsed.questions.map((q) => addQuestion(gameId, { ...q, salle: salleCible }))
-  );
+  let equipesCreees = 0;
+  let totalEnigmes = 0;
+
+  async function remplacerEnigmesEquipe(equipeId: string, qs: Omit<Question, "id">[]) {
+    const anciennes = await getQuestionsForSalle(gameId, equipeId);
+    await Promise.all(anciennes.map((q) => deleteQuestion(gameId, q.id)));
+    await Promise.all(qs.map((q) => addQuestion(gameId, { ...q, salle: equipeId })));
+    totalEnigmes += qs.length;
+  }
+
+  const labelsNommes = [...groupes.keys()].filter((l) => l !== "");
+
+  if (labelsNommes.length > 0) {
+    // Document organisé par équipe : chaque label rejoint l'équipe du même
+    // nom (créée si besoin). Un éventuel groupe sans label (texte avant la
+    // première ligne EQUIPE:) est ignoré : il n'appartient à aucune équipe.
+    for (const label of labelsNommes) {
+      let equipe = equipesParNom.get(label.toLowerCase());
+      if (!equipe) {
+        const id = await addTeam(gameId, { nom: label });
+        equipe = { id, nom: label, salle: id };
+        equipesParNom.set(label.toLowerCase(), equipe);
+        equipesCreees++;
+      }
+      await remplacerEnigmesEquipe(equipe.salle, groupes.get(label)!);
+    }
+  } else {
+    // Document sans découpage par équipe : un seul bloc d'énigmes commun.
+    const communes = groupes.get("") ?? [];
+    if (equipesExistantes.length === 0) {
+      const id = await addTeam(gameId, { nom: "Équipe 1" });
+      equipesCreees = 1;
+      await remplacerEnigmesEquipe(id, communes);
+    } else {
+      await Promise.all(equipesExistantes.map((t) => remplacerEnigmesEquipe(t.salle, communes)));
+    }
+  }
 
   if (parsed.histoire !== null) await saveQuizConfig(gameId, { histoire: parsed.histoire });
 
-  let equipesCreees = 0;
-  if (equipesExistantes.length === 0) {
-    await addTeam(gameId, { nom: "Équipe 1", salle: salleCible });
-    equipesCreees = 1;
-  }
-
-  const questionsApres = await getAllQuestions(gameId);
-  return { enigmes: questionsApres.length, equipesCreees };
+  return { enigmes: totalEnigmes, equipesCreees };
 }
 
 // --- Équipes ---
@@ -302,8 +333,13 @@ export async function getTeam(gameId: string, id: string): Promise<Team | null> 
   return { id: snap.id, ...(snap.data() as Omit<Team, "id">) };
 }
 
-export async function addTeam(gameId: string, t: Omit<Team, "id">): Promise<string> {
-  const ref = await addDoc(teamsCol(gameId), t);
+// Chaque équipe possède désormais son propre circuit d'énigmes : le champ
+// `salle` (conservé tel quel côté Firestore pour ne rien casser) est
+// simplement l'identifiant Firestore de l'équipe elle-même, auto-attribué à
+// la création. Il n'existe plus de salle partagée entre plusieurs équipes.
+export async function addTeam(gameId: string, t: { nom: string }): Promise<string> {
+  const ref = doc(teamsCol(gameId));
+  await setDoc(ref, { nom: t.nom, salle: ref.id });
   return ref.id;
 }
 
