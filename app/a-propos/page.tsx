@@ -25,22 +25,17 @@ export default async function AProposDuDeveloppeur({
 }) {
   const photo = trouverPhoto();
   // Si on arrive depuis la page de jeu (lien avec ?jeu=<gameId>), le retour
-  // doit ramener au jeu, jamais à l'espace organisateur : un joueur ne doit
-  // pas voir/pouvoir accéder à cet espace depuis cette page.
+  // doit ramener à l'accueil du jeu, jamais à l'espace organisateur : un
+  // joueur ne doit pas voir/pouvoir accéder à cet espace depuis cette page.
   const { jeu } = await searchParams;
+  const retourHref = jeu ? `/g/${jeu}` : "/admin";
 
   return (
     <main className="min-h-screen bg-white px-6 py-12">
       <div className="max-w-2xl mx-auto">
-        {jeu ? (
-          <Link href={`/g/${jeu}`} className="text-sm text-brand-blue underline">
-            ← Retour au jeu
-          </Link>
-        ) : (
-          <Link href="/admin" className="text-sm text-brand-blue underline">
-            ← Retour à l&apos;espace organisateur
-          </Link>
-        )}
+        <Link href={retourHref} className="text-sm text-brand-blue underline">
+          ← Retour à l&apos;accueil
+        </Link>
 
         <div className="mt-8 flex flex-col items-center text-center">
           {photo ? (

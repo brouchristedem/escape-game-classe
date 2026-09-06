@@ -88,7 +88,8 @@ export default function SuivreEquipe() {
   const progress = ((state.index + (state.feedbackOk ? 1 : 0)) / state.totalQuestions) * 100;
 
   return (
-    <main className="min-h-screen flex flex-col px-6 py-8 bg-ink max-w-xl mx-auto w-full">
+    <main className="min-h-screen bg-ink">
+      <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
       {banner}
       <div className="mb-6">
@@ -186,6 +187,7 @@ export default function SuivreEquipe() {
       {state.awaitingContinue && (
         <p className="mt-6 text-center text-parchment/40 text-sm">{texts.suivreAttenteContinuer}</p>
       )}
+      </div>
     </main>
   );
 }

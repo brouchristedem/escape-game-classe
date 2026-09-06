@@ -1,12 +1,19 @@
 import Link from "next/link";
 import TarifsCards, { WHATSAPP_NUMERO } from "@/app/components/TarifsCards";
 
-export default function Tarifs() {
+export default async function Tarifs({
+  searchParams,
+}: {
+  searchParams: Promise<{ jeu?: string }>;
+}) {
+  const { jeu } = await searchParams;
+  const retourHref = jeu ? `/g/${jeu}` : "/admin";
+
   return (
     <main className="min-h-screen bg-white px-6 py-12">
       <div className="max-w-3xl mx-auto">
-        <Link href="/a-propos" className="text-sm text-brand-blue underline">
-          ← À propos du développeur
+        <Link href={retourHref} className="text-sm text-brand-blue underline">
+          ← Retour à l&apos;accueil
         </Link>
 
         <div className="mt-8 text-center">

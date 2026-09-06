@@ -80,7 +80,7 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
           À propos du développeur
         </Link>
         <Link
-          href="/tarifs"
+          href={`/tarifs?jeu=${gameId}`}
           className="mt-2 text-xs text-parchment/40 hover:text-brass-light underline"
         >
           Tarifs

@@ -559,7 +559,8 @@ export default function JouerEquipe() {
           </span>
         </div>
       )}
-      <main className="min-h-screen flex flex-col px-6 py-8 bg-ink max-w-xl mx-auto w-full">
+      <main className="min-h-screen bg-ink">
+      <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-parchment/60 mb-2">
           <span className="font-medium text-parchment">{team?.nom}</span>
@@ -877,6 +878,7 @@ export default function JouerEquipe() {
           )}
         </div>
       )}
+      </div>
       </main>
     </>
   );
