@@ -6,6 +6,16 @@
   --brand-navy: #1e3a6e;
   --brand-blue: #14a3dd;
   --brand-blue-light: #eaf6fc;
+
+  /* Identité "Escape Game" : réservée aux pages de jeu (voir app/g/layout.tsx),
+     l'espace organisateur garde la charte bleu/blanc ci-dessus. */
+  --ink: #0d1526;
+  --ink-2: #17233d;
+  --brass: #c9a24d;
+  --brass-light: #f2d99a;
+  --brass-dark: #8f6f2e;
+  --parchment: #f1e8d3;
+  --stamp-red: #b23a2e;
 }
 
 @theme inline {
@@ -14,14 +24,59 @@
   --color-brand-navy: var(--brand-navy);
   --color-brand-blue: var(--brand-blue);
   --color-brand-blue-light: var(--brand-blue-light);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-brass: var(--brass);
+  --color-brass-light: var(--brass-light);
+  --color-brass-dark: var(--brass-dark);
+  --color-parchment: var(--parchment);
+  --color-stamp-red: var(--stamp-red);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-headline: var(--font-bitter);
+  --font-codemono: var(--font-plexmono);
 }
 
-/* Charte IUA X Classe : fond blanc constant, pas de bascule sombre automatique */
+/* Espace organisateur : fond blanc constant, pas de bascule sombre automatique */
 
 body {
   background: radial-gradient(circle at top, #f6fbfe 0%, #ffffff 55%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.font-headline {
+  font-family: var(--font-bitter), Georgia, serif;
+}
+.font-codemono {
+  font-family: var(--font-plexmono), monospace;
+}
+
+/* Animations de l'identité "Escape Game" (logo + chrono critique) */
+@keyframes gl-seal-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@keyframes gl-beam-flicker {
+  0%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+  55% { opacity: 0.45; }
+  80% { opacity: 0.9; }
+}
+@keyframes timer-critical-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.55); }
+  50% { box-shadow: 0 0 0 8px rgba(178, 58, 46, 0); }
+}
+
+.gl-seal-glow { animation: gl-seal-glow 3.2s ease-in-out infinite; transform-origin: center; }
+.gl-beam { animation: gl-beam-flicker 2.6s ease-in-out infinite; transform-origin: center; }
+.gl-beam-2 { animation-delay: 0.4s; }
+.gl-beam-3 { animation-delay: 0.8s; }
+.animate-timer-critical { animation: timer-critical-pulse 1.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-seal-glow, .gl-beam, .animate-timer-critical {
+    animation: none !important;
+  }
+}
+
