@@ -5,6 +5,7 @@ import Link from "next/link";
 import { listerJeux, creerJeu, supprimerJeu } from "@/lib/data";
 import { GameMeta } from "@/lib/types";
 import { useAuth } from "@/lib/auth";
+import QrCodeModal from "@/app/components/QrCodeModal";
 
 export default function EspaceOrganisateur() {
   const { user, loading } = useAuth();
@@ -95,6 +96,7 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
   const [creating, setCreating] = useState(false);
   const [origin, setOrigin] = useState("");
   const [copieId, setCopieId] = useState<string | null>(null);
+  const [qrJeu, setQrJeu] = useState<GameMeta | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") setOrigin(window.location.origin);
@@ -201,6 +203,12 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
                   >
                     {copieId === j.id ? "Copié ✓" : "Copier"}
                   </button>
+                  <button
+                    onClick={() => setQrJeu(j)}
+                    className="text-xs text-slate-400 hover:text-brand-blue shrink-0"
+                  >
+                    QR code
+                  </button>
                 </div>
               </div>
               <div className="flex items-center gap-4 shrink-0">
@@ -221,6 +229,10 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
           À propos du développeur
         </Link>
       </div>
+
+      {qrJeu && (
+        <QrCodeModal lien={`${origin}/g/${qrJeu.id}`} nom={qrJeu.nom} onClose={() => setQrJeu(null)} />
+      )}
     </main>
   );
 }
