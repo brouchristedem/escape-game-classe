@@ -78,7 +78,13 @@ export default async function AProposDuDeveloppeur({
             compagnie, ainsi qu&apos;à tout organisateur désireux de créer son propre jeu et d&apos;en faire
             profiter d&apos;autres.
           </p>
-          <p>Vous souhaitez créer votre propre jeu sur cette plateforme ? Contactez-moi pour en discuter.</p>
+          <p>
+            Vous souhaitez créer votre propre jeu sur cette plateforme ?{" "}
+            <Link href="/tarifs" className="text-brand-blue underline">
+              Voir les tarifs
+            </Link>
+            .
+          </p>
           <p>
             Je suis également le développeur de{" "}
             <a
