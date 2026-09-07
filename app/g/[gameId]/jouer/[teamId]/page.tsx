@@ -62,6 +62,10 @@ export default function JouerEquipe() {
   const [feedback, setFeedback] = useState<{ text: string; ok: boolean } | null>(null);
   const [awaitingContinue, setAwaitingContinue] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const timeLeftRef = useRef<number | null>(null);
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
   // Fragment libre (Question.fragmentTexte) débloqué par la dernière bonne
   // réponse ; affiché avec le design "trophée" juste après la réponse.
   const [fragmentTexte, setFragmentTexte] = useState<string | null>(null);
@@ -290,19 +294,25 @@ export default function JouerEquipe() {
       feedbackOk: feedback?.ok ?? null,
       awaitingContinue,
       attempts,
-      timeLeft,
+      timeLeft: timeLeftRef.current,
       fragmentTexte,
       updatedAt: Date.now(),
       chefSessionId: getSessionId(),
     };
     publierLiveState(gameId!, teamId, state);
 
-    // Battement de coeur : même sans changement d'état (le chef d'équipe lit
-    // une énigme sans agir), on republie régulièrement pour que sa place ne
-    // soit pas considérée libre et reprise par un autre appareil.
+    // Battement de coeur régulier : republie l'état (avec le temps restant à
+    // jour) même sans changement d'action du chef d'équipe, à la fois pour
+    // que sa place ne soit pas considérée libre et reprise par un autre
+    // appareil, et pour que les personnes qui suivent en direct depuis
+    // /suivre ne restent jamais bloquées sur un état ancien. On ne republie
+    // PAS à chaque seconde de décompte (timeLeft n'est pas dans les
+    // dépendances ci-dessous) pour éviter une écriture Firestore par
+    // seconde et par équipe, qui a pu causer des désynchronisations en
+    // conditions réelles (connexion faible, écritures qui s'accumulent).
     const heartbeat = setInterval(() => {
-      publierLiveState(gameId!, teamId, { ...state, updatedAt: Date.now() });
-    }, 20_000);
+      publierLiveState(gameId!, teamId, { ...state, timeLeft: timeLeftRef.current, updatedAt: Date.now() });
+    }, 5_000);
     return () => clearInterval(heartbeat);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -318,7 +328,6 @@ export default function JouerEquipe() {
     feedback,
     awaitingContinue,
     attempts,
-    timeLeft,
     fragmentTexte,
   ]);
 

@@ -23,6 +23,13 @@ export default function GlobalOverlays({
   const [broadcastVisible, setBroadcastVisible] = useState(false);
   const dernierAjustementVu = useRef<number | null>(null);
   const dernierBroadcastVu = useRef<string | null>(null);
+  // N'affiche la notification que pour un ajustement survenu APRÈS
+  // l'ouverture de cet écran : sans ce garde-fou, un ajustement déjà
+  // ancien (par ex. fait une seule fois par l'organisateur des heures
+  // plus tôt) réapparaissait à chaque fois qu'une équipe rouvrait la
+  // page, puisque `dernierAjustementVu` repart de zéro à chaque montage
+  // du composant alors que la valeur reste, elle, enregistrée dans Firestore.
+  const montageAt = useRef(Date.now());
 
   // Décompte local du chrono général, resynchronisé à chaque changement de
   // finTimestamp (ex. ajustement par l'organisateur).
@@ -43,6 +50,7 @@ export default function GlobalOverlays({
     if (!tempsGeneralAjustement) return;
     if (dernierAjustementVu.current === tempsGeneralAjustement.at) return;
     dernierAjustementVu.current = tempsGeneralAjustement.at;
+    if (tempsGeneralAjustement.at <= montageAt.current) return;
     const minutes = Math.round(Math.abs(tempsGeneralAjustement.deltaSecondes) / 60);
     const unite = minutes > 0 ? `${minutes} min` : `${Math.abs(tempsGeneralAjustement.deltaSecondes)} s`;
     setNotif(tempsGeneralAjustement.deltaSecondes >= 0 ? `+${unite} ajoutées au chrono` : `-${unite} retranchées au chrono`);
