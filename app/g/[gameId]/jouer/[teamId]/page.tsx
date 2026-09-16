@@ -71,6 +71,11 @@ export default function JouerEquipe() {
   const [fragmentTexte, setFragmentTexte] = useState<string | null>(null);
   const [needsRetryClick, setNeedsRetryClick] = useState(false);
   const [essaiKey, setEssaiKey] = useState(0);
+  // Pour l'écran "Résultats" de l'admin : début de partie, fin de partie, et
+  // total de tentatives ratées cumulées sur tout le circuit (voir LiveState).
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [finishedAt, setFinishedAt] = useState<number | null>(null);
+  const [totalTentatives, setTotalTentatives] = useState(0);
   const [chefRefuse, setChefRefuse] = useState(false);
   const [gameStatus, setGameStatus] = useState<GameStatus>("actif");
   // Mode hors-ligne : activé si le chargement initial depuis Firestore a
@@ -186,6 +191,9 @@ export default function JouerEquipe() {
         const reprendCetteSession = aDejaDemarreCetteSession(teamId);
         if (reprendCetteSession && dernierEtat?.phase === "termine") {
           setPhase("termine");
+          setStartedAt(dernierEtat.startedAt ?? null);
+          setFinishedAt(dernierEtat.finishedAt ?? null);
+          setTotalTentatives(dernierEtat.totalTentatives ?? 0);
           return;
         }
         if (
@@ -195,10 +203,15 @@ export default function JouerEquipe() {
           dernierEtat.index < qs.length
         ) {
           setIndex(dernierEtat.index);
+          setStartedAt(dernierEtat.startedAt ?? null);
+          setTotalTentatives(dernierEtat.totalTentatives ?? 0);
         }
         if (!previewOrganisateur) {
           marquerSessionDemarree(teamId);
         }
+        // Premier démarrage réel (pas de reprise ci-dessus) : marque le début
+        // de partie maintenant, pour la durée affichée dans "Résultats".
+        setStartedAt((prev) => prev ?? Date.now());
         setPhase("playing");
       } catch (e) {
         // Connexion indisponible (ou requête Firestore en échec) : on
@@ -225,6 +238,7 @@ export default function JouerEquipe() {
         if (indexSauvegarde !== null && indexSauvegarde > 0 && indexSauvegarde < qs.length) {
           setIndex(indexSauvegarde);
         }
+        setStartedAt((prev) => prev ?? Date.now());
         setPhase("playing");
       }
     })();
@@ -296,6 +310,9 @@ export default function JouerEquipe() {
       attempts,
       timeLeft: timeLeftRef.current,
       fragmentTexte,
+      startedAt,
+      finishedAt,
+      totalTentatives,
       updatedAt: Date.now(),
       chefSessionId: getSessionId(),
     };
@@ -329,6 +346,9 @@ export default function JouerEquipe() {
     awaitingContinue,
     attempts,
     fragmentTexte,
+    startedAt,
+    finishedAt,
+    totalTentatives,
   ]);
 
   function goNextQuestion() {
@@ -358,6 +378,7 @@ export default function JouerEquipe() {
 
   function finishQuiz() {
     if (timerRef.current) clearInterval(timerRef.current);
+    setFinishedAt((prev) => prev ?? Date.now());
     setPhase("termine");
   }
 
@@ -451,6 +472,7 @@ export default function JouerEquipe() {
   function handleTimeout() {
     if (!question || isCodePage || isInfoPage) return;
     setAttempts((a) => a + 1);
+    setTotalTentatives((n) => n + 1);
     // Temps écoulé : on ne fait jamais avancer automatiquement, l'équipe réessaie
     // jusqu'à trouver la bonne réponse.
     setFeedback({ text: texts.jeuTexteTempsEcoule, ok: false });
@@ -483,6 +505,7 @@ export default function JouerEquipe() {
       setNeedsRetryClick(true);
     } else {
       setAttempts((a) => a + 1);
+      setTotalTentatives((n) => n + 1);
       // Mauvaise réponse : jamais de passage automatique, l'équipe réessaie
       // jusqu'à trouver la bonne énigme.
       setFeedback({ text: texts.jeuTexteMauvaiseReponse, ok: false });

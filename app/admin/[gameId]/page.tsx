@@ -37,6 +37,7 @@ import {
 import { SCENARIO_FORMAT_GUIDE, extraireTexteFichier, parseScenario } from "@/lib/scenarioParser";
 import { useAuth } from "@/lib/auth";
 import Classement from "./Classement";
+import Resultats from "./Resultats";
 
 const emptyQuestionForm = {
   salle: "",
@@ -103,7 +104,7 @@ export default function Admin({ params }: { params: Promise<{ gameId: string }> 
   return <AdminPanel gameId={gameId} />;
 }
 
-type Tab = "circuit" | "equipes" | "classement" | "scenario" | "histoire" | "textes";
+type Tab = "circuit" | "equipes" | "classement" | "resultats" | "scenario" | "histoire" | "textes";
 
 function AdminPanel({ gameId }: { gameId: string }) {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -618,6 +619,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
         <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes</TabButton>
         <TabButton active={tab === "classement"} onClick={() => setTab("classement")}>Classement</TabButton>
+        <TabButton active={tab === "resultats"} onClick={() => setTab("resultats")}>Résultats</TabButton>
         <TabButton active={tab === "scenario"} onClick={() => setTab("scenario")}>Scénario</TabButton>
         <TabButton active={tab === "histoire"} onClick={() => setTab("histoire")}>Histoire</TabButton>
         <TabButton active={tab === "textes"} onClick={() => setTab("textes")}>Textes du site</TabButton>
@@ -692,6 +694,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
       )}
 
       {!loading && tab === "classement" && <Classement gameId={gameId} teams={teams} />}
+
+      {!loading && tab === "resultats" && <Resultats gameId={gameId} teams={teams} />}
 
       {!loading && tab === "circuit" && teams.length === 0 && (
         <div className="bg-brand-blue-light rounded-2xl p-6 text-center text-brand-navy">

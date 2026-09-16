@@ -258,6 +258,17 @@ export interface LiveState {
   // d'équipe (voir claimerChef dans lib/data.ts). Sert à empêcher qu'un autre
   // appareil prenne le rôle de chef pendant qu'une partie est en cours.
   chefSessionId: string;
+  // Horodatage (epoch ms) du tout début de la partie pour cette équipe,
+  // conservé tel quel lors des republications suivantes (y compris après un
+  // F5) ; null tant que l'équipe n'a pas encore démarré. Sert au calcul de
+  // la durée dans l'écran "Résultats" de l'admin.
+  startedAt: number | null;
+  // Horodatage (epoch ms) de la fin de partie (dès que la dernière étape est
+  // franchie) ; null tant que l'équipe n'a pas terminé.
+  finishedAt: number | null;
+  // Nombre total de tentatives ratées cumulées sur tout le circuit (toutes
+  // énigmes confondues), pour l'écran "Résultats" de l'admin.
+  totalTentatives: number;
 }
 
 // Durée sans nouvelle activité du chef d'équipe (ms) au-delà de laquelle sa
