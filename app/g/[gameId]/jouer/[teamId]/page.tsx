@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import {
   getQuestionsForSalle,
   getQuizConfig,
@@ -45,8 +45,15 @@ type Phase = "loading" | "error" | "playing" | "termine";
 
 export default function JouerEquipe() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const gameId = Array.isArray(params.gameId) ? params.gameId[0] : params.gameId;
   const teamId = Array.isArray(params.teamId) ? params.teamId[0] : params.teamId;
+  // Mode test organisateur (lien "Tester" depuis l'admin, ?test=1) : permet
+  // de parcourir le circuit d'une équipe comme un vrai joueur, sans jamais
+  // prendre le verrou de chef d'équipe ni publier d'état — invisible pour le
+  // classement, les résultats et le suivi en direct, et sans jamais reprendre
+  // une progression existante (toujours reparti de la première énigme).
+  const modeTest = searchParams.get("test") === "1";
   const { editMode } = useAdminMode();
 
   const [phase, setPhase] = useState<Phase>("loading");
@@ -144,7 +151,7 @@ export default function JouerEquipe() {
         const horsLigneDepart = typeof navigator !== "undefined" && navigator.onLine === false;
         if (horsLigneDepart) throw new Error("hors-ligne");
 
-        if (!previewOrganisateur) {
+        if (!previewOrganisateur && !modeTest) {
           const { ok } = await claimerChef(gameId!, teamId, getSessionId());
           if (!ok) {
             setChefRefuse(true);
@@ -187,8 +194,8 @@ export default function JouerEquipe() {
         // revanche, une nouvelle visite (onglet fermé/rouvert, lien rouvert
         // plus tard) doit toujours repartir de la première énigme, même si
         // Firestore garde un état plus avancé pour le suivi en direct.
-        const dernierEtat = await getLiveState(gameId!, teamId);
-        const reprendCetteSession = aDejaDemarreCetteSession(teamId);
+        const dernierEtat = modeTest ? null : await getLiveState(gameId!, teamId);
+        const reprendCetteSession = !modeTest && aDejaDemarreCetteSession(teamId);
         if (reprendCetteSession && dernierEtat?.phase === "termine") {
           setPhase("termine");
           setStartedAt(dernierEtat.startedAt ?? null);
@@ -206,7 +213,7 @@ export default function JouerEquipe() {
           setStartedAt(dernierEtat.startedAt ?? null);
           setTotalTentatives(dernierEtat.totalTentatives ?? 0);
         }
-        if (!previewOrganisateur) {
+        if (!previewOrganisateur && !modeTest) {
           marquerSessionDemarree(teamId);
         }
         // Premier démarrage réel (pas de reprise ci-dessus) : marque le début
@@ -293,7 +300,8 @@ export default function JouerEquipe() {
     // En mode édition, l'organisateur navigue sans publier son état : on ne
     // veut pas écraser l'écran en direct d'une vraie équipe qui joue.
     // En mode hors-ligne, aucune connexion Firestore n'est disponible.
-    if (editMode || horsLigne) return;
+    // En mode test, on ne publie jamais rien (voir modeTest plus haut).
+    if (editMode || horsLigne || modeTest) return;
     const state: LiveState = {
       phase,
       index,
@@ -349,6 +357,7 @@ export default function JouerEquipe() {
     startedAt,
     finishedAt,
     totalTentatives,
+    modeTest,
   ]);
 
   function goNextQuestion() {
@@ -549,6 +558,13 @@ export default function JouerEquipe() {
   if (phase === "termine") {
     return (
       <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-ink text-center">
+        {modeTest && (
+          <div className="fixed top-0 inset-x-0 z-40 flex justify-center px-4 pt-3 pointer-events-none">
+            <span className="pointer-events-auto bg-amber-500 text-white text-xs font-semibold rounded-full px-4 py-1.5 shadow-md">
+              🧪 Mode test — non enregistré, n&apos;affecte pas le classement
+            </span>
+          </div>
+        )}
         <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
         <div className="relative z-10 flex flex-col items-center max-w-md w-full">
@@ -588,6 +604,13 @@ export default function JouerEquipe() {
         <div className="fixed top-0 inset-x-0 z-40 flex justify-center px-4 pt-3 pointer-events-none">
           <span className="pointer-events-auto bg-slate-800 text-white text-xs font-medium rounded-full px-4 py-1.5 shadow-md">
             📡 Mode hors-ligne — votre progression est enregistrée sur cet appareil
+          </span>
+        </div>
+      )}
+      {modeTest && (
+        <div className="fixed top-0 inset-x-0 z-40 flex justify-center px-4 pt-3 pointer-events-none">
+          <span className="pointer-events-auto bg-amber-500 text-white text-xs font-semibold rounded-full px-4 py-1.5 shadow-md">
+            🧪 Mode test — non enregistré, n&apos;affecte pas le classement
           </span>
         </div>
       )}

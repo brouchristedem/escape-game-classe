@@ -678,6 +678,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
                       <p className="font-medium text-sm text-brand-navy">{t.nom}</p>
                     </div>
                     <div className="flex gap-2 shrink-0 text-xs">
+                      <a
+                        href={`/g/${gameId}/jouer/${t.id}?test=1`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-amber-600 underline"
+                      >
+                        Tester
+                      </a>
                       <button onClick={() => editTeam(t)} className="text-brand-blue underline">
                         Modifier
                       </button>
