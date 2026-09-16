@@ -355,7 +355,8 @@ export async function deleteTeam(gameId: string, id: string): Promise<void> {
 
 // Convertit le champ updatedAt (Timestamp Firestore serveur, ou nombre pour
 // d'anciens documents écrits avant ce correctif) en millisecondes epoch.
-function updatedAtEnMillis(value: unknown): number {
+// Exporté pour être réutilisé par l'écran de classement en direct (admin).
+export function updatedAtEnMillis(value: unknown): number {
   if (value instanceof Timestamp) return value.toMillis();
   if (typeof value === "number") return value;
   return 0;
