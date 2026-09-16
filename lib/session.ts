@@ -35,3 +35,20 @@ export function marquerSessionDemarree(teamId: string): void {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(cleStartee(teamId), "1");
 }
+
+// Efface tous les repères "partie démarrée" de cet onglet. À appeler dès
+// qu'un joueur revient sur l'accueil du jeu : la progression ne doit jamais
+// être reprise automatiquement après un retour à l'accueil, même sans
+// fermer l'onglet — seul un vrai rechargement de la page de jeu (F5) doit
+// pouvoir reprendre la dernière énigme en cours.
+export function oublierToutesLesSessions(): void {
+  if (typeof window === "undefined") return;
+  const clesAOublier: string[] = [];
+  for (let i = 0; i < window.sessionStorage.length; i++) {
+    const cle = window.sessionStorage.key(i);
+    if (cle && cle.startsWith("escape-game-started-")) {
+      clesAOublier.push(cle);
+    }
+  }
+  clesAOublier.forEach((cle) => window.sessionStorage.removeItem(cle));
+}

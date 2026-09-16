@@ -9,6 +9,7 @@ import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import GameLogo from "@/app/components/GameLogo";
+import { oublierToutesLesSessions } from "@/lib/session";
 
 export default function Home({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = use(params);
@@ -21,6 +22,14 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
       .then((config) => setTexts(fusionnerTextes(config.texts)))
       .catch(() => {});
   }, [gameId]);
+
+  // Revenir sur l'accueil (que ce soit après avoir quitté et rouvert le
+  // lien, ou en y retournant volontairement dans le même onglet) doit
+  // toujours effacer toute reprise possible : la prochaine partie repart de
+  // la première énigme, jamais de l'endroit où le joueur s'était arrêté.
+  useEffect(() => {
+    oublierToutesLesSessions();
+  }, []);
 
   async function saveText<K extends keyof GameTexts>(key: K, value: GameTexts[K]) {
     const next = { ...texts, [key]: value };
