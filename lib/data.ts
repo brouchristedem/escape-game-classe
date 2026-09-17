@@ -80,7 +80,10 @@ export async function listerJeux(uid: string): Promise<GameMeta[]> {
 
 // Liste publique de tous les jeux (page d'accueil, sans authentification) :
 // affiche uniquement nom + verrou par code, jamais le contenu du jeu
-// (questions/équipes restent protégées par les règles Firestore).
+// (questions/équipes restent protégées par les règles Firestore). Seuls les
+// jeux avec un code défini sont affichés : un jeu sans code ne pourrait de
+// toute façon jamais être débloqué (voir verifierCodeAcces), et ne fait
+// qu'ajouter une entrée fantôme dans la liste.
 export async function listerJeuxPublics(): Promise<GameMeta[]> {
   const snap = await getDocs(collection(db, GAMES_COL));
   return snap.docs
@@ -93,6 +96,7 @@ export async function listerJeuxPublics(): Promise<GameMeta[]> {
         codeAcces: data.codeAcces ?? "",
       };
     })
+    .filter((j) => j.codeAcces.trim().length > 0)
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
