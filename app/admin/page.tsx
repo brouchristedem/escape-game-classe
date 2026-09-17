@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listerJeux, creerJeu, supprimerJeu } from "@/lib/data";
+import { listerJeux, creerJeu, supprimerJeu, changerCodeAcces } from "@/lib/data";
 import { GameMeta } from "@/lib/types";
 import { useAuth } from "@/lib/auth";
 import QrCodeModal from "@/app/components/QrCodeModal";
@@ -97,6 +97,21 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
   const [origin, setOrigin] = useState("");
   const [copieId, setCopieId] = useState<string | null>(null);
   const [qrJeu, setQrJeu] = useState<GameMeta | null>(null);
+  const [editCodeId, setEditCodeId] = useState<string | null>(null);
+  const [codeBrouillon, setCodeBrouillon] = useState("");
+  const [savingCode, setSavingCode] = useState(false);
+
+  async function enregistrerCode(gameId: string) {
+    if (!codeBrouillon.trim() || savingCode) return;
+    setSavingCode(true);
+    try {
+      await changerCodeAcces(gameId, codeBrouillon);
+      setEditCodeId(null);
+      await reload();
+    } finally {
+      setSavingCode(false);
+    }
+  }
 
   useEffect(() => {
     if (typeof window !== "undefined") setOrigin(window.location.origin);
@@ -155,9 +170,9 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
         </button>
       </div>
       <p className="text-sm text-slate-500 mb-8">
-        Ce lien (racine du site) est votre espace organisateur, pas la page des joueurs. Chaque jeu créé ci-dessous a
-        son propre lien joueur (ci-dessous, sous son nom) à partager avec les équipes — totalement indépendant des
-        autres jeux.
+        La racine du site liste désormais tous les jeux publiquement, chacun verrouillé par un code. Donnez le code
+        affiché ci-dessous à vos joueurs — vous pouvez le changer à tout moment. Le lien direct par jeu reste
+        disponible ci-dessous si vous préférez le partager tel quel.
       </p>
 
       <div className="flex gap-2 mb-8">
@@ -209,6 +224,45 @@ function ListeJeux({ uid, email }: { uid: string; email: string }) {
                   >
                     QR code
                   </button>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  {editCodeId === j.id ? (
+                    <>
+                      <input
+                        autoFocus
+                        value={codeBrouillon}
+                        onChange={(e) => setCodeBrouillon(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && enregistrerCode(j.id)}
+                        placeholder="Nouveau code"
+                        className="border border-slate-200 rounded px-2 py-1 text-xs outline-none focus:border-brand-blue w-28"
+                      />
+                      <button
+                        onClick={() => enregistrerCode(j.id)}
+                        disabled={!codeBrouillon.trim() || savingCode}
+                        className="text-xs font-semibold text-brand-blue disabled:opacity-40"
+                      >
+                        {savingCode ? "..." : "Valider"}
+                      </button>
+                      <button onClick={() => setEditCodeId(null)} className="text-xs text-slate-400">
+                        Annuler
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xs text-slate-400">
+                        Code joueurs : <span className="font-mono font-semibold text-brand-navy">{j.codeAcces || "—"}</span>
+                      </span>
+                      <button
+                        onClick={() => {
+                          setEditCodeId(j.id);
+                          setCodeBrouillon(j.codeAcces || "");
+                        }}
+                        className="text-xs text-slate-400 hover:text-brand-blue"
+                      >
+                        Modifier
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4 shrink-0">

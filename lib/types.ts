@@ -79,6 +79,10 @@ export interface BroadcastMessage {
 export interface QuizConfig {
   nom?: string; // nom du jeu, affiché dans la liste des jeux de l'organisateur
   createdAt?: number; // date de création (Date.now()), pour trier la liste des jeux
+  // Code choisi par l'organisateur, donné aux joueurs pour débloquer l'accès
+  // au jeu depuis la page d'accueil publique (liste de tous les jeux,
+  // chacun verrouillé individuellement). Modifiable à tout moment.
+  codeAcces?: string;
   // UIDs Firebase Auth des organisateurs autorisés à administrer ce jeu
   // (Phase 2 du passage multi-tenant : remplace le mot de passe unique).
   organizers?: string[];
@@ -96,6 +100,7 @@ export interface GameMeta {
   id: string;
   nom: string;
   createdAt: number;
+  codeAcces: string;
 }
 
 // --- Tous les textes affichés sur les pages joueur (hors énoncés d'énigmes,

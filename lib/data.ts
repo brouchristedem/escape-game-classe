@@ -72,9 +72,46 @@ export async function listerJeux(uid: string): Promise<GameMeta[]> {
         id: d.id,
         nom: data.nom ?? "Jeu sans nom",
         createdAt: typeof data.createdAt === "number" ? data.createdAt : 0,
+        codeAcces: data.codeAcces ?? "",
       };
     })
     .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+// Liste publique de tous les jeux (page d'accueil, sans authentification) :
+// affiche uniquement nom + verrou par code, jamais le contenu du jeu
+// (questions/équipes restent protégées par les règles Firestore).
+export async function listerJeuxPublics(): Promise<GameMeta[]> {
+  const snap = await getDocs(collection(db, GAMES_COL));
+  return snap.docs
+    .map((d) => {
+      const data = d.data() as Partial<QuizConfig>;
+      return {
+        id: d.id,
+        nom: data.nom ?? "Jeu sans nom",
+        createdAt: typeof data.createdAt === "number" ? data.createdAt : 0,
+        codeAcces: data.codeAcces ?? "",
+      };
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+// Compare le code saisi par un joueur au code d'accès du jeu (insensible à
+// la casse/aux espaces). Un jeu sans code défini (chaîne vide) reste
+// verrouillé par défaut : aucun code ne peut le débloquer par erreur.
+export async function verifierCodeAcces(gameId: string, codeSaisi: string): Promise<boolean> {
+  const snap = await getDoc(gameDoc(gameId));
+  if (!snap.exists()) return false;
+  const data = snap.data() as Partial<QuizConfig>;
+  const attendu = (data.codeAcces ?? "").trim().toLowerCase();
+  if (!attendu) return false;
+  return attendu === codeSaisi.trim().toLowerCase();
+}
+
+// Code à 4 chiffres généré par défaut à la création d'un jeu ; l'organisateur
+// peut le changer à tout moment depuis la liste de ses jeux.
+function genererCodeParDefaut(): string {
+  return String(Math.floor(1000 + Math.random() * 9000));
 }
 
 export async function creerJeu(nom: string, uid: string): Promise<string> {
@@ -85,8 +122,13 @@ export async function creerJeu(nom: string, uid: string): Promise<string> {
     texts: {},
     gameStatus: "actif" as GameStatus,
     createdAt: Date.now(),
+    codeAcces: genererCodeParDefaut(),
   });
   return ref.id;
+}
+
+export async function changerCodeAcces(gameId: string, code: string): Promise<void> {
+  await updateDoc(gameDoc(gameId), { codeAcces: code.trim() });
 }
 
 export async function supprimerJeu(gameId: string): Promise<void> {
@@ -154,6 +196,7 @@ export async function getQuizConfig(gameId: string): Promise<QuizConfig> {
   const data = snap.data() as QuizConfig;
   return {
     nom: data.nom,
+    codeAcces: data.codeAcces ?? "",
     organizers: data.organizers ?? [],
     histoire: data.histoire ?? "",
     texts: data.texts ?? {},
