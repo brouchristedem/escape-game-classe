@@ -74,7 +74,7 @@ export default function Accueil() {
       )}
 
       <div className="mt-10 text-center">
-        <Link href="/admin" className="text-xs text-slate-400 hover:text-brand-blue underline">
+        <Link href="/organisateur" className="text-xs text-slate-400 hover:text-brand-blue underline">
           Espace organisateur
         </Link>
       </div>

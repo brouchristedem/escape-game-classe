@@ -12,7 +12,7 @@ export default async function Tarifs({
   searchParams: Promise<{ jeu?: string }>;
 }) {
   const { jeu } = await searchParams;
-  const retourHref = jeu ? `/g/${jeu}` : "/admin";
+  const retourHref = jeu ? `/g/${jeu}` : "/organisateur";
 
   return (
     <main className={`${bitter.variable} ${plexMono.variable} relative min-h-screen bg-ink px-6 py-12 overflow-hidden`}>

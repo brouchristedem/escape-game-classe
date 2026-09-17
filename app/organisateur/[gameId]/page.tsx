@@ -94,7 +94,7 @@ export default function Admin({ params }: { params: Promise<{ gameId: string }> 
             ? "Ce compte n'est pas organisateur de ce jeu."
             : "Vous devez être connecté pour administrer ce jeu."}
         </p>
-        <Link href="/admin" className="text-sm font-semibold text-brand-blue">
+        <Link href="/organisateur" className="text-sm font-semibold text-brand-blue">
           ← Retour à mes jeux
         </Link>
       </main>

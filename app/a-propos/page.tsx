@@ -33,7 +33,7 @@ export default async function AProposDuDeveloppeur({
   // doit ramener à l'accueil du jeu, jamais à l'espace organisateur : un
   // joueur ne doit pas voir/pouvoir accéder à cet espace depuis cette page.
   const { jeu } = await searchParams;
-  const retourHref = jeu ? `/g/${jeu}` : "/admin";
+  const retourHref = jeu ? `/g/${jeu}` : "/organisateur";
 
   return (
     <main className={`${bitter.variable} ${plexMono.variable} relative min-h-screen bg-ink px-6 py-12 overflow-hidden`}>

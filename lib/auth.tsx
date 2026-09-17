@@ -12,11 +12,11 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 
-// Seul ce compte Google a le droit de se connecter via Google (Christ
-// lui-même) : la connexion par e-mail/mot de passe reste le mécanisme
-// normal pour les autres organisateurs, dont les comptes sont créés
-// manuellement dans la Console Firebase.
-const OWNER_EMAIL = "brouchristedem@gmail.com";
+// E-mail du propriétaire de la plateforme (Christ), utilisé par la page
+// /admin (réservée à lui seul) pour restreindre l'accès. La connexion
+// Google/e-mail elle-même est ouverte à tous les organisateurs (chacun ne
+// voit que ses propres jeux, filtrés par uid — voir lib/data.ts).
+export const OWNER_EMAIL = "brouchristedem@gmail.com";
 
 interface AuthContextValue {
   user: User | null;
@@ -65,17 +65,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
-      // Filet de sécurité : si une session Google pour un compte autre que
-      // le propriétaire est restaurée (ex. onglet resté ouvert depuis avant
-      // cette restriction), on la coupe plutôt que d'exposer l'espace
-      // organisateur.
-      const estGoogle = u?.providerData.some((p) => p.providerId === "google.com");
-      if (u && estGoogle && u.email !== OWNER_EMAIL) {
-        firebaseSignOut(auth);
-        setUser(null);
-        setLoading(false);
-        return;
-      }
       setUser(u);
       setLoading(false);
     });
@@ -104,15 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signInWithGoogle() {
     try {
-      const result = await signInWithPopup(auth, new GoogleAuthProvider());
-      if (result.user.email !== OWNER_EMAIL) {
-        // Un autre compte Google que celui du propriétaire s'est connecté :
-        // on le déconnecte immédiatement. La vérification est aussi faite
-        // niveau affichage (voir AuthProvider ci-dessous), mais la refaire
-        // ici évite un flash de contenu autorisé avant la déconnexion.
-        await firebaseSignOut(auth);
-        return { ok: false, error: "Ce compte Google n'est pas autorisé à se connecter ici." };
-      }
+      await signInWithPopup(auth, new GoogleAuthProvider());
       return { ok: true };
     } catch (e) {
       const code = e instanceof Error && "code" in e ? String((e as { code: string }).code) : "";
