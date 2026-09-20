@@ -40,6 +40,7 @@ import Classement from "./Classement";
 import Resultats from "./Resultats";
 import Apparence from "./Apparence";
 import Evenements from "./Evenements";
+import FormationEquipes from "./FormationEquipes";
 import QrCodeModal from "@/app/components/QrCodeModal";
 
 const emptyQuestionForm = {
@@ -108,7 +109,7 @@ export default function Admin({ params }: { params: Promise<{ gameId: string }> 
   return <AdminPanel gameId={gameId} />;
 }
 
-type Tab = "circuit" | "equipes" | "classement" | "resultats" | "scenario" | "histoire" | "textes" | "apparence" | "evenements";
+type Tab = "circuit" | "equipes" | "classement" | "resultats" | "scenario" | "histoire" | "textes" | "apparence" | "evenements" | "formation";
 
 function AdminPanel({ gameId }: { gameId: string }) {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -627,6 +628,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       <div className="flex gap-2 mb-3 flex-wrap">
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
         <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes</TabButton>
+        <TabButton active={tab === "formation"} onClick={() => setTab("formation")}>Formation des équipes</TabButton>
         <TabButton active={tab === "classement"} onClick={() => setTab("classement")}>Classement</TabButton>
         <TabButton active={tab === "resultats"} onClick={() => setTab("resultats")}>Résultats</TabButton>
         <TabButton active={tab === "scenario"} onClick={() => setTab("scenario")}>Scénario</TabButton>
@@ -715,6 +717,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
       {!loading && tab === "classement" && <Classement gameId={gameId} teams={teams} />}
 
       {!loading && tab === "resultats" && <Resultats gameId={gameId} teams={teams} />}
+
+      {!loading && tab === "formation" && <FormationEquipes gameId={gameId} teams={teams} />}
 
       {!loading && tab === "evenements" && <Evenements gameId={gameId} teams={teams} />}
 

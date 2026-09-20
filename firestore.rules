@@ -35,6 +35,22 @@ service cloud.firestore {
         allow read: if true;
         allow write: if true;
       }
+      // Formation des équipes : un participant (non authentifié) s'inscrit
+      // avec un nom court, seulement tant que l'organisateur a ouvert les
+      // inscriptions ; l'affectation à une équipe (update) et la suppression
+      // sont réservées aux organisateurs du jeu.
+      match /inscriptions/{inscriptionId} {
+        allow read: if true;
+        allow create: if request.resource.data.keys().hasOnly(['nom', 'createdAt'])
+                      && request.resource.data.nom is string
+                      && request.resource.data.nom.size() > 0
+                      && request.resource.data.nom.size() <= 40
+                      && request.resource.data.createdAt == request.time
+                      && get(/databases/$(database)/documents/games/$(gameId)).data.get('inscriptionsOuvertes', false) == true;
+        allow update, delete: if request.auth != null
+                              && request.auth.uid in
+                                 get(/databases/$(database)/documents/games/$(gameId)).data.organizers;
+      }
       // Événements surprise : une équipe (non authentifiée) enregistre sa
       // première bonne réponse, une seule fois (création seule, jamais de
       // modification), avec l'heure du serveur — c'est elle qui départage

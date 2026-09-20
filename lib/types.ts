@@ -119,6 +119,19 @@ export interface BonneReponseSurprise {
   at: number; // heure serveur (epoch ms)
 }
 
+// --- Formation des équipes ---
+// Un participant s'inscrit via le QR code (page /g/{gameId}/inscription) ;
+// l'organisateur répartit ensuite les inscrits au hasard dans les équipes
+// (onglet "Formation des équipes"). La composition d'une équipe se déduit des
+// inscriptions dont equipeId = id de l'équipe.
+export interface Inscription {
+  id: string;
+  nom: string; // "Prénom X." (prénom + initiale du nom, pour limiter les données personnelles)
+  equipeId: string | null; // null = pas encore d'équipe
+  equipeNom: string | null;
+  createdAt: number;
+}
+
 export interface QuizConfig {
   nom?: string; // nom du jeu, affiché dans la liste des jeux de l'organisateur
   createdAt?: number; // date de création (Date.now()), pour trier la liste des jeux
@@ -136,6 +149,7 @@ export interface QuizConfig {
   tempsGeneralAjustement?: TempsGeneralAjustement | null;
   broadcast?: BroadcastMessage | null;
   personnalisation?: Personnalisation | null; // null = retour au thème par défaut
+  inscriptionsOuvertes?: boolean; // absent/false = inscriptions fermées (vérifié aussi par les règles Firestore)
   enigmeSurprise?: EnigmeSurprise | null; // null/absent = aucun événement en cours
   effets?: Record<string, EffetEquipe | null>; // par id d'équipe ; null = effet retiré
 }

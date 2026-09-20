@@ -32,6 +32,7 @@ import {
   EnigmeSurprise,
   EffetEquipe,
   BonneReponseSurprise,
+  Inscription,
 } from "./types";
 
 // --- Structure multi-tenant ---
@@ -222,6 +223,7 @@ export async function getQuizConfig(gameId: string): Promise<QuizConfig> {
     tempsGeneralAjustement: data.tempsGeneralAjustement ?? null,
     broadcast: data.broadcast ?? null,
     personnalisation: data.personnalisation ?? null,
+    inscriptionsOuvertes: data.inscriptionsOuvertes ?? false,
   };
 }
 
@@ -603,4 +605,116 @@ export async function reinitialiserStatistiques(gameId: string, teamId?: string)
     enigmeSurprise: null,
     effets: Object.fromEntries(teams.map((t) => [t.id, null])),
   });
+}
+
+
+// --- Formation des équipes (voir Inscription dans types.ts) ---
+
+function inscriptionsCol(gameId: string) {
+  return collection(db, GAMES_COL, gameId, "inscriptions");
+}
+function inscriptionDoc(gameId: string, id: string) {
+  return doc(db, GAMES_COL, gameId, "inscriptions", id);
+}
+
+function versInscription(id: string, data: Record<string, unknown>): Inscription {
+  return {
+    id,
+    nom: String(data.nom ?? ""),
+    equipeId: typeof data.equipeId === "string" ? data.equipeId : null,
+    equipeNom: typeof data.equipeNom === "string" ? data.equipeNom : null,
+    createdAt: updatedAtEnMillis(data.createdAt),
+  };
+}
+
+function melanger<T>(liste: T[]): T[] {
+  const copie = [...liste];
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+  return copie;
+}
+
+export async function definirInscriptionsOuvertes(gameId: string, ouvertes: boolean): Promise<void> {
+  await saveQuizConfig(gameId, { inscriptionsOuvertes: ouvertes });
+}
+
+// Appelé par un participant (non authentifié). Les règles Firestore refusent
+// la création si les inscriptions sont fermées.
+export async function inscrire(gameId: string, nom: string): Promise<string> {
+  const ref = await addDoc(inscriptionsCol(gameId), { nom, createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export function ecouterInscription(
+  gameId: string,
+  id: string,
+  callback: (inscription: Inscription | null) => void
+): () => void {
+  return onSnapshot(inscriptionDoc(gameId, id), (snap) => {
+    callback(snap.exists() ? versInscription(snap.id, snap.data({ serverTimestamps: "estimate" })) : null);
+  });
+}
+
+export function ecouterInscriptions(gameId: string, callback: (liste: Inscription[]) => void): () => void {
+  return onSnapshot(query(inscriptionsCol(gameId), orderBy("createdAt")), (snap) => {
+    callback(snap.docs.map((d) => versInscription(d.id, d.data({ serverTimestamps: "estimate" }))));
+  });
+}
+
+async function ecrireAffectations(gameId: string, affectations: { id: string; equipe: { id: string; nom: string } }[]) {
+  for (let i = 0; i < affectations.length; i += 400) {
+    const batch = writeBatch(db);
+    affectations.slice(i, i + 400).forEach((a) => {
+      batch.update(inscriptionDoc(gameId, a.id), { equipeId: a.equipe.id, equipeNom: a.equipe.nom });
+    });
+    await batch.commit();
+  }
+}
+
+// Répartit TOUS les inscrits au hasard dans les équipes EXISTANTES du jeu, en
+// équipes de taille égale (à une personne près). Ne crée aucune équipe.
+export async function formerEquipes(gameId: string): Promise<{ inscrits: number; equipes: number }> {
+  const [snap, existantes] = await Promise.all([getDocs(inscriptionsCol(gameId)), getAllTeams(gameId)]);
+  if (existantes.length === 0) throw new Error("Aucune équipe");
+  const equipes = existantes.map((t) => ({ id: t.id, nom: t.nom }));
+  const ids = melanger(snap.docs.map((d) => d.id));
+  await ecrireAffectations(
+    gameId,
+    ids.map((id, i) => ({ id, equipe: equipes[i % equipes.length] }))
+  );
+  return { inscrits: ids.length, equipes: equipes.length };
+}
+
+// Place les inscrits sans équipe (retardataires) dans les équipes les moins
+// remplies, sans toucher aux autres.
+export async function repartirRetardataires(gameId: string): Promise<number> {
+  const [snap, equipes] = await Promise.all([getDocs(inscriptionsCol(gameId)), getAllTeams(gameId)]);
+  if (equipes.length === 0) throw new Error("Aucune équipe");
+  const effectifs = new Map(equipes.map((t) => [t.id, 0]));
+  const sansEquipe: string[] = [];
+  snap.docs.forEach((d) => {
+    const equipeId = d.data().equipeId;
+    if (typeof equipeId === "string" && effectifs.has(equipeId)) effectifs.set(equipeId, (effectifs.get(equipeId) ?? 0) + 1);
+    else sansEquipe.push(d.id);
+  });
+  const affectations: { id: string; equipe: { id: string; nom: string } }[] = [];
+  for (const id of melanger(sansEquipe)) {
+    const min = Math.min(...effectifs.values());
+    const candidates = equipes.filter((t) => effectifs.get(t.id) === min);
+    const choix = candidates[Math.floor(Math.random() * candidates.length)];
+    effectifs.set(choix.id, min + 1);
+    affectations.push({ id, equipe: { id: choix.id, nom: choix.nom } });
+  }
+  await ecrireAffectations(gameId, affectations);
+  return affectations.length;
+}
+
+export async function deplacerInscrit(gameId: string, id: string, equipe: { id: string; nom: string } | null): Promise<void> {
+  await updateDoc(inscriptionDoc(gameId, id), { equipeId: equipe?.id ?? null, equipeNom: equipe?.nom ?? null });
+}
+
+export async function retirerInscrit(gameId: string, id: string): Promise<void> {
+  await deleteDoc(inscriptionDoc(gameId, id));
 }
