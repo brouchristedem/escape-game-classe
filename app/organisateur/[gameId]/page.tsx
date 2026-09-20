@@ -118,11 +118,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
   const [tab, setTab] = useState<Tab>("circuit");
 
   const [teamForm, setTeamForm] = useState({ ...emptyTeamForm });
-  // Ajout de plusieurs équipes d'un coup (un nom par ligne).
-  const [lotTexte, setLotTexte] = useState("");
-  const [lotNombre, setLotNombre] = useState("10");
-  const [lotOccupe, setLotOccupe] = useState(false);
-  const [lotMessage, setLotMessage] = useState<string | null>(null);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
 
   // Étape dont on affiche le QR code à imprimer (voir champ qrTexte).
@@ -210,42 +205,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
     }
     resetTeamForm();
     reload();
-  }
-
-  // Remplit la liste avec "Équipe N", "Équipe N+1"... à la suite des équipes existantes.
-  function genererNomsEquipes() {
-    const n = Math.min(Math.max(parseInt(lotNombre, 10) || 0, 0), 50);
-    const debut = teams.length + 1;
-    setLotTexte(Array.from({ length: n }, (_, i) => `Équipe ${debut + i}`).join("\n"));
-    setLotMessage(null);
-  }
-
-  async function ajouterPlusieursEquipes() {
-    // Ignore les lignes vides et les noms déjà pris (comparaison sans tenir compte de la casse).
-    const dejaPris = new Set(teams.map((t) => t.nom.trim().toLowerCase()));
-    const aCreer: string[] = [];
-    for (const ligne of lotTexte.split("\n")) {
-      const nom = ligne.trim();
-      if (!nom || dejaPris.has(nom.toLowerCase())) continue;
-      dejaPris.add(nom.toLowerCase());
-      aCreer.push(nom);
-    }
-    if (aCreer.length === 0) {
-      setLotMessage("Aucune nouvelle équipe à créer (lignes vides ou noms déjà utilisés).");
-      return;
-    }
-    setLotOccupe(true);
-    setLotMessage(null);
-    try {
-      for (const nom of aCreer) await addTeam(gameId, { nom });
-      setLotTexte("");
-      setLotMessage(`${aCreer.length} équipe${aCreer.length > 1 ? "s" : ""} ajoutée${aCreer.length > 1 ? "s" : ""}.`);
-      reload();
-    } catch {
-      setLotMessage("Échec de la création. Vérifie ta connexion, puis réessaie (recharge la page pour voir ce qui a déjà été créé).");
-    } finally {
-      setLotOccupe(false);
-    }
   }
 
   function editTeam(t: Team) {
@@ -718,45 +677,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 </button>
               )}
             </div>
-
-            {!editingTeamId && (
-              <div className="mt-6 pt-5 border-t border-slate-200">
-                <h3 className="font-semibold mb-2 text-brand-navy text-sm">Ajouter plusieurs équipes d&apos;un coup</h3>
-                <div className="flex items-center gap-2 mb-2 text-sm text-slate-600">
-                  <span>Générer</span>
-                  <input
-                    type="number"
-                    min="1"
-                    max="50"
-                    value={lotNombre}
-                    onChange={(e) => setLotNombre(e.target.value)}
-                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 w-16"
-                  />
-                  <button onClick={genererNomsEquipes} className="text-brand-blue underline">
-                    équipes numérotées
-                  </button>
-                </div>
-                <textarea
-                  value={lotTexte}
-                  onChange={(e) => setLotTexte(e.target.value)}
-                  rows={5}
-                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-2 w-full"
-                  placeholder={"Un nom d'équipe par ligne\nLes Lions\nTeam Bassam\n..."}
-                />
-                <button
-                  onClick={ajouterPlusieursEquipes}
-                  disabled={lotOccupe || !lotTexte.trim()}
-                  className="bg-brand-blue hover:bg-brand-navy text-white font-semibold px-6 py-2 rounded-full transition disabled:opacity-50"
-                >
-                  {lotOccupe ? "Création..." : "Créer ces équipes"}
-                </button>
-                {lotMessage && <p className="text-sm text-slate-600 mt-2">{lotMessage}</p>}
-                <p className="text-slate-500 text-xs mt-3">
-                  Astuce : crée d&apos;abord toutes les équipes, puis importe ton scénario dans l&apos;onglet
-                  &quot;Scénario&quot; (sans ligne « EQUIPE: ») : le même circuit est copié sur chaque équipe.
-                </p>
-              </div>
-            )}
           </section>
 
           <section>
