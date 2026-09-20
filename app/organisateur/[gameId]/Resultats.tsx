@@ -6,8 +6,8 @@
 // champs startedAt/finishedAt/totalTentatives publiés par la page de jeu.
 
 import { useEffect, useState } from "react";
-import { ecouterLiveState } from "@/lib/data";
-import { Team, LiveState } from "@/lib/types";
+import { ecouterLiveState, reinitialiserStatistiques } from "@/lib/data";
+import { Team, LiveState, normaliserReponse } from "@/lib/types";
 
 function formaterDuree(ms: number): string {
   const totalSecondes = Math.max(0, Math.round(ms / 1000));
@@ -32,6 +32,10 @@ function champCsv(valeur: string): string {
 
 export default function Resultats({ gameId, teams }: { gameId: string; teams: Team[] }) {
   const [states, setStates] = useState<Record<string, LiveState | null>>({});
+  const [confirmation, setConfirmation] = useState(false);
+  const [motConfirmation, setMotConfirmation] = useState("");
+  const [enCours, setEnCours] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null);
 
   useEffect(() => {
     const unsubs = teams.map((t) =>
@@ -69,6 +73,34 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
     URL.revokeObjectURL(url);
   }
 
+  async function reinitialiser(teamId?: string, nomEquipe?: string) {
+    setEnCours(true);
+    setMessage(null);
+    try {
+      await reinitialiserStatistiques(gameId, teamId);
+      setMessage({
+        ok: true,
+        texte: teamId ? `Statistiques de l'équipe ${nomEquipe} réinitialisées.` : "Statistiques de toute la partie réinitialisées.",
+      });
+      setConfirmation(false);
+      setMotConfirmation("");
+    } catch {
+      setMessage({ ok: false, texte: "Échec de la réinitialisation. Vérifie ta connexion et tes droits sur ce jeu, puis réessaie." });
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  function reinitialiserEquipe(team: Team) {
+    if (
+      window.confirm(
+        `Réinitialiser les statistiques de l'équipe « ${team.nom} » ? Sa progression, sa durée et ses tentatives seront effacées. Cette action est irréversible.`
+      )
+    ) {
+      reinitialiser(team.id, team.nom);
+    }
+  }
+
   if (teams.length === 0) {
     return <p className="text-slate-500 text-sm">Aucune équipe pour l&apos;instant.</p>;
   }
@@ -95,6 +127,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
               <th className="py-2 pr-4">Terminé à</th>
               <th className="py-2 pr-4">Durée</th>
               <th className="py-2 pr-4">Tentatives ratées</th>
+              <th className="py-2 pr-4"></th>
             </tr>
           </thead>
           <tbody>
@@ -113,11 +146,82 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
                   <td className="py-2 pr-4 text-slate-500">{state?.finishedAt ? formaterHeure(state.finishedAt) : "—"}</td>
                   <td className="py-2 pr-4 text-slate-500">{duree}</td>
                   <td className="py-2 pr-4 text-slate-500">{state?.totalTentatives ?? 0}</td>
+                  <td className="py-2 pr-4">
+                    {state && (
+                      <button
+                        onClick={() => reinitialiserEquipe(team)}
+                        disabled={enCours}
+                        className="text-brand-blue underline text-xs disabled:opacity-50"
+                      >
+                        Réinitialiser
+                      </button>
+                    )}
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-4">
+        <p className="font-semibold text-red-700 mb-1">Réinitialiser les statistiques</p>
+        {!confirmation ? (
+          <>
+            <p className="text-sm text-slate-600 mb-3">
+              Efface la progression, la durée et les tentatives de toutes les équipes, et retire l&apos;énigme
+              surprise et les effets en cours. Les équipes, les circuits et les énigmes ne sont pas touchés.
+            </p>
+            <button
+              onClick={() => {
+                setMessage(null);
+                setConfirmation(true);
+              }}
+              className="rounded-full border border-red-400 px-5 py-2 text-sm font-semibold text-red-700"
+            >
+              Réinitialiser toute la partie…
+            </button>
+          </>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-slate-700">
+              Cette action est <strong>irréversible</strong>. Exporte d&apos;abord les résultats si tu veux les
+              garder, et vérifie qu&apos;aucune équipe n&apos;est en train de jouer : une page de jeu encore ouverte
+              republierait son ancien état.
+            </p>
+            <button onClick={exporterCsv} className="self-start text-sm underline text-brand-blue">
+              Exporter en CSV d&apos;abord
+            </button>
+            <label className="text-sm text-slate-700">
+              Tape <strong>REINITIALISER</strong> pour confirmer :
+              <input
+                value={motConfirmation}
+                onChange={(e) => setMotConfirmation(e.target.value)}
+                className="mt-1 block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2"
+              />
+            </label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => reinitialiser()}
+                disabled={enCours || normaliserReponse(motConfirmation) !== "reinitialiser"}
+                className="rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {enCours ? "Réinitialisation..." : "Tout réinitialiser"}
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmation(false);
+                  setMotConfirmation("");
+                }}
+                disabled={enCours}
+                className="rounded-full border border-slate-300 px-5 py-2 text-sm text-slate-600"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+        {message && <p className={`mt-3 text-sm ${message.ok ? "text-green-600" : "text-red-600"}`}>{message.texte}</p>}
       </div>
     </div>
   );

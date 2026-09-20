@@ -11,6 +11,7 @@ import {
   query,
   where,
   orderBy,
+  writeBatch,
   runTransaction,
   serverTimestamp,
   Timestamp,
@@ -575,4 +576,31 @@ export async function appliquerEffetEquipe(
 
 export async function retirerEffetEquipe(gameId: string, teamId: string): Promise<void> {
   await saveQuizConfig(gameId, { effets: { [teamId]: null } });
+}
+
+// --- Réinitialisation des statistiques ---
+// Les statistiques (classement, résultats, suivi en direct) sont le
+// liveState de chaque équipe : progression, durée, tentatives ET verrou de
+// chef d'équipe (chefSessionId). Le supprimer remet l'équipe à zéro (elle
+// repartira de la première énigme) et libère aussi son verrou.
+// Avec teamId : une seule équipe. Sans teamId : toute la partie, y compris
+// les liveState orphelins d'équipes supprimées, et retire l'énigme surprise
+// et les effets en cours. Ni les équipes, ni les circuits, ni les énigmes,
+// ni le chrono général ne sont touchés.
+export async function reinitialiserStatistiques(gameId: string, teamId?: string): Promise<void> {
+  if (teamId) {
+    await deleteDoc(liveStateDoc(gameId, teamId));
+    return;
+  }
+  const snap = await getDocs(collection(db, GAMES_COL, gameId, "liveState"));
+  for (let i = 0; i < snap.docs.length; i += 400) {
+    const batch = writeBatch(db);
+    snap.docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  }
+  const teams = await getAllTeams(gameId);
+  await saveQuizConfig(gameId, {
+    enigmeSurprise: null,
+    effets: Object.fromEntries(teams.map((t) => [t.id, null])),
+  });
 }
