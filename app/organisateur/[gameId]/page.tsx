@@ -41,6 +41,8 @@ import Resultats from "./Resultats";
 import Apparence from "./Apparence";
 import Evenements from "./Evenements";
 import FormationEquipes from "./FormationEquipes";
+import Telecommande from "./Telecommande";
+import ChecklistJourJ from "./ChecklistJourJ";
 import QrCodeModal from "@/app/components/QrCodeModal";
 
 const emptyQuestionForm = {
@@ -109,7 +111,20 @@ export default function Admin({ params }: { params: Promise<{ gameId: string }> 
   return <AdminPanel gameId={gameId} />;
 }
 
-type Tab = "circuit" | "equipes" | "classement" | "resultats" | "scenario" | "histoire" | "textes" | "apparence" | "evenements" | "formation";
+type Tab = "circuit" | "equipes" | "classement" | "resultats" | "scenario" | "histoire" | "textes" | "apparence" | "evenements" | "formation" | "checklist";
+
+function cleModeTelecommande(gameId: string) {
+  return `telecommande:${gameId}`;
+}
+
+function lireModeTelecommande(gameId: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(cleModeTelecommande(gameId)) === "1";
+  } catch {
+    return false;
+  }
+}
 
 function AdminPanel({ gameId }: { gameId: string }) {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -117,6 +132,9 @@ function AdminPanel({ gameId }: { gameId: string }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("circuit");
+
+  // Mode télécommande (version téléphone de l'admin), mémorisé sur cet appareil.
+  const [modeTelecommande, setModeTelecommande] = useState(() => lireModeTelecommande(gameId));
 
   const [teamForm, setTeamForm] = useState({ ...emptyTeamForm });
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
@@ -533,10 +551,38 @@ function AdminPanel({ gameId }: { gameId: string }) {
     }
   }
 
+  function basculerTelecommande(actif: boolean) {
+    setModeTelecommande(actif);
+    try {
+      if (actif) window.localStorage.setItem(cleModeTelecommande(gameId), "1");
+      else window.localStorage.removeItem(cleModeTelecommande(gameId));
+    } catch {}
+    // Au retour dans l'admin complète, on relit l'état (la télécommande a pu le modifier).
+    if (!actif) reload();
+  }
+
+  if (modeTelecommande) {
+    return (
+      <main className="min-h-screen bg-white text-brand-navy px-4 py-4">
+        <Telecommande gameId={gameId} teams={teams} onQuitter={() => basculerTelecommande(false)} />
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-white text-brand-navy px-4 sm:px-8 py-8">
-      <h1 className="text-2xl font-bold mb-1">Espace organisateur</h1>
-      <p className="text-slate-500 text-sm mb-6">Escape Game</p>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Espace organisateur</h1>
+          <p className="text-slate-500 text-sm">Escape Game</p>
+        </div>
+        <button
+          onClick={() => basculerTelecommande(true)}
+          className="rounded-full bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white"
+        >
+          📱 Activer le mode télécommande
+        </button>
+      </div>
 
       <div
         className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4 ring-2 ${
@@ -636,6 +682,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
         <TabButton active={tab === "histoire"} onClick={() => setTab("histoire")}>Histoire</TabButton>
         <TabButton active={tab === "textes"} onClick={() => setTab("textes")}>Textes du site</TabButton>
         <TabButton active={tab === "evenements"} onClick={() => setTab("evenements")}>Événements</TabButton>
+        <TabButton active={tab === "checklist"} onClick={() => setTab("checklist")}>Checklist jour J</TabButton>
         <TabButton active={tab === "apparence"} onClick={() => setTab("apparence")}>Apparence</TabButton>
       </div>
 
@@ -722,6 +769,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
       {!loading && tab === "formation" && <FormationEquipes gameId={gameId} teams={teams} />}
 
       {!loading && tab === "evenements" && <Evenements gameId={gameId} teams={teams} />}
+
+      {!loading && tab === "checklist" && <ChecklistJourJ gameId={gameId} teams={teams} />}
 
       {!loading && tab === "apparence" && <Apparence gameId={gameId} />}
 

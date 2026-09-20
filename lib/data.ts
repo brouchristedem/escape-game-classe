@@ -224,6 +224,8 @@ export async function getQuizConfig(gameId: string): Promise<QuizConfig> {
     broadcast: data.broadcast ?? null,
     personnalisation: data.personnalisation ?? null,
     inscriptionsOuvertes: data.inscriptionsOuvertes ?? false,
+    enigmeSurprise: data.enigmeSurprise ?? null,
+    effets: data.effets ?? {},
   };
 }
 
@@ -717,4 +719,19 @@ export async function deplacerInscrit(gameId: string, id: string, equipe: { id: 
 
 export async function retirerInscrit(gameId: string, id: string): Promise<void> {
   await deleteDoc(inscriptionDoc(gameId, id));
+}
+
+export async function getInscriptions(gameId: string): Promise<Inscription[]> {
+  const snap = await getDocs(inscriptionsCol(gameId));
+  return snap.docs.map((d) => versInscription(d.id, d.data()));
+}
+
+// --- Libérer le chef d'équipe ---
+// Retire le verrou de chef d'une équipe SANS effacer sa progression, pour
+// qu'un coéquipier reprenne depuis un autre téléphone (celui du chef est
+// éteint, perdu, planté...). reprisePermise autorise ce nouvel appareil à
+// reprendre à l'énigme où l'équipe en était (voir LiveState.reprisePermise).
+// Échoue si l'équipe n'a pas encore de liveState (jamais démarrée).
+export async function libererChef(gameId: string, teamId: string): Promise<void> {
+  await updateDoc(liveStateDoc(gameId, teamId), { chefSessionId: "", reprisePermise: true });
 }

@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { ecouterLiveState } from "@/lib/data";
 import { classerEquipes, progression } from "@/lib/classement";
 import { Team, LiveState } from "@/lib/types";
+import LibererChefBouton from "./LibererChefBouton";
 
 export default function Classement({ gameId, teams }: { gameId: string; teams: Team[] }) {
   const [states, setStates] = useState<Record<string, LiveState | null>>({});
@@ -79,6 +80,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
                 />
               </div>
             </div>
+            <LibererChefBouton gameId={gameId} team={team} state={state} />
           </div>
         );
       })}

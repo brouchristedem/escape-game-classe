@@ -323,6 +323,11 @@ export interface LiveState {
   // d'équipe (voir claimerChef dans lib/data.ts). Sert à empêcher qu'un autre
   // appareil prenne le rôle de chef pendant qu'une partie est en cours.
   chefSessionId: string;
+  // Posé par l'organisateur quand il libère le chef (voir libererChef dans
+  // lib/data.ts) : le prochain appareil qui prend la main reprend alors à
+  // l'énigme où l'équipe en était, au lieu de repartir de la première. Effacé
+  // dès la republication suivante de l'état par le nouveau chef.
+  reprisePermise?: boolean;
   // Horodatage (epoch ms) du tout début de la partie pour cette équipe,
   // conservé tel quel lors des republications suivantes (y compris après un
   // F5) ; null tant que l'équipe n'a pas encore démarré. Sert au calcul de
