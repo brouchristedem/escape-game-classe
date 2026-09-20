@@ -169,6 +169,14 @@ export async function getAllQuestions(gameId: string): Promise<Question[]> {
     .sort((a, b) => a.salle.localeCompare(b.salle) || a.ordre - b.ordre);
 }
 
+// Lit une seule étape (utilisé par la page publique de scan d'un QR code).
+export async function getQuestion(gameId: string, id: string): Promise<Question | null> {
+  const snap = await getDoc(questionDoc(gameId, id));
+  if (!snap.exists()) return null;
+  const data = snap.data() as Omit<Question, "id">;
+  return { id: snap.id, ...data, salle: String(data.salle) };
+}
+
 export async function addQuestion(gameId: string, q: Omit<Question, "id">): Promise<string> {
   const ref = await addDoc(questionsCol(gameId), q);
   return ref.id;

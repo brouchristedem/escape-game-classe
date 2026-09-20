@@ -39,6 +39,7 @@ import { useAuth } from "@/lib/auth";
 import Classement from "./Classement";
 import Resultats from "./Resultats";
 import Apparence from "./Apparence";
+import QrCodeModal from "@/app/components/QrCodeModal";
 
 const emptyQuestionForm = {
   salle: "",
@@ -52,6 +53,7 @@ const emptyQuestionForm = {
   tempsValeur: "" as string | number,
   tempsUnite: "secondes" as UniteTemps,
   fragmentTexte: "",
+  qrTexte: "",
 };
 
 const emptyTeamForm = {
@@ -116,6 +118,9 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
   const [teamForm, setTeamForm] = useState({ ...emptyTeamForm });
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+
+  // Étape dont on affiche le QR code à imprimer (voir champ qrTexte).
+  const [qrEtape, setQrEtape] = useState<{ id: string; nom: string } | null>(null);
 
   const [qForm, setQForm] = useState({ ...emptyQuestionForm });
   const [editingQId, setEditingQId] = useState<string | null>(null);
@@ -244,6 +249,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       tempsValeur: q.tempsLimite ?? "",
       tempsUnite: "secondes",
       fragmentTexte: q.fragmentTexte ?? "",
+      qrTexte: q.qrTexte ?? "",
     });
     setEditingQId(q.id);
     setTab("circuit");
@@ -274,6 +280,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       feedbackCorrect: qForm.feedbackCorrect.trim(),
       feedbackIncorrect: qForm.feedbackIncorrect.trim(),
       tempsLimite,
+      qrTexte: qForm.qrTexte.trim(),
       ...((qForm.type === "qcm" || qForm.type === "libre") ? { fragmentTexte: qForm.fragmentTexte.trim() } : {}),
     };
 
@@ -709,6 +716,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
       {!loading && tab === "apparence" && <Apparence gameId={gameId} />}
 
+      {qrEtape && (
+        <QrCodeModal
+          lien={`${window.location.origin}/g/${gameId}/qr/${qrEtape.id}`}
+          nom={qrEtape.nom}
+          onClose={() => setQrEtape(null)}
+        />
+      )}
+
       {!loading && tab === "circuit" && teams.length === 0 && (
         <div className="bg-brand-blue-light rounded-2xl p-6 text-center text-brand-navy">
           Aucune équipe pour l&apos;instant. Créez d&apos;abord une équipe dans l&apos;onglet{" "}
@@ -854,6 +869,22 @@ function AdminPanel({ gameId }: { gameId: string }) {
               </>
             )}
 
+            <label className="block text-sm text-slate-500 mb-1">
+              Message révélé par un QR code (facultatif)
+            </label>
+            <textarea
+              value={qForm.qrTexte}
+              onChange={(e) => setQForm({ ...qForm, qrTexte: e.target.value })}
+              className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-1 w-full"
+              rows={2}
+              placeholder="Ex. Le code à saisir est **LUNE42**."
+            />
+            <p className="text-slate-500 text-xs mb-3">
+              Si vous remplissez ce champ, enregistrez l&apos;étape puis cliquez sur « QR code » dans la liste : vous
+              obtenez un QR code à imprimer et cacher dans un lieu réel. En le scannant, les joueurs voient ce message
+              (un indice, un code à saisir sur une page code...).
+            </p>
+
             {qForm.type !== "code" && (
               <p className="text-slate-500 text-xs mb-3">
                 Les messages de réussite/échec affichés après cette énigme se gèrent globalement dans l&apos;onglet
@@ -934,6 +965,9 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         {q.fragmentTexte && (
                           <span className="ml-2 text-[10px] uppercase tracking-wide text-amber-600 font-semibold">🏆 Fragment</span>
                         )}
+                        {q.qrTexte && (
+                          <span className="ml-2 text-[10px] uppercase tracking-wide text-brand-navy font-semibold">📱 QR</span>
+                        )}
                       </p>
                       <div className="flex gap-2 shrink-0 text-xs items-center">
                         <button onClick={() => deplacerEtape(q, -1)} disabled={i === 0 || savingStep} className="text-brand-navy disabled:text-slate-300" title="Monter">
@@ -942,6 +976,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         <button onClick={() => deplacerEtape(q, 1)} disabled={i === etapesSalle.length - 1 || savingStep} className="text-brand-navy disabled:text-slate-300" title="Descendre">
                           ↓
                         </button>
+                        {q.qrTexte && (
+                          <button
+                            onClick={() => setQrEtape({ id: q.id, nom: `${equipeCircuit?.nom ?? "Équipe"} - étape ${i + 1}` })}
+                            className="text-brand-blue underline"
+                          >
+                            QR code
+                          </button>
+                        )}
                         <button onClick={() => editQuestion(q)} className="text-brand-blue underline">
                           Modifier
                         </button>
@@ -968,6 +1010,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                     {q.fragmentTexte && (
                       <p className="text-amber-700 text-xs mt-1">🏆 Fragment débloqué : {q.fragmentTexte}</p>
                     )}
+                    {q.qrTexte && <p className="text-brand-navy text-xs mt-1">📱 Message du QR code : {q.qrTexte}</p>}
                     {q.tempsLimite && (
                       <p className="text-slate-500 text-xs mt-1">Temps limite : {formatTemps(q.tempsLimite)}</p>
                     )}

@@ -47,6 +47,10 @@ export interface Question {
   // avec le même design que l'ancien écran "lettre débloquée". Vide/absent =
   // aucun fragment sur cette étape. Uniquement pertinent pour "qcm"/"libre".
   fragmentTexte?: string;
+  // Message révélé quand on scanne le QR code de cette étape (un indice, un
+  // code à saisir...). Vide/absent = pas de QR code pour cette étape. Le QR
+  // pointe vers /g/{gameId}/qr/{id de l'étape} et ne révèle que ce texte.
+  qrTexte?: string;
 }
 
 // Chrono général du jeu, commun à toutes les équipes : affiché à l'écran
