@@ -5,7 +5,6 @@ import Link from "next/link";
 import { listerJeux, creerJeu, supprimerJeu, changerCodeAcces } from "@/lib/data";
 import { GameMeta } from "@/lib/types";
 import { useAuth } from "@/lib/auth";
-import QrCodeModal from "@/app/components/QrCodeModal";
 
 // Composant partagé entre /organisateur (ouvert à tout organisateur) et
 // /admin (réservé au propriétaire de la plateforme, via restrictedEmail).
@@ -122,9 +121,6 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
   const [loading, setLoading] = useState(true);
   const [nouveauNom, setNouveauNom] = useState("");
   const [creating, setCreating] = useState(false);
-  const [origin, setOrigin] = useState("");
-  const [copieId, setCopieId] = useState<string | null>(null);
-  const [qrJeu, setQrJeu] = useState<GameMeta | null>(null);
   const [editCodeId, setEditCodeId] = useState<string | null>(null);
   const [codeBrouillon, setCodeBrouillon] = useState("");
   const [savingCode, setSavingCode] = useState(false);
@@ -138,22 +134,6 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
       await reload();
     } finally {
       setSavingCode(false);
-    }
-  }
-
-  useEffect(() => {
-    if (typeof window !== "undefined") setOrigin(window.location.origin);
-  }, []);
-
-  async function copierLien(gameId: string) {
-    const lien = `${origin}/g/${gameId}`;
-    try {
-      await navigator.clipboard.writeText(lien);
-      setCopieId(gameId);
-      setTimeout(() => setCopieId(null), 2000);
-    } catch {
-      // Best effort : si le presse-papier est indisponible, le lien reste
-      // cliquable juste à côté.
     }
   }
 
@@ -230,29 +210,6 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
             <div key={j.id} className="flex items-center justify-between rounded-2xl ring-1 ring-black/5 px-5 py-4 gap-4">
               <div className="min-w-0">
                 <p className="font-semibold text-brand-navy">{j.nom}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <a
-                    href={`/g/${j.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-brand-blue underline truncate"
-                    title="Ouvrir le lien joueur dans un nouvel onglet"
-                  >
-                    {origin || ""}/g/{j.id}
-                  </a>
-                  <button
-                    onClick={() => copierLien(j.id)}
-                    className="text-xs text-slate-400 hover:text-brand-blue shrink-0"
-                  >
-                    {copieId === j.id ? "Copié ✓" : "Copier"}
-                  </button>
-                  <button
-                    onClick={() => setQrJeu(j)}
-                    className="text-xs text-slate-400 hover:text-brand-blue shrink-0"
-                  >
-                    QR code
-                  </button>
-                </div>
                 <div className="flex items-center gap-2 mt-1.5">
                   {editCodeId === j.id ? (
                     <>
@@ -311,10 +268,6 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
           À propos du développeur
         </Link>
       </div>
-
-      {qrJeu && (
-        <QrCodeModal lien={`${origin}/g/${qrJeu.id}`} nom={qrJeu.nom} onClose={() => setQrJeu(null)} />
-      )}
     </main>
   );
 }

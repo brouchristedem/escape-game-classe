@@ -625,7 +625,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-3 flex-wrap">
+      {/* Barre d'onglets collée en haut de l'écran : elle reste visible pendant qu'on fait défiler une longue liste. */}
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-8 px-4 sm:px-8 py-2 mb-4 bg-white border-b border-slate-100 flex gap-2 overflow-x-auto">
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
         <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes</TabButton>
         <TabButton active={tab === "formation"} onClick={() => setTab("formation")}>Formation des équipes</TabButton>
@@ -651,7 +652,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
       {!loading && tab === "equipes" && (
         <div className="grid lg:grid-cols-2 gap-8">
-          <section className="bg-brand-blue-light rounded-2xl p-5">
+          <section className="bg-brand-blue-light rounded-2xl p-5 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
             <h2 className="font-semibold mb-4 text-brand-navy">{editingTeamId ? "Modifier l'équipe" : "Ajouter une équipe"}</h2>
 
             <label className="block text-sm text-slate-500 mb-1">Nom de l&apos;équipe</label>
@@ -763,7 +764,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           </div>
           <div className="grid lg:grid-cols-2 gap-8">
           {/* Formulaire */}
-          <section className="bg-brand-blue-light rounded-2xl p-5">
+          <section className="bg-brand-blue-light rounded-2xl p-5 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
             <h2 className="font-semibold mb-4 text-brand-navy">
               {editingQId ? "Modifier cette étape" : "Ajouter une étape à la fin"}
             </h2>
@@ -1248,7 +1249,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+      className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition ${
         active ? "bg-brand-blue text-white" : "bg-brand-blue-light text-brand-navy"
       }`}
     >
