@@ -208,6 +208,7 @@ export async function getQuizConfig(gameId: string): Promise<QuizConfig> {
     tempsGeneral: data.tempsGeneral ?? { finTimestamp: null },
     tempsGeneralAjustement: data.tempsGeneralAjustement ?? null,
     broadcast: data.broadcast ?? null,
+    personnalisation: data.personnalisation ?? null,
   };
 }
 

@@ -76,6 +76,14 @@ export interface BroadcastMessage {
   envoyeAt: number;
 }
 
+// Apparence propre à un jeu, réglée par son organisateur (onglet "Apparence").
+// Tous les champs sont facultatifs : absent = identité "Escape Game" par défaut.
+export interface Personnalisation {
+  logo?: string; // image réduite, stockée en data URL (voir Apparence.tsx)
+  couleurFond?: string; // hex #rrggbb, doit rester sombre (le texte est clair)
+  couleurAccent?: string; // hex #rrggbb, boutons / barres / chrono
+}
+
 export interface QuizConfig {
   nom?: string; // nom du jeu, affiché dans la liste des jeux de l'organisateur
   createdAt?: number; // date de création (Date.now()), pour trier la liste des jeux
@@ -92,6 +100,7 @@ export interface QuizConfig {
   tempsGeneral?: TempsGeneral;
   tempsGeneralAjustement?: TempsGeneralAjustement | null;
   broadcast?: BroadcastMessage | null;
+  personnalisation?: Personnalisation | null; // null = retour au thème par défaut
 }
 
 // Résumé d'un jeu affiché dans la liste des jeux de l'organisateur

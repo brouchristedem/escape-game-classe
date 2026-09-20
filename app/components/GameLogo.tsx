@@ -1,8 +1,19 @@
+"use client";
+
+import { useLogoPersonnalise } from "@/app/components/GameTheme";
+
 // Identité visuelle du jeu : un cadran de coffre-fort/serrure à combinaison,
 // avec un trou de serrure d'où s'échappe la lumière. Seul élément animé de
 // façon continue (mais discrète) sur les écrans de jeu — le reste de
 // l'interface reste calme, conformément au principe "un seul moment fort".
 export default function GameLogo({ className = "" }: { className?: string }) {
+  // Logo choisi par l'organisateur pour ce jeu (voir onglet "Apparence").
+  const logoPersonnalise = useLogoPersonnalise();
+  if (logoPersonnalise) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={logoPersonnalise} alt="Logo du jeu" className={`${className} object-contain`} />;
+  }
+
   return (
     <svg
       viewBox="0 0 200 200"
