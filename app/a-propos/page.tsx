@@ -94,7 +94,7 @@ export default async function AProposDuDeveloppeur({
           <p>
             Je suis également le développeur de{" "}
             <a
-              href="https://moncvpro-ci.vercel.app"
+              href="https://moncvproci.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-brass-dark underline font-semibold"
