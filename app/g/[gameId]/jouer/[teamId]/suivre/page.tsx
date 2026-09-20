@@ -8,6 +8,7 @@ import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
 import GlobalOverlays from "@/app/components/GlobalOverlays";
+import EvenementsOverlay from "@/app/components/EvenementsOverlay";
 
 export default function SuivreEquipe() {
   const params = useParams();
@@ -91,6 +92,7 @@ export default function SuivreEquipe() {
     <main className="min-h-screen bg-ink">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
+      <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre={false} />
       {banner}
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-parchment/60 mb-2">

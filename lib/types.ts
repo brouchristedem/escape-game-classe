@@ -88,6 +88,37 @@ export interface Personnalisation {
   couleurAccent?: string; // hex #rrggbb, boutons / barres / chrono
 }
 
+// --- Événements surprise ---
+// Énigme lancée par l'organisateur chez toutes les équipes en même temps ;
+// la première équipe à répondre juste est désignée par l'heure serveur de sa
+// réponse (voir signalerBonneReponseSurprise dans lib/data.ts). L'équipe
+// gagnante choisit ensuite sa cible à l'oral, et l'organisateur applique
+// l'effet depuis l'admin.
+export interface EnigmeSurprise {
+  id: string;
+  enonce: string;
+  reponse: string; // comparée avec normaliserReponse
+  lanceAt: number;
+}
+
+// "prison" : un membre de l'équipe quitte le jeu (simple alerte, l'équipe
+// continue) ; "blocage" : écran de l'équipe bloqué jusqu'à finTimestamp.
+export type TypeEffet = "prison" | "blocage";
+
+export interface EffetEquipe {
+  id: string;
+  type: TypeEffet;
+  personne?: string; // prison uniquement : nom de la personne emprisonnée
+  finTimestamp: number | null; // blocage uniquement : fin du blocage (Date.now()), sinon null
+  at: number;
+}
+
+export interface BonneReponseSurprise {
+  teamId: string;
+  nom: string;
+  at: number; // heure serveur (epoch ms)
+}
+
 export interface QuizConfig {
   nom?: string; // nom du jeu, affiché dans la liste des jeux de l'organisateur
   createdAt?: number; // date de création (Date.now()), pour trier la liste des jeux
@@ -105,6 +136,8 @@ export interface QuizConfig {
   tempsGeneralAjustement?: TempsGeneralAjustement | null;
   broadcast?: BroadcastMessage | null;
   personnalisation?: Personnalisation | null; // null = retour au thème par défaut
+  enigmeSurprise?: EnigmeSurprise | null; // null/absent = aucun événement en cours
+  effets?: Record<string, EffetEquipe | null>; // par id d'équipe ; null = effet retiré
 }
 
 // Résumé d'un jeu affiché dans la liste des jeux de l'organisateur

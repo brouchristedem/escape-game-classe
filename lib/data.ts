@@ -10,6 +10,7 @@ import {
   onSnapshot,
   query,
   where,
+  orderBy,
   runTransaction,
   serverTimestamp,
   Timestamp,
@@ -27,6 +28,9 @@ import {
   TempsGeneral,
   TempsGeneralAjustement,
   BroadcastMessage,
+  EnigmeSurprise,
+  EffetEquipe,
+  BonneReponseSurprise,
 } from "./types";
 
 // --- Structure multi-tenant ---
@@ -496,4 +500,79 @@ export function ecouterLiveState(
   return onSnapshot(liveStateDoc(gameId, teamId), (snap) => {
     callback(snap.exists() ? (snap.data() as LiveState) : null);
   });
+}
+
+
+// --- Événements surprise (voir EnigmeSurprise / EffetEquipe dans types.ts) ---
+
+function bonnesReponsesCol(gameId: string, eventId: string) {
+  return collection(db, GAMES_COL, gameId, "evenements", eventId, "bonnes");
+}
+
+// Lance (ou remplace) l'énigme surprise chez toutes les équipes.
+export async function lancerEnigmeSurprise(gameId: string, enonce: string, reponse: string): Promise<void> {
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  await saveQuizConfig(gameId, { enigmeSurprise: { id, enonce, reponse, lanceAt: Date.now() } });
+}
+
+export async function terminerEnigmeSurprise(gameId: string): Promise<void> {
+  await saveQuizConfig(gameId, { enigmeSurprise: null });
+}
+
+// Appelé par le chef d'équipe à sa première bonne réponse. L'heure est celle
+// du serveur (imposée par les règles Firestore), pas celle de l'appareil : le
+// classement des équipes ne dépend donc d'aucune horloge locale. Un second
+// envoi de la même équipe est refusé (création seule) : à ignorer.
+export async function signalerBonneReponseSurprise(
+  gameId: string,
+  eventId: string,
+  teamId: string,
+  nomEquipe: string
+): Promise<void> {
+  await setDoc(doc(bonnesReponsesCol(gameId, eventId), teamId), { nom: nomEquipe, at: serverTimestamp() });
+}
+
+// Équipes ayant répondu juste, de la plus rapide à la plus lente.
+export function ecouterBonnesReponsesSurprise(
+  gameId: string,
+  eventId: string,
+  callback: (bonnes: BonneReponseSurprise[]) => void
+): () => void {
+  return onSnapshot(query(bonnesReponsesCol(gameId, eventId), orderBy("at")), (snap) => {
+    callback(
+      snap.docs.map((d) => {
+        const data = d.data({ serverTimestamps: "estimate" });
+        return { teamId: d.id, nom: String(data.nom ?? ""), at: updatedAtEnMillis(data.at) };
+      })
+    );
+  });
+}
+
+// Énigme surprise en cours et effets actifs par équipe (un seul abonnement
+// sur le document du jeu, pour les écrans joueur comme pour l'admin).
+export function ecouterEvenementsJeu(
+  gameId: string,
+  callback: (v: { enigmeSurprise: EnigmeSurprise | null; effets: Record<string, EffetEquipe | null> }) => void
+): () => void {
+  return onSnapshot(gameDoc(gameId), (snap) => {
+    const data = snap.exists() ? (snap.data() as QuizConfig) : null;
+    callback({ enigmeSurprise: data?.enigmeSurprise ?? null, effets: data?.effets ?? {} });
+  });
+}
+
+export async function appliquerEffetEquipe(
+  gameId: string,
+  teamId: string,
+  effet: { type: "prison"; personne: string } | { type: "blocage"; dureeSecondes: number }
+): Promise<void> {
+  const base = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, at: Date.now() };
+  const valeur: EffetEquipe =
+    effet.type === "prison"
+      ? { ...base, type: "prison", personne: effet.personne, finTimestamp: null }
+      : { ...base, type: "blocage", finTimestamp: Date.now() + effet.dureeSecondes * 1000 };
+  await saveQuizConfig(gameId, { effets: { [teamId]: valeur } });
+}
+
+export async function retirerEffetEquipe(gameId: string, teamId: string): Promise<void> {
+  await saveQuizConfig(gameId, { effets: { [teamId]: null } });
 }

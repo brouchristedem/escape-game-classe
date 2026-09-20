@@ -38,6 +38,7 @@ import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
 import PauseOverlay from "@/app/components/PauseOverlay";
 import GlobalOverlays from "@/app/components/GlobalOverlays";
+import EvenementsOverlay from "@/app/components/EvenementsOverlay";
 import { useAdminMode, editModePersiste } from "@/lib/adminMode";
 import { sauvegarderCache, lireCache, sauvegarderProgressionHorsLigne, lireProgressionHorsLigne } from "@/lib/offlineCache";
 
@@ -599,6 +600,9 @@ export default function JouerEquipe() {
       )}
       {!horsLigne && !editMode && (
         <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
+      )}
+      {!horsLigne && !editMode && (
+        <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre test={modeTest} />
       )}
       {horsLigne && (
         <div className="fixed top-0 inset-x-0 z-40 flex justify-center px-4 pt-3 pointer-events-none">

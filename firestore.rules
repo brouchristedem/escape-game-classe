@@ -35,6 +35,14 @@ service cloud.firestore {
         allow read: if true;
         allow write: if true;
       }
+      // Événements surprise : une équipe (non authentifiée) enregistre sa
+      // première bonne réponse, une seule fois (création seule, jamais de
+      // modification), avec l'heure du serveur — c'est elle qui départage
+      // les équipes.
+      match /evenements/{eventId}/bonnes/{teamId} {
+        allow read: if true;
+        allow create: if request.resource.data.at == request.time;
+      }
     }
   }
 }
