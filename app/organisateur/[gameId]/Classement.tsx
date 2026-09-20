@@ -9,19 +9,9 @@
 // tête), puis équipes n'ayant pas encore commencé.
 
 import { useEffect, useState } from "react";
-import { ecouterLiveState, updatedAtEnMillis } from "@/lib/data";
+import { ecouterLiveState } from "@/lib/data";
+import { classerEquipes, progression } from "@/lib/classement";
 import { Team, LiveState } from "@/lib/types";
-
-function rang(state: LiveState | null): number {
-  if (!state) return 2;
-  if (state.phase === "termine") return 0;
-  return 1;
-}
-
-function progression(state: LiveState | null): number {
-  if (!state || !state.totalQuestions) return 0;
-  return state.index / state.totalQuestions;
-}
 
 export default function Classement({ gameId, teams }: { gameId: string; teams: Team[] }) {
   const [states, setStates] = useState<Record<string, LiveState | null>>({});
@@ -36,16 +26,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId, teams.map((t) => t.id).join(",")]);
 
-  const classees = [...teams].sort((a, b) => {
-    const stateA = states[a.id] ?? null;
-    const stateB = states[b.id] ?? null;
-    const rangA = rang(stateA);
-    const rangB = rang(stateB);
-    if (rangA !== rangB) return rangA - rangB;
-    if (rangA === 0) return updatedAtEnMillis(stateA?.updatedAt) - updatedAtEnMillis(stateB?.updatedAt);
-    if (rangA === 1) return progression(stateB) - progression(stateA);
-    return a.nom.localeCompare(b.nom);
-  });
+  const classees = classerEquipes(teams, states);
 
   if (teams.length === 0) {
     return <p className="text-slate-500 text-sm">Aucune équipe pour l&apos;instant.</p>;
@@ -53,6 +34,14 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
 
   return (
     <div className="flex flex-col gap-3">
+      <a
+        href={`/g/${gameId}/projection`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="self-end text-sm font-semibold text-brand-navy underline underline-offset-2"
+      >
+        Ouvrir l&apos;écran de projection
+      </a>
       {classees.map((team, i) => {
         const state = states[team.id] ?? null;
         const termine = state?.phase === "termine";
