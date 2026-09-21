@@ -277,7 +277,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
   async function submitQForm() {
     if (!qForm.texte.trim()) {
-      alert(qForm.type === "code" ? "Merci de remplir le texte de la page." : "Merci de remplir l'énigme.");
+      alert(qForm.type === "code" || qForm.type === "info" ? "Merci de remplir le texte de la page." : "Merci de remplir l'énigme.");
       return;
     }
     if (qForm.type === "qcm" && qForm.propositions.some((p) => !p.trim())) {
@@ -829,6 +829,9 @@ function AdminPanel({ gameId }: { gameId: string }) {
               <TypeButton active={qForm.type === "code"} onClick={() => setQForm({ ...qForm, type: "code" })}>
                 Page code (verrou)
               </TypeButton>
+              <TypeButton active={qForm.type === "info"} onClick={() => setQForm({ ...qForm, type: "info" })}>
+                Page vierge (info)
+              </TypeButton>
             </div>
 
             <label className="block text-sm text-slate-500 mb-1">
@@ -994,6 +997,9 @@ function AdminPanel({ gameId }: { gameId: string }) {
               <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
                 + Page code en tête de circuit
               </button>
+              <button onClick={() => inserer(null, "info")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
+                + Page vierge en tête de circuit
+              </button>
             </div>
 
             {etapesSalle.length === 0 && (
@@ -1079,6 +1085,9 @@ function AdminPanel({ gameId }: { gameId: string }) {
                     </button>
                     <button onClick={() => inserer(q, "code")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
                       + Insérer une page code après
+                    </button>
+                    <button onClick={() => inserer(q, "info")} disabled={savingStep} className="text-brand-blue underline disabled:text-slate-400">
+                      + Insérer une page vierge après
                     </button>
                   </div>
                 </div>
