@@ -92,7 +92,7 @@ export default function SuivreEquipe() {
     <main className="min-h-screen bg-ink">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
-      <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre={false} />
+      <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre={false} texts={texts} />
       {banner}
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-parchment/60 mb-2">

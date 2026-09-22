@@ -605,7 +605,7 @@ export default function JouerEquipe() {
         <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
       )}
       {!horsLigne && !editMode && (
-        <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre test={modeTest} />
+        <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre test={modeTest} texts={texts} />
       )}
       {horsLigne && (
         <div className="fixed top-0 inset-x-0 z-40 flex justify-center px-4 pt-3 pointer-events-none">

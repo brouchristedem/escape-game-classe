@@ -1248,6 +1248,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <TextAreaField label="Sous-titre" value={siteTexts.finSousTitre} onChange={(v) => setSiteText("finSousTitre", v)} rows={2} />
           </TextGroup>
 
+          <TextGroup title="Fausse fin (onglet Événements)">
+            <p className="text-ink/55 text-xs mb-2">
+              Réutilise le titre/sous-titre de l&apos;écran final ci-dessus pour le faux écran de victoire, puis
+              affiche ce message de révélation.
+            </p>
+            <TextAreaField label="Message de révélation" value={siteTexts.fausseFinLeurre} onChange={(v) => setSiteText("fausseFinLeurre", v)} rows={2} />
+          </TextGroup>
+
           <TextGroup title="Page « suivre » (lecture seule pour l'équipe)">
             <TextField label="Bannière" value={siteTexts.suivreBanniere} onChange={(v) => setSiteText("suivreBanniere", v)} />
             <TextAreaField label="Texte d'attente (chef pas encore démarré)" value={siteTexts.suivreAttente} onChange={(v) => setSiteText("suivreAttente", v)} rows={2} />

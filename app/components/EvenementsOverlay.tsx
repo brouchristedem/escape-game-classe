@@ -9,13 +9,14 @@
 // Sur l'écran de suivi (peutRepondre = false), l'énigme est visible mais on ne
 // peut pas y répondre : c'est le rôle du chef d'équipe.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ecouterBonnesReponsesSurprise,
   ecouterEvenementsJeu,
+  retirerEffetEquipe,
   signalerBonneReponseSurprise,
 } from "@/lib/data";
-import { EffetEquipe, EnigmeSurprise, normaliserReponse } from "@/lib/types";
+import { EffetEquipe, EnigmeSurprise, GameTexts, fusionnerTextes, normaliserReponse } from "@/lib/types";
 import RichText from "@/app/components/RichText";
 
 function formaterCompteARebours(totalSecondes: number): string {
@@ -23,19 +24,29 @@ function formaterCompteARebours(totalSecondes: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
+// Durées fixes (ms) des séquences "fausse fin" et "glitch" : pas configurables
+// depuis l'admin, l'organisateur ne choisit que le moment du déclenchement
+// (et le message, pour le glitch).
+const FAUSSE_FIN_VICTOIRE_MS = 3500;
+const FAUSSE_FIN_LEURRE_MS = 3000;
+const GLITCH_DUREE_MS = 4000;
+
 export default function EvenementsOverlay({
   gameId,
   teamId,
   nomEquipe,
   peutRepondre,
   test = false,
+  texts,
 }: {
   gameId: string;
   teamId: string;
   nomEquipe: string;
   peutRepondre: boolean;
   test?: boolean; // mode test organisateur : rien n'est enregistré
+  texts?: GameTexts; // pour les textes de l'écran de victoire leurre (fausse fin)
 }) {
+  const t = texts ?? fusionnerTextes();
   const [enigme, setEnigme] = useState<EnigmeSurprise | null>(null);
   const [effet, setEffet] = useState<EffetEquipe | null>(null);
   const [dejaRepondu, setDejaRepondu] = useState(false);
@@ -45,6 +56,15 @@ export default function EvenementsOverlay({
   const [confirmeId, setConfirmeId] = useState<string | null>(null); // id de l'énigme à laquelle on vient de répondre juste
   const [ferme, setFerme] = useState<string | null>(null); // id de l'énigme fermée à la main
   const [maintenant, setMaintenant] = useState(() => Date.now());
+
+  // "fausse fin" : séquence en deux temps (victoire, puis révélation),
+  // rejouée une seule fois par id d'effet, avec des minuteurs locaux fixes.
+  const [fausseFinPhase, setFausseFinPhase] = useState<"victoire" | "leurre" | null>(null);
+  const dernierFausseFinVu = useRef<string | null>(null);
+
+  // "glitch" : overlay affiché une seule fois par id d'effet, durée fixe.
+  const [glitchVisible, setGlitchVisible] = useState(false);
+  const dernierGlitchVu = useRef<string | null>(null);
 
   useEffect(() => {
     return ecouterEvenementsJeu(gameId, (v) => {
@@ -68,6 +88,39 @@ export default function EvenementsOverlay({
     const id = setInterval(() => setMaintenant(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // "fausse fin" : à chaque nouvel id d'effet de ce type, joue la séquence
+  // victoire -> leurre -> retour au jeu, une seule fois, puis nettoie l'effet
+  // côté Firestore (sauf en mode test, où rien n'est jamais écrit).
+  useEffect(() => {
+    if (!effet || effet.type !== "fausseFin") return;
+    if (dernierFausseFinVu.current === effet.id) return;
+    dernierFausseFinVu.current = effet.id;
+    setFausseFinPhase("victoire");
+    const versLeurre = setTimeout(() => setFausseFinPhase("leurre"), FAUSSE_FIN_VICTOIRE_MS);
+    const versFin = setTimeout(() => {
+      setFausseFinPhase(null);
+      if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
+    }, FAUSSE_FIN_VICTOIRE_MS + FAUSSE_FIN_LEURRE_MS);
+    return () => {
+      clearTimeout(versLeurre);
+      clearTimeout(versFin);
+    };
+  }, [effet, gameId, teamId, test]);
+
+  // "glitch" : affiche l'overlay de piratage pendant une durée fixe, une
+  // seule fois par id d'effet, puis nettoie l'effet côté Firestore.
+  useEffect(() => {
+    if (!effet || effet.type !== "glitch") return;
+    if (dernierGlitchVu.current === effet.id) return;
+    dernierGlitchVu.current = effet.id;
+    setGlitchVisible(true);
+    const id = setTimeout(() => {
+      setGlitchVisible(false);
+      if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
+    }, GLITCH_DUREE_MS);
+    return () => clearTimeout(id);
+  }, [effet, gameId, teamId, test]);
 
   async function valider() {
     if (!enigme || envoi || !reponse.trim()) return;
@@ -103,6 +156,41 @@ export default function EvenementsOverlay({
             </p>
             <p className="font-codemono text-5xl font-semibold text-brass-light">
               {formaterCompteARebours(((effet?.finTimestamp ?? 0) - maintenant) / 1000)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {fausseFinPhase && (
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-ink px-6 py-16 text-center">
+          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+          <div className="relative z-10 flex flex-col items-center max-w-md w-full">
+            {fausseFinPhase === "victoire" ? (
+              <>
+                <p className="text-brass-light font-semibold mb-2">{nomEquipe}</p>
+                <h1 className="font-headline text-2xl font-bold mb-4 text-parchment">{t.finTitre}</h1>
+                <p className="text-parchment/60 max-w-sm">{t.finSousTitre}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-5xl mb-5">🎭</p>
+                <p className="font-headline text-xl font-bold text-parchment whitespace-pre-line">{t.fausseFinLeurre}</p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {glitchVisible && (
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-ink px-6 py-16 text-center">
+          <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(178,58,46,0.06)_0px,rgba(178,58,46,0.06)_1px,transparent_1px,transparent_3px)]" />
+          <div className="relative z-10 flex flex-col items-center max-w-md w-full animate-glitch-flicker">
+            <p className="font-codemono text-xs uppercase tracking-widest text-stamp-red mb-4 animate-glitch-shift">
+              ⚠ ERREUR SYSTÈME ⚠
+            </p>
+            <p className="font-headline text-xl font-bold text-parchment whitespace-pre-line animate-glitch-shift">
+              {effet?.type === "glitch" ? effet.texte : ""}
             </p>
           </div>
         </div>

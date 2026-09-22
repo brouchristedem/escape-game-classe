@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import {
   appliquerEffetEquipe,
+  appliquerEffetToutesEquipes,
   ecouterBonnesReponsesSurprise,
   ecouterEvenementsJeu,
   lancerEnigmeSurprise,
@@ -35,6 +36,13 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
   const [unite, setUnite] = useState<UniteTemps>("minutes");
   const [occupe, setOccupe] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null);
+
+  // Section 3 : "fausse fin" / "glitch", déclenchables chez une équipe
+  // précise ou chez toutes les équipes en même temps.
+  const [typeSurprise, setTypeSurprise] = useState<"fausseFin" | "glitch">("fausseFin");
+  const [cibleSurprise, setCibleSurprise] = useState<"equipe" | "toutes">("toutes");
+  const [teamSurprise, setTeamSurprise] = useState("");
+  const [glitchTexte, setGlitchTexte] = useState("");
 
   useEffect(() => ecouterEvenementsJeu(gameId, (v) => {
     setEnigme(v.enigmeSurprise);
@@ -93,9 +101,31 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
     }
   }
 
+  function declencherSurprise() {
+    const effet =
+      typeSurprise === "glitch"
+        ? ({ type: "glitch", texte: glitchTexte.trim() } as const)
+        : ({ type: "fausseFin" } as const);
+    if (typeSurprise === "glitch" && !glitchTexte.trim()) return;
+
+    if (cibleSurprise === "toutes") {
+      executer(
+        () => appliquerEffetToutesEquipes(gameId, teams.map((t) => t.id), effet),
+        typeSurprise === "glitch" ? "Glitch déclenché chez toutes les équipes." : "Fausse fin déclenchée chez toutes les équipes."
+      );
+    } else {
+      const equipe = teams.find((t) => t.id === teamSurprise);
+      if (!equipe) return;
+      executer(
+        () => appliquerEffetEquipe(gameId, equipe.id, effet),
+        typeSurprise === "glitch" ? `Glitch déclenché chez ${equipe.nom}.` : `Fausse fin déclenchée chez ${equipe.nom}.`
+      );
+    }
+  }
+
   const effetsActifs = teams
     .map((t) => ({ team: t, effet: effets[t.id] ?? null }))
-    .filter((x): x is { team: Team; effet: EffetEquipe } => !!x.effet);
+    .filter((x): x is { team: Team; effet: EffetEquipe } => !!x.effet && (x.effet.type === "prison" || x.effet.type === "blocage"));
 
   const champ = "bg-parchment border border-brass/20 rounded-lg px-3 py-2 w-full";
   const bouton = "rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50";
@@ -190,6 +220,72 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             className={`${bouton} self-start`}
           >
             {typeEffet === "prison" ? "Mettre en prison" : "Bloquer l'écran"}
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h2 className="font-semibold text-ink mb-2">3. Fausse fin / Glitch</h2>
+        <div className="bg-brass-light rounded-xl p-4 flex flex-col gap-3">
+          <p className="text-sm text-ink/65">
+            À déclencher au moment de ton choix, chez une équipe précise ou chez toutes en même temps. L&apos;effet
+            se joue automatiquement (quelques secondes) puis le jeu reprend tout seul.
+          </p>
+          <div className="flex gap-2">
+            {(["fausseFin", "glitch"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setTypeSurprise(v)}
+                className={`px-4 py-1.5 rounded-full text-sm transition ${
+                  typeSurprise === v ? "bg-brass text-ink" : "bg-parchment border border-brass/20 text-ink"
+                }`}
+              >
+                {v === "fausseFin" ? "Fausse fin" : "Glitch (site piraté)"}
+              </button>
+            ))}
+          </div>
+          {typeSurprise === "glitch" && (
+            <textarea
+              value={glitchTexte}
+              onChange={(e) => setGlitchTexte(e.target.value)}
+              rows={2}
+              className={champ}
+              placeholder="Message révélé pendant le glitch"
+            />
+          )}
+          <div className="flex gap-2">
+            {(["toutes", "equipe"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setCibleSurprise(v)}
+                className={`px-4 py-1.5 rounded-full text-sm transition ${
+                  cibleSurprise === v ? "bg-brass text-ink" : "bg-parchment border border-brass/20 text-ink"
+                }`}
+              >
+                {v === "toutes" ? "Toutes les équipes" : "Une équipe précise"}
+              </button>
+            ))}
+          </div>
+          {cibleSurprise === "equipe" && (
+            <select value={teamSurprise} onChange={(e) => setTeamSurprise(e.target.value)} className={champ}>
+              <option value="">Équipe visée…</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.nom}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={declencherSurprise}
+            disabled={
+              occupe ||
+              (typeSurprise === "glitch" && !glitchTexte.trim()) ||
+              (cibleSurprise === "equipe" && !teamSurprise)
+            }
+            className={`${bouton} self-start`}
+          >
+            Déclencher
           </button>
         </div>
       </div>

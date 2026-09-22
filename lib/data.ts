@@ -565,17 +565,44 @@ export function ecouterEvenementsJeu(
   });
 }
 
-export async function appliquerEffetEquipe(
-  gameId: string,
-  teamId: string,
-  effet: { type: "prison"; personne: string } | { type: "blocage"; dureeSecondes: number }
-): Promise<void> {
+type NouvelEffet =
+  | { type: "prison"; personne: string }
+  | { type: "blocage"; dureeSecondes: number }
+  | { type: "fausseFin" }
+  | { type: "glitch"; texte: string };
+
+function construireEffet(effet: NouvelEffet): EffetEquipe {
   const base = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, at: Date.now() };
-  const valeur: EffetEquipe =
-    effet.type === "prison"
-      ? { ...base, type: "prison", personne: effet.personne, finTimestamp: null }
-      : { ...base, type: "blocage", finTimestamp: Date.now() + effet.dureeSecondes * 1000 };
-  await saveQuizConfig(gameId, { effets: { [teamId]: valeur } });
+  switch (effet.type) {
+    case "prison":
+      return { ...base, type: "prison", personne: effet.personne, finTimestamp: null };
+    case "blocage":
+      return { ...base, type: "blocage", finTimestamp: Date.now() + effet.dureeSecondes * 1000 };
+    case "glitch":
+      return { ...base, type: "glitch", texte: effet.texte, finTimestamp: null };
+    case "fausseFin":
+      return { ...base, type: "fausseFin", finTimestamp: null };
+  }
+}
+
+export async function appliquerEffetEquipe(gameId: string, teamId: string, effet: NouvelEffet): Promise<void> {
+  await saveQuizConfig(gameId, { effets: { [teamId]: construireEffet(effet) } });
+}
+
+// Déclenche le même effet chez plusieurs équipes en une seule écriture, pour
+// qu'il apparaisse exactement au même moment chez toutes (utilisé pour
+// "fausse fin" et "glitch" en mode "toutes les équipes"). Chaque équipe
+// reçoit sa propre copie de l'effet (même id), donc chacune peut le rejouer
+// indépendamment sans affecter les autres.
+export async function appliquerEffetToutesEquipes(
+  gameId: string,
+  teamIds: string[],
+  effet: { type: "fausseFin" } | { type: "glitch"; texte: string }
+): Promise<void> {
+  const valeur = construireEffet(effet);
+  await saveQuizConfig(gameId, {
+    effets: Object.fromEntries(teamIds.map((id) => [id, valeur])),
+  });
 }
 
 export async function retirerEffetEquipe(gameId: string, teamId: string): Promise<void> {

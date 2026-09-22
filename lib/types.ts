@@ -102,14 +102,19 @@ export interface EnigmeSurprise {
 }
 
 // "prison" : un membre de l'équipe quitte le jeu (simple alerte, l'équipe
-// continue) ; "blocage" : écran de l'équipe bloqué jusqu'à finTimestamp.
-export type TypeEffet = "prison" | "blocage";
+// continue) ; "blocage" : écran de l'équipe bloqué jusqu'à finTimestamp ;
+// "fausseFin" : faux écran de victoire suivi d'un message "ce n'était qu'un
+// leurre", puis retour automatique au jeu (durée fixe côté client, voir
+// EvenementsOverlay) ; "glitch" : faux piratage du site qui révèle un
+// message choisi par l'organisateur pendant quelques secondes.
+export type TypeEffet = "prison" | "blocage" | "fausseFin" | "glitch";
 
 export interface EffetEquipe {
   id: string;
   type: TypeEffet;
   personne?: string; // prison uniquement : nom de la personne emprisonnée
   finTimestamp: number | null; // blocage uniquement : fin du blocage (Date.now()), sinon null
+  texte?: string; // glitch uniquement : message révélé pendant le piratage
   at: number;
 }
 
@@ -210,6 +215,8 @@ export interface GameTexts {
   finTitre: string;
   finSousTitre: string;
 
+  fausseFinLeurre: string;
+
   suivreBanniere: string;
   suivreAttente: string;
   suivreChargementLabel: string;
@@ -271,6 +278,8 @@ export const DEFAULT_GAME_TEXTS: GameTexts = {
 
   finTitre: "Bravo, votre escape game est terminé !",
   finSousTitre: "Merci d'avoir joué. Direction l'amphi pour la suite !",
+
+  fausseFinLeurre: "Ce n'était qu'un leurre... Le jeu continue !",
 
   suivreBanniere: "👀 Vous suivez l'écran du chef d'équipe en direct — lecture seule",
   suivreAttente:
