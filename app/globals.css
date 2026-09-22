@@ -7,8 +7,10 @@
   --brand-blue: #14a3dd;
   --brand-blue-light: #eaf6fc;
 
-  /* Identité "Escape Game" : réservée aux pages de jeu (voir app/g/layout.tsx),
-     l'espace organisateur garde la charte bleu/blanc ci-dessus. */
+  /* Identité "Escape Game" (ink/brass/parchment) : utilisée sur les pages de
+     jeu (voir app/g/layout.tsx) ET sur /admin + /organisateur, pour un design
+     unifié sur toute la plateforme. Les variables brand-navy/brand-blue
+     ci-dessus ne servent plus qu'aux pages marketing (/, /a-propos, /tarifs). */
   --ink: #0d1526;
   --ink-2: #17233d;
   --brass: #c9a24d;

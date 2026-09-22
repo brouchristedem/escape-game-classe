@@ -102,16 +102,16 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
   }
 
   if (teams.length === 0) {
-    return <p className="text-slate-500 text-sm">Aucune équipe pour l&apos;instant.</p>;
+    return <p className="text-ink/55 text-sm">Aucune équipe pour l&apos;instant.</p>;
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-slate-500">Mis à jour en direct pendant que les équipes jouent.</p>
+        <p className="text-sm text-ink/55">Mis à jour en direct pendant que les équipes jouent.</p>
         <button
           onClick={exporterCsv}
-          className="bg-brand-blue hover:bg-brand-navy text-white text-sm font-semibold px-4 py-2 rounded-full transition"
+          className="bg-brass hover:bg-brass-dark text-ink text-sm font-semibold px-4 py-2 rounded-full transition"
         >
           Exporter en CSV
         </button>
@@ -120,7 +120,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs uppercase tracking-wide text-ink/45 border-b border-brass/20">
               <th className="py-2 pr-4">Équipe</th>
               <th className="py-2 pr-4">Statut</th>
               <th className="py-2 pr-4">Démarré à</th>
@@ -137,21 +137,21 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
               const duree =
                 state?.startedAt && state?.finishedAt ? formaterDuree(state.finishedAt - state.startedAt) : "—";
               return (
-                <tr key={team.id} className="border-b border-slate-100">
-                  <td className="py-2 pr-4 font-medium text-brand-navy">{team.nom}</td>
-                  <td className={`py-2 pr-4 ${termine ? "text-green-600 font-semibold" : "text-slate-500"}`}>
+                <tr key={team.id} className="border-b border-brass/10">
+                  <td className="py-2 pr-4 font-medium text-ink">{team.nom}</td>
+                  <td className={`py-2 pr-4 ${termine ? "text-green-600 font-semibold" : "text-ink/55"}`}>
                     {statutTexte(state)}
                   </td>
-                  <td className="py-2 pr-4 text-slate-500">{state?.startedAt ? formaterHeure(state.startedAt) : "—"}</td>
-                  <td className="py-2 pr-4 text-slate-500">{state?.finishedAt ? formaterHeure(state.finishedAt) : "—"}</td>
-                  <td className="py-2 pr-4 text-slate-500">{duree}</td>
-                  <td className="py-2 pr-4 text-slate-500">{state?.totalTentatives ?? 0}</td>
+                  <td className="py-2 pr-4 text-ink/55">{state?.startedAt ? formaterHeure(state.startedAt) : "—"}</td>
+                  <td className="py-2 pr-4 text-ink/55">{state?.finishedAt ? formaterHeure(state.finishedAt) : "—"}</td>
+                  <td className="py-2 pr-4 text-ink/55">{duree}</td>
+                  <td className="py-2 pr-4 text-ink/55">{state?.totalTentatives ?? 0}</td>
                   <td className="py-2 pr-4">
                     {state && (
                       <button
                         onClick={() => reinitialiserEquipe(team)}
                         disabled={enCours}
-                        className="text-brand-blue underline text-xs disabled:opacity-50"
+                        className="text-brass-dark underline text-xs disabled:opacity-50"
                       >
                         Réinitialiser
                       </button>
@@ -165,10 +165,10 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
       </div>
 
       <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-4">
-        <p className="font-semibold text-red-700 mb-1">Réinitialiser les statistiques</p>
+        <p className="font-semibold text-stamp-red mb-1">Réinitialiser les statistiques</p>
         {!confirmation ? (
           <>
-            <p className="text-sm text-slate-600 mb-3">
+            <p className="text-sm text-ink/65 mb-3">
               Efface la progression, la durée et les tentatives de toutes les équipes, et retire l&apos;énigme
               surprise et les effets en cours. Les équipes, les circuits et les énigmes ne sont pas touchés.
             </p>
@@ -177,27 +177,27 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
                 setMessage(null);
                 setConfirmation(true);
               }}
-              className="rounded-full border border-red-400 px-5 py-2 text-sm font-semibold text-red-700"
+              className="rounded-full border border-red-400 px-5 py-2 text-sm font-semibold text-stamp-red"
             >
               Réinitialiser toute la partie…
             </button>
           </>
         ) : (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-ink/75">
               Cette action est <strong>irréversible</strong>. Exporte d&apos;abord les résultats si tu veux les
               garder, et vérifie qu&apos;aucune équipe n&apos;est en train de jouer : une page de jeu encore ouverte
               republierait son ancien état.
             </p>
-            <button onClick={exporterCsv} className="self-start text-sm underline text-brand-blue">
+            <button onClick={exporterCsv} className="self-start text-sm underline text-brass-dark">
               Exporter en CSV d&apos;abord
             </button>
-            <label className="text-sm text-slate-700">
+            <label className="text-sm text-ink/75">
               Tape <strong>REINITIALISER</strong> pour confirmer :
               <input
                 value={motConfirmation}
                 onChange={(e) => setMotConfirmation(e.target.value)}
-                className="mt-1 block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2"
+                className="mt-1 block w-full max-w-xs rounded-lg border border-brass/30 bg-parchment px-3 py-2"
               />
             </label>
             <div className="flex gap-3">
@@ -214,14 +214,14 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
                   setMotConfirmation("");
                 }}
                 disabled={enCours}
-                className="rounded-full border border-slate-300 px-5 py-2 text-sm text-slate-600"
+                className="rounded-full border border-brass/30 px-5 py-2 text-sm text-ink/65"
               >
                 Annuler
               </button>
             </div>
           </div>
         )}
-        {message && <p className={`mt-3 text-sm ${message.ok ? "text-green-600" : "text-red-600"}`}>{message.texte}</p>}
+        {message && <p className={`mt-3 text-sm ${message.ok ? "text-green-600" : "text-stamp-red"}`}>{message.texte}</p>}
       </div>
     </div>
   );

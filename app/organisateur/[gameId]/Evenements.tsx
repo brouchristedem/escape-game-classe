@@ -97,16 +97,16 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
     .map((t) => ({ team: t, effet: effets[t.id] ?? null }))
     .filter((x): x is { team: Team; effet: EffetEquipe } => !!x.effet);
 
-  const champ = "bg-white border border-slate-200 rounded-lg px-3 py-2 w-full";
-  const bouton = "rounded-full bg-brand-blue px-6 py-2 text-sm font-semibold text-white disabled:opacity-50";
+  const champ = "bg-parchment border border-brass/20 rounded-lg px-3 py-2 w-full";
+  const bouton = "rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50";
 
   return (
     <section className="max-w-2xl flex flex-col gap-8">
       <div>
-        <h2 className="font-semibold text-brand-navy mb-2">1. Énigme surprise</h2>
+        <h2 className="font-semibold text-ink mb-2">1. Énigme surprise</h2>
         {!enigme ? (
-          <div className="bg-brand-blue-light rounded-xl p-4 flex flex-col gap-3">
-            <p className="text-sm text-slate-600">
+          <div className="bg-brass-light rounded-xl p-4 flex flex-col gap-3">
+            <p className="text-sm text-ink/65">
               L&apos;énigme s&apos;affiche en plein écran chez toutes les équipes, sans dire ce qui est en jeu. La
               première équipe à répondre juste apparaît ici.
             </p>
@@ -117,15 +117,15 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             </button>
           </div>
         ) : (
-          <div className="bg-brand-blue-light rounded-xl p-4 flex flex-col gap-3">
-            <p className="text-sm text-brand-navy whitespace-pre-line">{enigme.enonce}</p>
-            <p className="text-xs text-slate-500">Réponse attendue : {enigme.reponse}</p>
+          <div className="bg-brass-light rounded-xl p-4 flex flex-col gap-3">
+            <p className="text-sm text-ink whitespace-pre-line">{enigme.enonce}</p>
+            <p className="text-xs text-ink/55">Réponse attendue : {enigme.reponse}</p>
             <div>
-              <p className="text-sm font-medium text-brand-navy mb-1">Équipes ayant répondu juste</p>
+              <p className="text-sm font-medium text-ink mb-1">Équipes ayant répondu juste</p>
               {bonnes.length === 0 ? (
-                <p className="text-sm text-slate-500">Aucune pour l&apos;instant.</p>
+                <p className="text-sm text-ink/55">Aucune pour l&apos;instant.</p>
               ) : (
-                <ol className="text-sm text-brand-navy space-y-0.5">
+                <ol className="text-sm text-ink space-y-0.5">
                   {bonnes.map((b, i) => (
                     <li key={b.teamId} className={i === 0 ? "font-semibold" : ""}>
                       {i === 0 ? "🥇 " : `${i + 1}. `}
@@ -138,7 +138,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             <button
               onClick={() => executer(() => terminerEnigmeSurprise(gameId), "Énigme surprise terminée.")}
               disabled={occupe}
-              className="self-start rounded-full border border-slate-300 px-6 py-2 text-sm text-brand-navy disabled:opacity-50"
+              className="self-start rounded-full border border-brass/30 px-6 py-2 text-sm text-ink disabled:opacity-50"
             >
               Terminer l&apos;énigme surprise
             </button>
@@ -147,9 +147,9 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
       </div>
 
       <div>
-        <h2 className="font-semibold text-brand-navy mb-2">2. Appliquer un effet à une équipe</h2>
-        <div className="bg-brand-blue-light rounded-xl p-4 flex flex-col gap-3">
-          <p className="text-sm text-slate-600">
+        <h2 className="font-semibold text-ink mb-2">2. Appliquer un effet à une équipe</h2>
+        <div className="bg-brass-light rounded-xl p-4 flex flex-col gap-3">
+          <p className="text-sm text-ink/65">
             L&apos;équipe gagnante annonce sa cible à l&apos;oral : applique ici l&apos;effet choisi.
           </p>
           <select value={teamCible} onChange={(e) => setTeamCible(e.target.value)} className={champ}>
@@ -166,7 +166,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                 key={t}
                 onClick={() => setTypeEffet(t)}
                 className={`px-4 py-1.5 rounded-full text-sm transition ${
-                  typeEffet === t ? "bg-brand-blue text-white" : "bg-white border border-slate-200 text-brand-navy"
+                  typeEffet === t ? "bg-brass text-ink" : "bg-parchment border border-brass/20 text-ink"
                 }`}
               >
                 {t === "prison" ? "Prison" : "Écran bloqué"}
@@ -196,12 +196,12 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
 
       {effetsActifs.length > 0 && (
         <div>
-          <h2 className="font-semibold text-brand-navy mb-2">Effets en cours</h2>
+          <h2 className="font-semibold text-ink mb-2">Effets en cours</h2>
           <ul className="flex flex-col gap-2">
             {effetsActifs.map(({ team, effet }) => {
               const termine = effet.type === "blocage" && !!effet.finTimestamp && effet.finTimestamp <= maintenant;
               return (
-                <li key={team.id} className="bg-brand-blue-light rounded-xl p-3 flex items-center justify-between gap-3 text-sm text-brand-navy">
+                <li key={team.id} className="bg-brass-light rounded-xl p-3 flex items-center justify-between gap-3 text-sm text-ink">
                   <span>
                     <strong>{team.nom}</strong> —{" "}
                     {effet.type === "prison"
@@ -213,7 +213,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                   <button
                     onClick={() => executer(() => retirerEffetEquipe(gameId, team.id), `Effet retiré pour ${team.nom}.`)}
                     disabled={occupe}
-                    className="underline text-brand-blue shrink-0 disabled:opacity-50"
+                    className="underline text-brass-dark shrink-0 disabled:opacity-50"
                   >
                     {effet.type === "prison" ? "Libérer" : "Retirer"}
                   </button>
@@ -224,7 +224,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
         </div>
       )}
 
-      {message && <p className={`text-sm ${message.ok ? "text-green-600" : "text-red-600"}`}>{message.texte}</p>}
+      {message && <p className={`text-sm ${message.ok ? "text-green-600" : "text-stamp-red"}`}>{message.texte}</p>}
     </section>
   );
 }

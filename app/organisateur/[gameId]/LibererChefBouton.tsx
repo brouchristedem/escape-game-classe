@@ -46,7 +46,7 @@ export default function LibererChefBouton({
     <button
       onClick={liberer}
       disabled={occupe}
-      className={`shrink-0 text-xs underline text-brand-blue disabled:opacity-50 ${className}`}
+      className={`shrink-0 text-xs underline text-brass-dark disabled:opacity-50 ${className}`}
     >
       {occupe ? "..." : "Libérer le chef"}
     </button>

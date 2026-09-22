@@ -30,7 +30,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
   const classees = classerEquipes(teams, states);
 
   if (teams.length === 0) {
-    return <p className="text-slate-500 text-sm">Aucune équipe pour l&apos;instant.</p>;
+    return <p className="text-ink/55 text-sm">Aucune équipe pour l&apos;instant.</p>;
   }
 
   return (
@@ -39,7 +39,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
         href={`/g/${gameId}/projection`}
         target="_blank"
         rel="noopener noreferrer"
-        className="self-end text-sm font-semibold text-brand-navy underline underline-offset-2"
+        className="self-end text-sm font-semibold text-ink underline underline-offset-2"
       >
         Ouvrir l&apos;écran de projection
       </a>
@@ -50,20 +50,20 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
         const pct = termine ? 100 : Math.round(progression(state) * 100);
 
         return (
-          <div key={team.id} className="bg-brand-blue-light rounded-xl p-4 flex items-center gap-4">
+          <div key={team.id} className="bg-brass-light rounded-xl p-4 flex items-center gap-4">
             <div
               className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-sm font-bold ${
-                termine && i === 0 ? "bg-amber-400 text-white" : "bg-white text-brand-navy"
+                termine && i === 0 ? "bg-amber-400 text-white" : "bg-parchment text-ink"
               }`}
             >
               {i + 1}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1.5 gap-2">
-                <p className="font-medium text-sm text-brand-navy truncate">{team.nom}</p>
+                <p className="font-medium text-sm text-ink truncate">{team.nom}</p>
                 <span
                   className={`text-xs font-semibold shrink-0 ${
-                    termine ? "text-green-600" : commence ? "text-slate-500" : "text-slate-400"
+                    termine ? "text-green-600" : commence ? "text-ink/55" : "text-ink/45"
                   }`}
                 >
                   {!commence
@@ -73,9 +73,9 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
                       : `Énigme ${state!.index + 1} / ${state!.totalQuestions}`}
                 </span>
               </div>
-              <div className="h-1.5 w-full rounded-full bg-white overflow-hidden">
+              <div className="h-1.5 w-full rounded-full bg-parchment overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${termine ? "bg-green-500" : "bg-brand-blue"}`}
+                  className={`h-full rounded-full transition-all duration-500 ${termine ? "bg-green-500" : "bg-brass"}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>

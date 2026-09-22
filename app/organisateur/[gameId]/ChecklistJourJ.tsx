@@ -198,7 +198,7 @@ export default function ChecklistJourJ({ gameId, teams }: { gameId: string; team
   return (
     <section className="max-w-2xl">
       <div className="flex items-center justify-between gap-3 mb-4">
-        <p className="font-semibold text-brand-navy">
+        <p className="font-semibold text-ink">
           {points === null
             ? erreur
               ? "Vérification impossible"
@@ -209,12 +209,12 @@ export default function ChecklistJourJ({ gameId, teams }: { gameId: string; team
                 ? `⚠️ ${nbAlertes} point${nbAlertes > 1 ? "s" : ""} à vérifier`
                 : "✅ Tout est prêt"}
         </p>
-        <button onClick={reverifier} className="shrink-0 rounded-full border border-slate-300 px-4 py-1.5 text-sm text-brand-navy">
+        <button onClick={reverifier} className="shrink-0 rounded-full border border-brass/30 px-4 py-1.5 text-sm text-ink">
           Revérifier
         </button>
       </div>
 
-      {erreur && <p className="text-sm text-red-600">Impossible de lire l&apos;état du jeu. Vérifie ta connexion, puis réessaie.</p>}
+      {erreur && <p className="text-sm text-stamp-red">Impossible de lire l&apos;état du jeu. Vérifie ta connexion, puis réessaie.</p>}
 
       {points && (
         <ul className="flex flex-col gap-2">
@@ -226,13 +226,13 @@ export default function ChecklistJourJ({ gameId, teams }: { gameId: string; team
                   ? "bg-red-50 ring-1 ring-red-200"
                   : p.niveau === "warn"
                     ? "bg-amber-50 ring-1 ring-amber-200"
-                    : "bg-brand-blue-light"
+                    : "bg-brass-light"
               }`}
             >
-              <p className="font-medium text-brand-navy">
+              <p className="font-medium text-ink">
                 {ICONE[p.niveau]} {p.titre}
               </p>
-              {p.detail && <p className="text-slate-600 mt-0.5">{p.detail}</p>}
+              {p.detail && <p className="text-ink/65 mt-0.5">{p.detail}</p>}
             </li>
           ))}
         </ul>
