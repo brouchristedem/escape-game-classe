@@ -24,12 +24,12 @@ function formaterCompteARebours(totalSecondes: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-// Durées fixes (ms) des séquences "fausse fin" et "glitch" : pas configurables
-// depuis l'admin, l'organisateur ne choisit que le moment du déclenchement
-// (et le message, pour le glitch).
-const FAUSSE_FIN_VICTOIRE_MS = 3500;
+// Durées par défaut (ms) si l'organisateur n'en choisit pas dans l'admin.
+// "fausse fin" : dureeSecondes de l'effet règle la durée de l'écran de
+// victoire leurre ; la révélation qui suit a une durée fixe, courte.
+const FAUSSE_FIN_VICTOIRE_MS_DEFAUT = 3500;
 const FAUSSE_FIN_LEURRE_MS = 3000;
-const GLITCH_DUREE_MS = 4000;
+const GLITCH_DUREE_MS_DEFAUT = 4000;
 
 export default function EvenementsOverlay({
   gameId,
@@ -96,29 +96,38 @@ export default function EvenementsOverlay({
     if (!effet || effet.type !== "fausseFin") return;
     if (dernierFausseFinVu.current === effet.id) return;
     dernierFausseFinVu.current = effet.id;
+    const dureeVictoireMs = effet.dureeSecondes ? effet.dureeSecondes * 1000 : FAUSSE_FIN_VICTOIRE_MS_DEFAUT;
     setFausseFinPhase("victoire");
-    const versLeurre = setTimeout(() => setFausseFinPhase("leurre"), FAUSSE_FIN_VICTOIRE_MS);
+    const versLeurre = setTimeout(() => setFausseFinPhase("leurre"), dureeVictoireMs);
     const versFin = setTimeout(() => {
       setFausseFinPhase(null);
       if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
-    }, FAUSSE_FIN_VICTOIRE_MS + FAUSSE_FIN_LEURRE_MS);
+    }, dureeVictoireMs + FAUSSE_FIN_LEURRE_MS);
     return () => {
       clearTimeout(versLeurre);
       clearTimeout(versFin);
     };
   }, [effet, gameId, teamId, test]);
 
-  // "glitch" : affiche l'overlay de piratage pendant une durée fixe, une
-  // seule fois par id d'effet, puis nettoie l'effet côté Firestore.
+  // "glitch" : affiche l'overlay de piratage pendant la durée choisie par
+  // l'organisateur (ou une durée par défaut), une seule fois par id d'effet,
+  // avec vibration de l'appareil si demandé et supporté, puis nettoie
+  // l'effet côté Firestore.
   useEffect(() => {
     if (!effet || effet.type !== "glitch") return;
     if (dernierGlitchVu.current === effet.id) return;
     dernierGlitchVu.current = effet.id;
+    const dureeMs = effet.dureeSecondes ? effet.dureeSecondes * 1000 : GLITCH_DUREE_MS_DEFAUT;
     setGlitchVisible(true);
+    if (effet.vibrer && typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate(dureeMs);
+      } catch {}
+    }
     const id = setTimeout(() => {
       setGlitchVisible(false);
       if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
-    }, GLITCH_DUREE_MS);
+    }, dureeMs);
     return () => clearTimeout(id);
   }, [effet, gameId, teamId, test]);
 
@@ -140,6 +149,10 @@ export default function EvenementsOverlay({
   }
 
   const blocageActif = effet?.type === "blocage" && !!effet.finTimestamp && effet.finTimestamp > maintenant;
+  // Prison : bandeau affiché jusqu'à ce que l'organisateur libère la personne,
+  // sauf si une durée a été choisie (finTimestamp alors défini), auquel cas
+  // le bandeau disparaît tout seul une fois ce délai passé.
+  const prisonActive = effet?.type === "prison" && (!effet.finTimestamp || effet.finTimestamp > maintenant);
   const enigmeVisible = !!enigme && !dejaRepondu && ferme !== enigme.id;
   const afficherConfirmation = !!enigme && confirmeId === enigme.id && ferme !== enigme.id;
 
@@ -196,7 +209,7 @@ export default function EvenementsOverlay({
         </div>
       )}
 
-      {effet?.type === "prison" && (
+      {prisonActive && (
         <div className="fixed bottom-0 inset-x-0 z-40 flex justify-center px-4 pb-3 pointer-events-none">
           <p className="pointer-events-auto max-w-md w-full rounded-xl bg-stamp-red text-parchment text-sm font-medium px-4 py-3 shadow-lg text-center">
             🔒 {effet.personne ? `${effet.personne} est` : "Un membre est"} en prison et quitte le jeu. Votre équipe

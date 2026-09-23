@@ -20,12 +20,12 @@ export default function EspaceOrganisateur({
 }) {
   const { user, loading, signOut } = useAuth();
 
-  if (loading) return <main className="min-h-screen bg-parchment" />;
+  if (loading) return <main className="min-h-screen bg-white" />;
   if (!user) return <ConnexionOrganisateur titre={titre} />;
 
   if (restrictedEmail && user.email !== restrictedEmail) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-parchment text-center">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
         <p className="text-ink font-semibold mb-2">Accès réservé.</p>
         <p className="text-sm text-ink/45 mb-6">
           Ce compte ({user.email}) n&apos;est pas autorisé sur cette page.
@@ -66,7 +66,7 @@ function ConnexionOrganisateur({ titre }: { titre: string }) {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-parchment">
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
       <GameLogo className="h-14 w-14 mb-4" />
       <h1 className="font-headline text-xl font-semibold mb-1 text-ink">{titre}</h1>
       <p className="text-sm text-ink/45 mb-6">Connectez-vous à votre compte</p>
@@ -172,7 +172,7 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
   }
 
   return (
-    <main className="min-h-screen px-6 py-12 bg-parchment max-w-2xl mx-auto w-full">
+    <main className="min-h-screen px-6 py-12 bg-white max-w-2xl mx-auto w-full">
       <div className="flex items-start justify-between mb-1">
         <div className="flex items-center gap-3">
           <GameLogo className="h-10 w-10 shrink-0" />

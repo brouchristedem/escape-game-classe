@@ -41,10 +41,13 @@ service cloud.firestore {
       // sont réservées aux organisateurs du jeu.
       match /inscriptions/{inscriptionId} {
         allow read: if true;
-        allow create: if request.resource.data.keys().hasOnly(['nom', 'createdAt'])
+        allow create: if request.resource.data.keys().hasOnly(['nom', 'niveau', 'createdAt'])
                       && request.resource.data.nom is string
                       && request.resource.data.nom.size() > 0
                       && request.resource.data.nom.size() <= 40
+                      && request.resource.data.niveau is string
+                      && request.resource.data.niveau.size() > 0
+                      && request.resource.data.niveau.size() <= 40
                       && request.resource.data.createdAt == request.time
                       && get(/databases/$(database)/documents/games/$(gameId)).data.get('inscriptionsOuvertes', false) == true;
         allow update, delete: if request.auth != null

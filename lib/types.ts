@@ -113,8 +113,10 @@ export interface EffetEquipe {
   id: string;
   type: TypeEffet;
   personne?: string; // prison uniquement : nom de la personne emprisonnée
-  finTimestamp: number | null; // blocage uniquement : fin du blocage (Date.now()), sinon null
+  finTimestamp: number | null; // blocage (fin du blocage) ET prison si une durée a été choisie (sinon null = manuel/blocage jusqu'à "Libérer")
   texte?: string; // glitch uniquement : message révélé pendant le piratage
+  dureeSecondes?: number; // fausseFin (durée de l'écran de victoire leurre) et glitch (durée de l'overlay) ; absent = durée par défaut (voir EvenementsOverlay)
+  vibrer?: boolean; // glitch uniquement : fait vibrer l'appareil pendant l'overlay, si le navigateur le permet
   at: number;
 }
 
@@ -131,7 +133,8 @@ export interface BonneReponseSurprise {
 // inscriptions dont equipeId = id de l'équipe.
 export interface Inscription {
   id: string;
-  nom: string; // "Prénom X." (prénom + initiale du nom, pour limiter les données personnelles)
+  nom: string; // prénom du participant (pour limiter les données personnelles, pas de nom de famille demandé)
+  niveau: string; // niveau d'étude déclaré par le participant, utilisé pour répartir les niveaux équitablement entre équipes
   equipeId: string | null; // null = pas encore d'équipe
   equipeNom: string | null;
   createdAt: number;

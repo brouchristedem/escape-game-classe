@@ -123,8 +123,10 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
   function exporterCsv() {
     const lignes = [...inscrits]
       .sort((a, b) => (a.equipeNom ?? "￿").localeCompare(b.equipeNom ?? "￿") || a.nom.localeCompare(b.nom))
-      .map((i) => [estAffecte(i) ? (teams.find((t) => t.id === i.equipeId)?.nom ?? "") : "", i.nom].map(champCsv).join(","));
-    const csv = "\uFEFF" + [["Équipe", "Nom"].map(champCsv).join(","), ...lignes].join("\r\n");
+      .map((i) =>
+        [estAffecte(i) ? (teams.find((t) => t.id === i.equipeId)?.nom ?? "") : "", i.nom, i.niveau].map(champCsv).join(",")
+      );
+    const csv = "\uFEFF" + [["Équipe", "Nom", "Niveau"].map(champCsv).join(","), ...lignes].join("\r\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
     const a = document.createElement("a");
     a.href = url;
@@ -153,8 +155,9 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
           </div>
           <div className="flex flex-col gap-3">
             <p className="text-sm text-ink/65">
-              Les participants scannent ce QR code et saisissent leur prénom et l&apos;initiale de leur nom.
-              Ouvre l&apos;affiche pour le projeter en plein écran ou l&apos;imprimer.
+              Les participants scannent ce QR code et saisissent leur prénom et leur niveau d&apos;étude (utilisé
+              pour répartir les niveaux équitablement entre équipes). Ouvre l&apos;affiche pour le projeter en
+              plein écran ou l&apos;imprimer.
             </p>
             <div className="flex flex-wrap gap-2">
               <a
@@ -197,8 +200,8 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
             </p>
           ) : (
             <p className="text-sm text-ink/65">
-              Répartit tous les inscrits au hasard dans les {teams.length} équipes du jeu, en équipes de même taille
-              (à une personne près)
+              Répartit tous les inscrits dans les {teams.length} équipes du jeu, en équipes de même taille (à une
+              personne près) et en équilibrant les niveaux d&apos;étude entre équipes
               {tailleApprox > 0 && <> : environ {tailleApprox} personnes par équipe</>}. Aucune équipe n&apos;est
               créée.
             </p>
@@ -246,6 +249,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                         <li key={i.id} className="flex items-center justify-between gap-2 text-sm text-ink">
                           <span className="truncate">
                             {i.nom}
+                            {i.niveau && <span className="text-ink/45"> · {i.niveau}</span>}
                             {(doublons.get(i.nom.trim().toLowerCase()) ?? 0) > 1 && (
                               <span className="ml-1 text-amber-600" title="Nom identique à une autre inscription">
                                 ⚠
@@ -257,7 +261,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                               value={estAffecte(i) ? i.equipeId ?? "" : ""}
                               onChange={(e) => deplacer(i, e.target.value)}
                               disabled={occupe}
-                              className="bg-parchment border border-brass/20 rounded px-1 py-0.5 text-xs max-w-32"
+                              className="bg-white border border-brass/20 rounded px-1 py-0.5 text-xs max-w-32"
                               aria-label={`Déplacer ${i.nom}`}
                             >
                               <option value="">Sans équipe</option>

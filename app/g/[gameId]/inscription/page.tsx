@@ -2,10 +2,12 @@
 
 // Page ouverte par un participant qui scanne le QR code d'inscription
 // (affiché ou imprimé depuis l'onglet "Formation des équipes" de l'admin).
-// Il saisit son prénom et l'initiale de son nom, puis attend que
-// l'organisateur forme les équipes : son équipe s'affiche alors ici, sans
-// recharger la page. L'identifiant de son inscription est gardé sur son
-// téléphone pour qu'il retrouve son équipe s'il rouvre la page.
+// Il saisit son prénom et son niveau d'étude, puis attend que l'organisateur
+// forme les équipes : son équipe s'affiche alors ici, sans recharger la
+// page. Le niveau d'étude sert uniquement à répartir les niveaux
+// équitablement entre équipes (voir formerEquipes dans lib/data.ts).
+// L'identifiant de son inscription est gardé sur son téléphone pour qu'il
+// retrouve son équipe s'il rouvre la page.
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -38,7 +40,7 @@ export default function InscriptionParticipant() {
   const [inscription, setInscription] = useState<Inscription | null>(null);
   const [inscriptionLue, setInscriptionLue] = useState(false);
   const [prenom, setPrenom] = useState("");
-  const [initiale, setInitiale] = useState("");
+  const [niveau, setNiveau] = useState("");
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -72,15 +74,15 @@ export default function InscriptionParticipant() {
   async function envoyer() {
     if (!gameId || envoi) return;
     const p = prenom.trim();
-    const i = initiale.trim().charAt(0).toUpperCase();
-    if (!p || !i) {
-      setErreur("Merci d'indiquer ton prénom et la première lettre de ton nom.");
+    const n = niveau.trim();
+    if (!p || !n) {
+      setErreur("Merci d'indiquer ton prénom et ton niveau d'étude.");
       return;
     }
     setEnvoi(true);
     setErreur(null);
     try {
-      const id = await inscrire(gameId, `${p.slice(0, 30)} ${i}.`);
+      const id = await inscrire(gameId, p.slice(0, 30), n.slice(0, 40));
       try {
         window.localStorage.setItem(cleStockage(gameId), id);
       } catch {}
@@ -160,11 +162,11 @@ export default function InscriptionParticipant() {
                 className={champ}
               />
               <input
-                value={initiale}
-                onChange={(e) => setInitiale(e.target.value)}
+                value={niveau}
+                onChange={(e) => setNiveau(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && envoyer()}
-                maxLength={20}
-                placeholder="Première lettre de ton nom"
+                maxLength={40}
+                placeholder="Ton niveau d'étude (ex. Licence 2)"
                 className={champ}
               />
             </div>
@@ -177,7 +179,7 @@ export default function InscriptionParticipant() {
               {envoi ? "Inscription..." : "Je m'inscris"}
             </button>
             <p className="text-xs text-parchment/50 mt-4">
-              Seuls ton prénom et l&apos;initiale de ton nom sont enregistrés.
+              Seuls ton prénom et ton niveau d&apos;étude sont enregistrés.
             </p>
           </>
         )}

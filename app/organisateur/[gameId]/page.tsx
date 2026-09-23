@@ -90,12 +90,12 @@ export default function Admin({ params }: { params: Promise<{ gameId: string }> 
   }, [gameId, user, authLoading]);
 
   if (statut === "verification") {
-    return <main className="min-h-screen bg-parchment" />;
+    return <main className="min-h-screen bg-white" />;
   }
 
   if (statut === "refuse") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-parchment text-center">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
         <h1 className="text-xl font-semibold mb-2 text-ink">Accès refusé</h1>
         <p className="text-sm text-ink/55 mb-6">
           {user
@@ -564,14 +564,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
   if (modeTelecommande) {
     return (
-      <main className="min-h-screen bg-parchment text-ink px-4 py-4">
+      <main className="min-h-screen bg-white text-ink px-4 py-4">
         <Telecommande gameId={gameId} teams={teams} onQuitter={() => basculerTelecommande(false)} />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-parchment text-ink px-4 sm:px-8 py-8">
+    <main className="min-h-screen bg-white text-ink px-4 sm:px-8 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
           <GameLogo className="h-10 w-10 shrink-0" />
@@ -623,8 +623,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => ajusterTemps(10)} disabled={savingTemps} className="bg-brass text-ink text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">+10 min</button>
                 <button onClick={() => ajusterTemps(-10)} disabled={savingTemps} className="bg-brass text-ink text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">-10 min</button>
-                <button onClick={() => ajusterTemps(1)} disabled={savingTemps} className="bg-parchment ring-1 ring-brass/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">+1 min</button>
-                <button onClick={() => ajusterTemps(-1)} disabled={savingTemps} className="bg-parchment ring-1 ring-brass/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">-1 min</button>
+                <button onClick={() => ajusterTemps(1)} disabled={savingTemps} className="bg-white ring-1 ring-brass/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">+1 min</button>
+                <button onClick={() => ajusterTemps(-1)} disabled={savingTemps} className="bg-white ring-1 ring-brass/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">-1 min</button>
                 <button onClick={stopperTempsGeneral} disabled={savingTemps} className="text-stamp-red underline text-sm">Arrêter</button>
               </div>
             </>
@@ -635,7 +635,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 min={1}
                 value={dureeDepart}
                 onChange={(e) => setDureeDepart(e.target.value)}
-                className="bg-parchment border border-brass/20 rounded-lg px-3 py-1.5 w-20 text-sm"
+                className="bg-white border border-brass/20 rounded-lg px-3 py-1.5 w-20 text-sm"
               />
               <span className="text-sm text-ink/55">minutes</span>
               <button onClick={lancerTempsGeneral} disabled={savingTemps} className="bg-brass hover:bg-brass-dark text-ink text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
@@ -656,7 +656,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             onChange={(e) => setBroadcastTexte(e.target.value)}
             rows={2}
             placeholder="Message à afficher..."
-            className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-2 w-full text-sm"
+            className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-2 w-full text-sm"
           />
           <div className="flex items-center gap-2">
             <input
@@ -664,7 +664,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               min={1}
               value={broadcastDuree}
               onChange={(e) => setBroadcastDuree(e.target.value)}
-              className="bg-parchment border border-brass/20 rounded-lg px-3 py-1.5 w-20 text-sm"
+              className="bg-white border border-brass/20 rounded-lg px-3 py-1.5 w-20 text-sm"
             />
             <span className="text-sm text-ink/55">secondes</span>
             <button onClick={diffuserMessage} disabled={sendingBroadcast} className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
@@ -676,7 +676,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       </div>
 
       {/* Barre d'onglets collée en haut de l'écran : elle reste visible pendant qu'on fait défiler une longue liste. */}
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-8 px-4 sm:px-8 py-2 mb-4 bg-parchment border-b border-brass/10 flex gap-2 overflow-x-auto">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-8 px-4 sm:px-8 py-2 mb-4 bg-white border-b border-brass/10 flex gap-2 overflow-x-auto">
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
         <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes</TabButton>
         <TabButton active={tab === "formation"} onClick={() => setTab("formation")}>Formation des équipes</TabButton>
@@ -711,7 +711,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               value={teamForm.nom}
               onChange={(e) => setTeamForm({ ...teamForm, nom: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && submitTeamForm()}
-              className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-4 w-full"
+              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-4 w-full"
               placeholder="Ex. Les Lions, Team Bassam..."
             />
             {!editingTeamId && (
@@ -803,7 +803,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <select
               value={equipeCircuit?.id ?? ""}
               onChange={(e) => setEquipeCircuitId(e.target.value)}
-              className="bg-parchment border border-brass/20 rounded-lg px-3 py-2"
+              className="bg-white border border-brass/20 rounded-lg px-3 py-2"
             >
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -848,7 +848,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <textarea
               value={qForm.texte}
               onChange={(e) => setQForm({ ...qForm, texte: e.target.value })}
-              className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
               rows={qForm.type === "code" || qForm.type === "info" ? 3 : 2}
             />
             {qForm.type === "info" && (
@@ -877,7 +877,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         next[i] = e.target.value;
                         setQForm({ ...qForm, propositions: next });
                       }}
-                      className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 flex-1"
+                      className="bg-white border border-brass/20 rounded-lg px-3 py-2 flex-1"
                       placeholder={`Proposition ${i + 1}`}
                     />
                   </div>
@@ -891,7 +891,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <input
                   value={qForm.reponse}
                   onChange={(e) => setQForm({ ...qForm, reponse: e.target.value })}
-                  className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Réponse exacte attendue"
                 />
                 <p className="text-ink/55 text-xs mb-3">
@@ -906,7 +906,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <input
                   value={qForm.reponse}
                   onChange={(e) => setQForm({ ...qForm, reponse: e.target.value })}
-                  className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Ex. IUA2026"
                 />
                 <p className="text-ink/55 text-xs mb-3">
@@ -923,7 +923,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <textarea
                   value={qForm.fragmentTexte}
                   onChange={(e) => setQForm({ ...qForm, fragmentTexte: e.target.value })}
-                  className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
                   rows={2}
                   placeholder="Ex. Le premier mot du code final est « TREMPLIN »."
                 />
@@ -940,7 +940,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <textarea
               value={qForm.qrTexte}
               onChange={(e) => setQForm({ ...qForm, qrTexte: e.target.value })}
-              className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
               rows={2}
               placeholder="Ex. Le code à saisir est **LUNE42**."
             />
@@ -963,14 +963,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <input
                   value={qForm.feedbackCorrect}
                   onChange={(e) => setQForm({ ...qForm, feedbackCorrect: e.target.value })}
-                  className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Bravo, c'est la bonne réponse !"
                 />
                 <label className="block text-sm text-ink/55 mb-1">Message affiché si le code est incorrect</label>
                 <input
                   value={qForm.feedbackIncorrect}
                   onChange={(e) => setQForm({ ...qForm, feedbackIncorrect: e.target.value })}
-                  className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Ce n'est pas ça, réessayez !"
                 />
               </>
@@ -1024,7 +1024,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                   >
                     <div className="flex justify-between items-start gap-2">
                       <p className="font-medium text-sm text-ink">
-                        <span className="text-[10px] uppercase tracking-wide font-semibold mr-2 px-1.5 py-0.5 rounded bg-parchment/70">
+                        <span className="text-[10px] uppercase tracking-wide font-semibold mr-2 px-1.5 py-0.5 rounded bg-white/70">
                           {q.type === "code" ? `Page code ${i + 1}` : q.type === "info" ? `Page vierge ${i + 1}` : `Énigme ${i + 1}`}
                         </span>
                         {q.texte}
@@ -1277,14 +1277,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
               value={siteTexts.messagesReussite.join("\n")}
               onChange={(e) => setSiteText("messagesReussite", e.target.value.split("\n"))}
               rows={3}
-              className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
             />
             <label className="block text-sm text-ink/55 mb-1">Messages d&apos;échec</label>
             <textarea
               value={siteTexts.messagesEchec.join("\n")}
               onChange={(e) => setSiteText("messagesEchec", e.target.value.split("\n"))}
               rows={3}
-              className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
             />
           </TextGroup>
 
@@ -1333,7 +1333,7 @@ function TypeButton({ active, onClick, children }: { active: boolean; onClick: (
     <button
       onClick={onClick}
       className={`px-4 py-1.5 rounded-full text-sm transition ${
-        active ? "bg-brass text-ink" : "bg-parchment border border-brass/20 text-ink"
+        active ? "bg-brass text-ink" : "bg-white border border-brass/20 text-ink"
       }`}
     >
       {children}
@@ -1357,7 +1357,7 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 w-full"
+        className="bg-white border border-brass/20 rounded-lg px-3 py-2 w-full"
       />
     </div>
   );
@@ -1381,7 +1381,7 @@ function TextAreaField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="bg-parchment border border-brass/20 rounded-lg px-3 py-2 w-full"
+        className="bg-white border border-brass/20 rounded-lg px-3 py-2 w-full"
       />
     </div>
   );

@@ -34,15 +34,22 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
   const [personne, setPersonne] = useState("");
   const [duree, setDuree] = useState("2");
   const [unite, setUnite] = useState<UniteTemps>("minutes");
+  const [prisonDureeLimitee, setPrisonDureeLimitee] = useState(false);
+  const [dureePrison, setDureePrison] = useState("5");
+  const [unitePrison, setUnitePrison] = useState<UniteTemps>("minutes");
   const [occupe, setOccupe] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null);
 
   // Section 3 : "fausse fin" / "glitch", déclenchables chez une équipe
-  // précise ou chez toutes les équipes en même temps.
+  // précise ou chez toutes les équipes en même temps, avec une durée
+  // d'affichage choisie ici (secondes ou minutes).
   const [typeSurprise, setTypeSurprise] = useState<"fausseFin" | "glitch">("fausseFin");
   const [cibleSurprise, setCibleSurprise] = useState<"equipe" | "toutes">("toutes");
   const [teamSurprise, setTeamSurprise] = useState("");
   const [glitchTexte, setGlitchTexte] = useState("");
+  const [dureeSurprise, setDureeSurprise] = useState("4");
+  const [uniteSurprise, setUniteSurprise] = useState<UniteTemps>("secondes");
+  const [vibrer, setVibrer] = useState(true);
 
   useEffect(() => ecouterEvenementsJeu(gameId, (v) => {
     setEnigme(v.enigmeSurprise);
@@ -87,8 +94,10 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
     if (!equipe) return;
     if (typeEffet === "prison") {
       if (!personne.trim()) return;
+      const dureeSecondes = prisonDureeLimitee ? versSecondes(Number(dureePrison), unitePrison) : undefined;
+      if (prisonDureeLimitee && !dureeSecondes) return;
       executer(async () => {
-        await appliquerEffetEquipe(gameId, equipe.id, { type: "prison", personne: personne.trim() });
+        await appliquerEffetEquipe(gameId, equipe.id, { type: "prison", personne: personne.trim(), dureeSecondes });
         setPersonne("");
       }, `${personne.trim()} est en prison (équipe ${equipe.nom}).`);
     } else {
@@ -102,10 +111,11 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
   }
 
   function declencherSurprise() {
+    const dureeSecondes = versSecondes(Number(dureeSurprise), uniteSurprise) || undefined;
     const effet =
       typeSurprise === "glitch"
-        ? ({ type: "glitch", texte: glitchTexte.trim() } as const)
-        : ({ type: "fausseFin" } as const);
+        ? ({ type: "glitch", texte: glitchTexte.trim(), dureeSecondes, vibrer } as const)
+        : ({ type: "fausseFin", dureeSecondes } as const);
     if (typeSurprise === "glitch" && !glitchTexte.trim()) return;
 
     if (cibleSurprise === "toutes") {
@@ -127,7 +137,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
     .map((t) => ({ team: t, effet: effets[t.id] ?? null }))
     .filter((x): x is { team: Team; effet: EffetEquipe } => !!x.effet && (x.effet.type === "prison" || x.effet.type === "blocage"));
 
-  const champ = "bg-parchment border border-brass/20 rounded-lg px-3 py-2 w-full";
+  const champ = "bg-white border border-brass/20 rounded-lg px-3 py-2 w-full";
   const bouton = "rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50";
 
   return (
@@ -196,7 +206,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                 key={t}
                 onClick={() => setTypeEffet(t)}
                 className={`px-4 py-1.5 rounded-full text-sm transition ${
-                  typeEffet === t ? "bg-brass text-ink" : "bg-parchment border border-brass/20 text-ink"
+                  typeEffet === t ? "bg-brass text-ink" : "bg-white border border-brass/20 text-ink"
                 }`}
               >
                 {t === "prison" ? "Prison" : "Écran bloqué"}
@@ -204,7 +214,22 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             ))}
           </div>
           {typeEffet === "prison" ? (
-            <input value={personne} onChange={(e) => setPersonne(e.target.value)} className={champ} placeholder="Nom de la personne mise en prison" />
+            <>
+              <input value={personne} onChange={(e) => setPersonne(e.target.value)} className={champ} placeholder="Nom de la personne mise en prison" />
+              <label className="flex items-center gap-2 text-sm text-ink/70">
+                <input type="checkbox" checked={prisonDureeLimitee} onChange={(e) => setPrisonDureeLimitee(e.target.checked)} />
+                Durée limitée (sinon jusqu&apos;à ce que tu libères la personne)
+              </label>
+              {prisonDureeLimitee && (
+                <div className="flex gap-2">
+                  <input type="number" min="1" value={dureePrison} onChange={(e) => setDureePrison(e.target.value)} className={`${champ} w-28`} />
+                  <select value={unitePrison} onChange={(e) => setUnitePrison(e.target.value as UniteTemps)} className={`${champ} w-36`}>
+                    <option value="secondes">secondes</option>
+                    <option value="minutes">minutes</option>
+                  </select>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex gap-2">
               <input type="number" min="1" value={duree} onChange={(e) => setDuree(e.target.value)} className={`${champ} w-28`} />
@@ -237,7 +262,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                 key={v}
                 onClick={() => setTypeSurprise(v)}
                 className={`px-4 py-1.5 rounded-full text-sm transition ${
-                  typeSurprise === v ? "bg-brass text-ink" : "bg-parchment border border-brass/20 text-ink"
+                  typeSurprise === v ? "bg-brass text-ink" : "bg-white border border-brass/20 text-ink"
                 }`}
               >
                 {v === "fausseFin" ? "Fausse fin" : "Glitch (site piraté)"}
@@ -253,13 +278,31 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
               placeholder="Message révélé pendant le glitch"
             />
           )}
+          <div>
+            <p className="text-xs text-ink/55 mb-1">
+              {typeSurprise === "glitch" ? "Durée d'affichage du glitch" : "Durée de l'écran de victoire (avant la révélation)"}
+            </p>
+            <div className="flex gap-2">
+              <input type="number" min="1" value={dureeSurprise} onChange={(e) => setDureeSurprise(e.target.value)} className={`${champ} w-28`} />
+              <select value={uniteSurprise} onChange={(e) => setUniteSurprise(e.target.value as UniteTemps)} className={`${champ} w-36`}>
+                <option value="secondes">secondes</option>
+                <option value="minutes">minutes</option>
+              </select>
+            </div>
+          </div>
+          {typeSurprise === "glitch" && (
+            <label className="flex items-center gap-2 text-sm text-ink/70">
+              <input type="checkbox" checked={vibrer} onChange={(e) => setVibrer(e.target.checked)} />
+              Faire vibrer l&apos;appareil pendant le glitch (si le téléphone le permet)
+            </label>
+          )}
           <div className="flex gap-2">
             {(["toutes", "equipe"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setCibleSurprise(v)}
                 className={`px-4 py-1.5 rounded-full text-sm transition ${
-                  cibleSurprise === v ? "bg-brass text-ink" : "bg-parchment border border-brass/20 text-ink"
+                  cibleSurprise === v ? "bg-brass text-ink" : "bg-white border border-brass/20 text-ink"
                 }`}
               >
                 {v === "toutes" ? "Toutes les équipes" : "Une équipe précise"}

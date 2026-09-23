@@ -566,22 +566,34 @@ export function ecouterEvenementsJeu(
 }
 
 type NouvelEffet =
-  | { type: "prison"; personne: string }
+  | { type: "prison"; personne: string; dureeSecondes?: number } // dureeSecondes absent = libération manuelle uniquement
   | { type: "blocage"; dureeSecondes: number }
-  | { type: "fausseFin" }
-  | { type: "glitch"; texte: string };
+  | { type: "fausseFin"; dureeSecondes?: number }
+  | { type: "glitch"; texte: string; dureeSecondes?: number; vibrer?: boolean };
 
 function construireEffet(effet: NouvelEffet): EffetEquipe {
   const base = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, at: Date.now() };
   switch (effet.type) {
     case "prison":
-      return { ...base, type: "prison", personne: effet.personne, finTimestamp: null };
+      return {
+        ...base,
+        type: "prison",
+        personne: effet.personne,
+        finTimestamp: effet.dureeSecondes ? Date.now() + effet.dureeSecondes * 1000 : null,
+      };
     case "blocage":
       return { ...base, type: "blocage", finTimestamp: Date.now() + effet.dureeSecondes * 1000 };
     case "glitch":
-      return { ...base, type: "glitch", texte: effet.texte, finTimestamp: null };
+      return {
+        ...base,
+        type: "glitch",
+        texte: effet.texte,
+        finTimestamp: null,
+        dureeSecondes: effet.dureeSecondes,
+        vibrer: effet.vibrer,
+      };
     case "fausseFin":
-      return { ...base, type: "fausseFin", finTimestamp: null };
+      return { ...base, type: "fausseFin", finTimestamp: null, dureeSecondes: effet.dureeSecondes };
   }
 }
 
@@ -597,7 +609,9 @@ export async function appliquerEffetEquipe(gameId: string, teamId: string, effet
 export async function appliquerEffetToutesEquipes(
   gameId: string,
   teamIds: string[],
-  effet: { type: "fausseFin" } | { type: "glitch"; texte: string }
+  effet:
+    | { type: "fausseFin"; dureeSecondes?: number }
+    | { type: "glitch"; texte: string; dureeSecondes?: number; vibrer?: boolean }
 ): Promise<void> {
   const valeur = construireEffet(effet);
   await saveQuizConfig(gameId, {
@@ -650,6 +664,7 @@ function versInscription(id: string, data: Record<string, unknown>): Inscription
   return {
     id,
     nom: String(data.nom ?? ""),
+    niveau: String(data.niveau ?? ""),
     equipeId: typeof data.equipeId === "string" ? data.equipeId : null,
     equipeNom: typeof data.equipeNom === "string" ? data.equipeNom : null,
     createdAt: updatedAtEnMillis(data.createdAt),
@@ -671,8 +686,8 @@ export async function definirInscriptionsOuvertes(gameId: string, ouvertes: bool
 
 // Appelé par un participant (non authentifié). Les règles Firestore refusent
 // la création si les inscriptions sont fermées.
-export async function inscrire(gameId: string, nom: string): Promise<string> {
-  const ref = await addDoc(inscriptionsCol(gameId), { nom, createdAt: serverTimestamp() });
+export async function inscrire(gameId: string, nom: string, niveau: string): Promise<string> {
+  const ref = await addDoc(inscriptionsCol(gameId), { nom, niveau, createdAt: serverTimestamp() });
   return ref.id;
 }
 
@@ -702,38 +717,70 @@ async function ecrireAffectations(gameId: string, affectations: { id: string; eq
   }
 }
 
-// Répartit TOUS les inscrits au hasard dans les équipes EXISTANTES du jeu, en
-// équipes de taille égale (à une personne près). Ne crée aucune équipe.
+// Répartit TOUS les inscrits dans les équipes EXISTANTES du jeu, en équipes
+// de taille égale (à une personne près). Ne crée aucune équipe. Les inscrits
+// sont d'abord regroupés par niveau d'étude déclaré ; chaque groupe est
+// mélangé au hasard puis distribué en tourniquet sur les équipes, pour que
+// chaque niveau soit représenté aussi équitablement que possible dans chaque
+// équipe (le point de départ du tourniquet avance d'un groupe à l'autre pour
+// éviter qu'une même équipe hérite toujours du "reste" de chaque niveau).
 export async function formerEquipes(gameId: string): Promise<{ inscrits: number; equipes: number }> {
   const [snap, existantes] = await Promise.all([getDocs(inscriptionsCol(gameId)), getAllTeams(gameId)]);
   if (existantes.length === 0) throw new Error("Aucune équipe");
   const equipes = existantes.map((t) => ({ id: t.id, nom: t.nom }));
-  const ids = melanger(snap.docs.map((d) => d.id));
-  await ecrireAffectations(
-    gameId,
-    ids.map((id, i) => ({ id, equipe: equipes[i % equipes.length] }))
-  );
-  return { inscrits: ids.length, equipes: equipes.length };
+
+  const parNiveau = new Map<string, string[]>();
+  snap.docs.forEach((d) => {
+    const cle = String(d.data().niveau ?? "").trim().toLowerCase() || "—";
+    parNiveau.set(cle, [...(parNiveau.get(cle) ?? []), d.id]);
+  });
+
+  const affectations: { id: string; equipe: { id: string; nom: string } }[] = [];
+  let decalage = 0;
+  for (const ids of parNiveau.values()) {
+    const melanges = melanger(ids);
+    melanges.forEach((id, i) => affectations.push({ id, equipe: equipes[(decalage + i) % equipes.length] }));
+    decalage += melanges.length;
+  }
+
+  await ecrireAffectations(gameId, affectations);
+  return { inscrits: affectations.length, equipes: equipes.length };
 }
 
-// Place les inscrits sans équipe (retardataires) dans les équipes les moins
-// remplies, sans toucher aux autres.
+// Place les inscrits sans équipe (retardataires) dans l'équipe la moins
+// remplie POUR LEUR NIVEAU (départage par effectif total le plus faible en
+// cas d'égalité), sans toucher aux autres.
 export async function repartirRetardataires(gameId: string): Promise<number> {
   const [snap, equipes] = await Promise.all([getDocs(inscriptionsCol(gameId)), getAllTeams(gameId)]);
   if (equipes.length === 0) throw new Error("Aucune équipe");
-  const effectifs = new Map(equipes.map((t) => [t.id, 0]));
-  const sansEquipe: string[] = [];
+  const total = new Map(equipes.map((t) => [t.id, 0]));
+  const parNiveauEtEquipe = new Map<string, Map<string, number>>();
+  const sansEquipe: { id: string; niveau: string }[] = [];
   snap.docs.forEach((d) => {
-    const equipeId = d.data().equipeId;
-    if (typeof equipeId === "string" && effectifs.has(equipeId)) effectifs.set(equipeId, (effectifs.get(equipeId) ?? 0) + 1);
-    else sansEquipe.push(d.id);
+    const data = d.data();
+    const equipeId = data.equipeId;
+    const niveau = String(data.niveau ?? "").trim().toLowerCase() || "—";
+    if (typeof equipeId === "string" && total.has(equipeId)) {
+      total.set(equipeId, (total.get(equipeId) ?? 0) + 1);
+      const m = parNiveauEtEquipe.get(niveau) ?? new Map<string, number>();
+      m.set(equipeId, (m.get(equipeId) ?? 0) + 1);
+      parNiveauEtEquipe.set(niveau, m);
+    } else {
+      sansEquipe.push({ id: d.id, niveau });
+    }
   });
   const affectations: { id: string; equipe: { id: string; nom: string } }[] = [];
-  for (const id of melanger(sansEquipe)) {
-    const min = Math.min(...effectifs.values());
-    const candidates = equipes.filter((t) => effectifs.get(t.id) === min);
-    const choix = candidates[Math.floor(Math.random() * candidates.length)];
-    effectifs.set(choix.id, min + 1);
+  for (const { id, niveau } of melanger(sansEquipe)) {
+    const compteNiveau = parNiveauEtEquipe.get(niveau) ?? new Map<string, number>();
+    const minNiveau = Math.min(...equipes.map((t) => compteNiveau.get(t.id) ?? 0));
+    const candidats = equipes.filter((t) => (compteNiveau.get(t.id) ?? 0) === minNiveau);
+    const minTotal = Math.min(...candidats.map((t) => total.get(t.id) ?? 0));
+    const finalistes = candidats.filter((t) => (total.get(t.id) ?? 0) === minTotal);
+    const choix = finalistes[Math.floor(Math.random() * finalistes.length)];
+    total.set(choix.id, (total.get(choix.id) ?? 0) + 1);
+    const m = parNiveauEtEquipe.get(niveau) ?? new Map<string, number>();
+    m.set(choix.id, (m.get(choix.id) ?? 0) + 1);
+    parNiveauEtEquipe.set(niveau, m);
     affectations.push({ id, equipe: { id: choix.id, nom: choix.nom } });
   }
   await ecrireAffectations(gameId, affectations);

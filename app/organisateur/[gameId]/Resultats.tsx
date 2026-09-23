@@ -197,7 +197,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
               <input
                 value={motConfirmation}
                 onChange={(e) => setMotConfirmation(e.target.value)}
-                className="mt-1 block w-full max-w-xs rounded-lg border border-brass/30 bg-parchment px-3 py-2"
+                className="mt-1 block w-full max-w-xs rounded-lg border border-brass/30 bg-white px-3 py-2"
               />
             </label>
             <div className="flex gap-3">
