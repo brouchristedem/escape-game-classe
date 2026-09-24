@@ -97,14 +97,29 @@ export default function EvenementsOverlay({
     if (dernierFausseFinVu.current === effet.id) return;
     dernierFausseFinVu.current = effet.id;
     const dureeVictoireMs = effet.dureeSecondes ? effet.dureeSecondes * 1000 : FAUSSE_FIN_VICTOIRE_MS_DEFAUT;
-    setFausseFinPhase("victoire");
-    const versLeurre = setTimeout(() => setFausseFinPhase("leurre"), dureeVictoireMs);
+    const dureeTotaleMs = dureeVictoireMs + FAUSSE_FIN_LEURRE_MS;
+    // Si l'effet a été déclenché alors qu'aucun appareil n'était connecté
+    // pour le nettoyer à temps (organisateur qui teste sans joueur en face,
+    // page fermée...), il reste en base au-delà de sa durée prévue. On ne le
+    // rejoue pas en entier des heures après : on compare à l'heure réelle.
+    const ecouleMs = Date.now() - effet.at;
+    if (ecouleMs >= dureeTotaleMs) {
+      if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
+      return;
+    }
+    let versLeurre: ReturnType<typeof setTimeout> | undefined;
+    if (ecouleMs >= dureeVictoireMs) {
+      setFausseFinPhase("leurre");
+    } else {
+      setFausseFinPhase("victoire");
+      versLeurre = setTimeout(() => setFausseFinPhase("leurre"), dureeVictoireMs - ecouleMs);
+    }
     const versFin = setTimeout(() => {
       setFausseFinPhase(null);
       if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
-    }, dureeVictoireMs + FAUSSE_FIN_LEURRE_MS);
+    }, dureeTotaleMs - ecouleMs);
     return () => {
-      clearTimeout(versLeurre);
+      if (versLeurre) clearTimeout(versLeurre);
       clearTimeout(versFin);
     };
   }, [effet, gameId, teamId, test]);
@@ -118,16 +133,23 @@ export default function EvenementsOverlay({
     if (dernierGlitchVu.current === effet.id) return;
     dernierGlitchVu.current = effet.id;
     const dureeMs = effet.dureeSecondes ? effet.dureeSecondes * 1000 : GLITCH_DUREE_MS_DEFAUT;
+    // Même logique que "fausse fin" ci-dessus : ne pas rejouer un glitch déjà
+    // périmé (personne n'était là pour le nettoyer au bon moment).
+    const restantMs = effet.at + dureeMs - Date.now();
+    if (restantMs <= 0) {
+      if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
+      return;
+    }
     setGlitchVisible(true);
     if (effet.vibrer && typeof navigator !== "undefined" && "vibrate" in navigator) {
       try {
-        navigator.vibrate(dureeMs);
+        navigator.vibrate(restantMs);
       } catch {}
     }
     const id = setTimeout(() => {
       setGlitchVisible(false);
       if (!test) retirerEffetEquipe(gameId, teamId).catch(() => {});
-    }, dureeMs);
+    }, restantMs);
     return () => clearTimeout(id);
   }, [effet, gameId, teamId, test]);
 
