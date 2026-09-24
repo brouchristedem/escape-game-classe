@@ -111,7 +111,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
         <p className="text-sm text-ink/55">Mis à jour en direct pendant que les équipes jouent.</p>
         <button
           onClick={exporterCsv}
-          className="bg-brass hover:bg-brass-dark text-ink text-sm font-semibold px-4 py-2 rounded-full transition"
+          className="bg-admin-blue hover:bg-admin-blue-dark text-ink text-sm font-semibold px-4 py-2 rounded-full transition"
         >
           Exporter en CSV
         </button>
@@ -120,7 +120,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-ink/45 border-b border-brass/20">
+            <tr className="text-left text-xs uppercase tracking-wide text-ink/45 border-b border-admin-blue/20">
               <th className="py-2 pr-4">Équipe</th>
               <th className="py-2 pr-4">Statut</th>
               <th className="py-2 pr-4">Démarré à</th>
@@ -137,7 +137,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
               const duree =
                 state?.startedAt && state?.finishedAt ? formaterDuree(state.finishedAt - state.startedAt) : "—";
               return (
-                <tr key={team.id} className="border-b border-brass/10">
+                <tr key={team.id} className="border-b border-admin-blue/10">
                   <td className="py-2 pr-4 font-medium text-ink">{team.nom}</td>
                   <td className={`py-2 pr-4 ${termine ? "text-green-600 font-semibold" : "text-ink/55"}`}>
                     {statutTexte(state)}
@@ -151,7 +151,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
                       <button
                         onClick={() => reinitialiserEquipe(team)}
                         disabled={enCours}
-                        className="text-brass-dark underline text-xs disabled:opacity-50"
+                        className="text-admin-blue-dark underline text-xs disabled:opacity-50"
                       >
                         Réinitialiser
                       </button>
@@ -189,7 +189,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
               garder, et vérifie qu&apos;aucune équipe n&apos;est en train de jouer : une page de jeu encore ouverte
               republierait son ancien état.
             </p>
-            <button onClick={exporterCsv} className="self-start text-sm underline text-brass-dark">
+            <button onClick={exporterCsv} className="self-start text-sm underline text-admin-blue-dark">
               Exporter en CSV d&apos;abord
             </button>
             <label className="text-sm text-ink/75">
@@ -197,7 +197,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
               <input
                 value={motConfirmation}
                 onChange={(e) => setMotConfirmation(e.target.value)}
-                className="mt-1 block w-full max-w-xs rounded-lg border border-brass/30 bg-white px-3 py-2"
+                className="mt-1 block w-full max-w-xs rounded-lg border border-admin-blue/30 bg-white px-3 py-2"
               />
             </label>
             <div className="flex gap-3">
@@ -214,7 +214,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
                   setMotConfirmation("");
                 }}
                 disabled={enCours}
-                className="rounded-full border border-brass/30 px-5 py-2 text-sm text-ink/65"
+                className="rounded-full border border-admin-blue/30 px-5 py-2 text-sm text-ink/65"
               >
                 Annuler
               </button>

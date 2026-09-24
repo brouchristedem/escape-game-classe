@@ -135,8 +135,8 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
     URL.revokeObjectURL(url);
   }
 
-  const bouton = "rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50";
-  const boutonSecondaire = "rounded-full border border-brass/30 px-5 py-2 text-sm text-ink disabled:opacity-50";
+  const bouton = "rounded-full bg-admin-blue px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50";
+  const boutonSecondaire = "rounded-full border border-admin-blue/30 px-5 py-2 text-sm text-ink disabled:opacity-50";
 
   const equipesAvecMembres = teams.map((t) => ({ team: t, membres: inscrits.filter((i) => i.equipeId === t.id) }));
 
@@ -144,13 +144,13 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
     <section className="max-w-3xl flex flex-col gap-8">
       <div>
         <h2 className="font-semibold text-ink mb-2">1. Inscriptions</h2>
-        <div className="bg-brass-light rounded-xl p-4 flex flex-col sm:flex-row gap-5">
+        <div className="bg-admin-blue-light rounded-xl p-4 flex flex-col sm:flex-row gap-5">
           <div className="shrink-0">
             {qr ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={qr} alt="QR code d'inscription" className="h-40 w-40 rounded-lg ring-1 ring-brass/15" />
+              <img src={qr} alt="QR code d'inscription" className="h-40 w-40 rounded-lg ring-1 ring-admin-blue/15" />
             ) : (
-              <div className="h-40 w-40 rounded-lg bg-brass/10 animate-pulse" />
+              <div className="h-40 w-40 rounded-lg bg-admin-blue/10 animate-pulse" />
             )}
           </div>
           <div className="flex flex-col gap-3">
@@ -193,7 +193,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
 
       <div>
         <h2 className="font-semibold text-ink mb-2">2. Former les équipes</h2>
-        <div className="bg-brass-light rounded-xl p-4 flex flex-col gap-3">
+        <div className="bg-admin-blue-light rounded-xl p-4 flex flex-col gap-3">
           {teams.length === 0 ? (
             <p className="text-sm text-amber-700">
               Aucune équipe pour l&apos;instant : crée d&apos;abord les équipes dans l&apos;onglet &quot;Équipes&quot;.
@@ -225,7 +225,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
         <div className="flex items-center justify-between mb-2">
           <h2 className="font-semibold text-ink">3. Composition des équipes</h2>
           {inscrits.length > 0 && (
-            <button onClick={exporterCsv} className="text-sm underline text-brass-dark">
+            <button onClick={exporterCsv} className="text-sm underline text-admin-blue-dark">
               Exporter en CSV
             </button>
           )}
@@ -237,7 +237,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
             {[...equipesAvecMembres, { team: null, membres: sansEquipe }]
               .filter((g) => g.team !== null || g.membres.length > 0)
               .map((g) => (
-                <div key={g.team?.id ?? "sans-equipe"} className="bg-brass-light rounded-xl p-3">
+                <div key={g.team?.id ?? "sans-equipe"} className="bg-admin-blue-light rounded-xl p-3">
                   <p className="font-medium text-sm text-ink mb-2">
                     {g.team ? g.team.nom : "Sans équipe"} ({g.membres.length})
                   </p>
@@ -261,7 +261,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                               value={estAffecte(i) ? i.equipeId ?? "" : ""}
                               onChange={(e) => deplacer(i, e.target.value)}
                               disabled={occupe}
-                              className="bg-white border border-brass/20 rounded px-1 py-0.5 text-xs max-w-32"
+                              className="bg-white border border-admin-blue/20 rounded px-1 py-0.5 text-xs max-w-32"
                               aria-label={`Déplacer ${i.nom}`}
                             >
                               <option value="">Sans équipe</option>

@@ -42,7 +42,7 @@ const gros = "min-h-12 rounded-2xl px-4 text-base font-semibold disabled:opacity
 
 function Bloc({ titre, children, ouvert = false }: { titre: string; children: React.ReactNode; ouvert?: boolean }) {
   return (
-    <details open={ouvert} className="rounded-2xl bg-brass/5 ring-1 ring-brass/20">
+    <details open={ouvert} className="rounded-2xl bg-admin-blue/5 ring-1 ring-admin-blue/20">
       <summary className="cursor-pointer select-none px-4 py-3.5 font-semibold text-ink">{titre}</summary>
       <div className="px-4 pb-4">{children}</div>
     </details>
@@ -125,12 +125,12 @@ export default function Telecommande({
     <div className="max-w-md mx-auto flex flex-col gap-4 pb-10">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-ink">📱 Télécommande</h1>
-        <button onClick={onQuitter} className="rounded-full border border-brass/30 px-4 py-2 text-sm text-ink">
+        <button onClick={onQuitter} className="rounded-full border border-admin-blue/30 px-4 py-2 text-sm text-ink">
           🖥️ Admin complète
         </button>
       </div>
 
-      <div className={`rounded-2xl p-4 ring-2 ${enPause ? "bg-red-50 ring-red-300" : "bg-brass/5 ring-brass/20"}`}>
+      <div className={`rounded-2xl p-4 ring-2 ${enPause ? "bg-red-50 ring-red-300" : "bg-admin-blue/5 ring-admin-blue/20"}`}>
         <p className={`font-semibold mb-3 ${enPause ? "text-stamp-red" : "text-ink"}`}>
           {enPause ? "⏸️ Jeu en pause chez toutes les équipes" : "▶️ Jeu actif"}
         </p>
@@ -143,7 +143,7 @@ export default function Telecommande({
         </button>
       </div>
 
-      <div className="rounded-2xl p-4 ring-2 ring-brass/20 bg-brass/5">
+      <div className="rounded-2xl p-4 ring-2 ring-admin-blue/20 bg-admin-blue/5">
         <p className="font-semibold text-ink mb-2">⏱️ Chrono général</p>
         {secondesRestantes !== null ? (
           <>
@@ -151,16 +151,16 @@ export default function Telecommande({
               {secondesRestantes <= 0 ? "Temps écoulé" : formaterChrono(secondesRestantes)}
             </p>
             <div className="grid grid-cols-2 gap-2 mb-2">
-              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, 600))} disabled={occupe} className={`${gros} bg-brass text-ink`}>
+              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, 600))} disabled={occupe} className={`${gros} bg-admin-blue text-ink`}>
                 +10 min
               </button>
-              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, -600))} disabled={occupe} className={`${gros} bg-brass text-ink`}>
+              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, -600))} disabled={occupe} className={`${gros} bg-admin-blue text-ink`}>
                 −10 min
               </button>
-              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, 60))} disabled={occupe} className={`${gros} bg-white ring-1 ring-brass/30 text-ink`}>
+              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, 60))} disabled={occupe} className={`${gros} bg-white ring-1 ring-admin-blue/30 text-ink`}>
                 +1 min
               </button>
-              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, -60))} disabled={occupe} className={`${gros} bg-white ring-1 ring-brass/30 text-ink`}>
+              <button onClick={() => agir(() => ajusterTempsGeneral(gameId, -60))} disabled={occupe} className={`${gros} bg-white ring-1 ring-admin-blue/30 text-ink`}>
                 −1 min
               </button>
             </div>
@@ -179,10 +179,10 @@ export default function Telecommande({
               min={1}
               value={dureeDepart}
               onChange={(e) => setDureeDepart(e.target.value)}
-              className="min-h-12 w-24 rounded-2xl border border-brass/20 bg-white px-3 text-base"
+              className="min-h-12 w-24 rounded-2xl border border-admin-blue/20 bg-white px-3 text-base"
             />
             <span className="text-ink/55">min</span>
-            <button onClick={demarrerChrono} disabled={occupe} className={`${gros} flex-1 bg-brass text-ink`}>
+            <button onClick={demarrerChrono} disabled={occupe} className={`${gros} flex-1 bg-admin-blue text-ink`}>
               Démarrer
             </button>
           </div>
@@ -195,7 +195,7 @@ export default function Telecommande({
           onChange={(e) => setTexte(e.target.value)}
           rows={3}
           placeholder="Message à afficher..."
-          className="w-full rounded-2xl border border-brass/20 bg-white px-3 py-2 text-base mb-2"
+          className="w-full rounded-2xl border border-admin-blue/20 bg-white px-3 py-2 text-base mb-2"
         />
         <div className="flex items-center gap-2">
           <input
@@ -203,7 +203,7 @@ export default function Telecommande({
             min={1}
             value={dureeMessage}
             onChange={(e) => setDureeMessage(e.target.value)}
-            className="min-h-12 w-20 rounded-2xl border border-brass/20 bg-white px-3 text-base"
+            className="min-h-12 w-20 rounded-2xl border border-admin-blue/20 bg-white px-3 text-base"
           />
           <span className="text-ink/55">secondes</span>
           <button onClick={diffuser} disabled={occupe || !texte.trim()} className={`${gros} flex-1 bg-violet-600 text-white`}>
@@ -228,7 +228,7 @@ export default function Telecommande({
               const pct = termine ? 100 : Math.round(progression(state) * 100);
               const activite = state?.updatedAt ? updatedAtEnMillis(state.updatedAt) : 0;
               return (
-                <li key={team.id} className="rounded-xl bg-white ring-1 ring-brass/20 px-3 py-2.5">
+                <li key={team.id} className="rounded-xl bg-white ring-1 ring-admin-blue/20 px-3 py-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-medium text-sm text-ink truncate">
                       {i + 1}. {team.nom}
@@ -237,8 +237,8 @@ export default function Telecommande({
                       {!state ? "Pas commencé" : termine ? "Terminé 🏁" : `Énigme ${state.index + 1} / ${state.totalQuestions}`}
                     </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-brass/10 overflow-hidden my-1.5">
-                    <div className={`h-full rounded-full ${termine ? "bg-green-500" : "bg-brass"}`} style={{ width: `${pct}%` }} />
+                  <div className="h-1.5 w-full rounded-full bg-admin-blue/10 overflow-hidden my-1.5">
+                    <div className={`h-full rounded-full ${termine ? "bg-green-500" : "bg-admin-blue"}`} style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex items-center justify-between gap-2 text-xs text-ink/55">
                     <span>{state && activite > 0 ? `Dernière activité ${ilYa(maintenant - activite)}` : "—"}</span>

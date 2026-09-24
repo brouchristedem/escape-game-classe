@@ -50,7 +50,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
         const pct = termine ? 100 : Math.round(progression(state) * 100);
 
         return (
-          <div key={team.id} className="bg-brass-light rounded-xl p-4 flex items-center gap-4">
+          <div key={team.id} className="bg-admin-blue-light rounded-xl p-4 flex items-center gap-4">
             <div
               className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-sm font-bold ${
                 termine && i === 0 ? "bg-amber-400 text-white" : "bg-white text-ink"
@@ -75,7 +75,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
               </div>
               <div className="h-1.5 w-full rounded-full bg-white overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${termine ? "bg-green-500" : "bg-brass"}`}
+                  className={`h-full rounded-full transition-all duration-500 ${termine ? "bg-green-500" : "bg-admin-blue"}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>

@@ -18,6 +18,12 @@
   --brass-dark: #8f6f2e;
   --parchment: #f1e8d3;
   --stamp-red: #b23a2e;
+
+  /* Accent bleu clair réservé à /admin et /organisateur (fond blanc, logo
+     inchangé) : remplace l'accent brass utilisé sur ces deux routes. */
+  --admin-blue: #3b82f6;
+  --admin-blue-light: #dbeafe;
+  --admin-blue-dark: #1d4ed8;
 }
 
 @theme inline {
@@ -33,6 +39,9 @@
   --color-brass-dark: var(--brass-dark);
   --color-parchment: var(--parchment);
   --color-stamp-red: var(--stamp-red);
+  --color-admin-blue: var(--admin-blue);
+  --color-admin-blue-light: var(--admin-blue-light);
+  --color-admin-blue-dark: var(--admin-blue-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-headline: var(--font-bitter);

@@ -102,7 +102,7 @@ export default function Admin({ params }: { params: Promise<{ gameId: string }> 
             ? "Ce compte n'est pas organisateur de ce jeu."
             : "Vous devez être connecté pour administrer ce jeu."}
         </p>
-        <Link href="/organisateur" className="text-sm font-semibold text-brass-dark">
+        <Link href="/organisateur" className="text-sm font-semibold text-admin-blue-dark">
           ← Retour à mes jeux
         </Link>
       </main>
@@ -582,7 +582,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
         </div>
         <button
           onClick={() => basculerTelecommande(true)}
-          className="rounded-full bg-brass px-5 py-2.5 text-sm font-semibold text-ink"
+          className="rounded-full bg-admin-blue px-5 py-2.5 text-sm font-semibold text-ink"
         >
           📱 Activer le mode télécommande
         </button>
@@ -590,7 +590,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
       <div
         className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4 ring-2 ${
-          gameStatus === "pause" ? "bg-red-50 ring-red-300" : "bg-brass/5 ring-brass/20"
+          gameStatus === "pause" ? "bg-red-50 ring-red-300" : "bg-admin-blue/5 ring-admin-blue/20"
         }`}
       >
         <div>
@@ -613,7 +613,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       </div>
 
       <div className="mb-6 grid sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl px-5 py-4 ring-2 ring-brass/20 bg-brass/5">
+        <div className="rounded-2xl px-5 py-4 ring-2 ring-admin-blue/20 bg-admin-blue/5">
           <p className="font-semibold text-ink mb-1">⏱️ Chrono général (toutes les équipes)</p>
           {tempsGeneral.finTimestamp ? (
             <>
@@ -621,10 +621,10 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 Affiché à l&apos;écran chez toutes les équipes. Ajustez en direct si besoin.
               </p>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => ajusterTemps(10)} disabled={savingTemps} className="bg-brass text-ink text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">+10 min</button>
-                <button onClick={() => ajusterTemps(-10)} disabled={savingTemps} className="bg-brass text-ink text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">-10 min</button>
-                <button onClick={() => ajusterTemps(1)} disabled={savingTemps} className="bg-white ring-1 ring-brass/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">+1 min</button>
-                <button onClick={() => ajusterTemps(-1)} disabled={savingTemps} className="bg-white ring-1 ring-brass/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">-1 min</button>
+                <button onClick={() => ajusterTemps(10)} disabled={savingTemps} className="bg-admin-blue text-ink text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">+10 min</button>
+                <button onClick={() => ajusterTemps(-10)} disabled={savingTemps} className="bg-admin-blue text-ink text-sm font-semibold px-3 py-1.5 rounded-full disabled:opacity-50">-10 min</button>
+                <button onClick={() => ajusterTemps(1)} disabled={savingTemps} className="bg-white ring-1 ring-admin-blue/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">+1 min</button>
+                <button onClick={() => ajusterTemps(-1)} disabled={savingTemps} className="bg-white ring-1 ring-admin-blue/20 text-ink text-sm px-3 py-1.5 rounded-full disabled:opacity-50">-1 min</button>
                 <button onClick={stopperTempsGeneral} disabled={savingTemps} className="text-stamp-red underline text-sm">Arrêter</button>
               </div>
             </>
@@ -635,10 +635,10 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 min={1}
                 value={dureeDepart}
                 onChange={(e) => setDureeDepart(e.target.value)}
-                className="bg-white border border-brass/20 rounded-lg px-3 py-1.5 w-20 text-sm"
+                className="bg-white border border-admin-blue/20 rounded-lg px-3 py-1.5 w-20 text-sm"
               />
               <span className="text-sm text-ink/55">minutes</span>
-              <button onClick={lancerTempsGeneral} disabled={savingTemps} className="bg-brass hover:bg-brass-dark text-ink text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
+              <button onClick={lancerTempsGeneral} disabled={savingTemps} className="bg-admin-blue hover:bg-admin-blue-dark text-ink text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
                 Démarrer
               </button>
             </div>
@@ -656,7 +656,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             onChange={(e) => setBroadcastTexte(e.target.value)}
             rows={2}
             placeholder="Message à afficher..."
-            className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-2 w-full text-sm"
+            className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-2 w-full text-sm"
           />
           <div className="flex items-center gap-2">
             <input
@@ -664,7 +664,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               min={1}
               value={broadcastDuree}
               onChange={(e) => setBroadcastDuree(e.target.value)}
-              className="bg-white border border-brass/20 rounded-lg px-3 py-1.5 w-20 text-sm"
+              className="bg-white border border-admin-blue/20 rounded-lg px-3 py-1.5 w-20 text-sm"
             />
             <span className="text-sm text-ink/55">secondes</span>
             <button onClick={diffuserMessage} disabled={sendingBroadcast} className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
@@ -676,7 +676,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       </div>
 
       {/* Barre d'onglets collée en haut de l'écran : elle reste visible pendant qu'on fait défiler une longue liste. */}
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-8 px-4 sm:px-8 py-2 mb-4 bg-white border-b border-brass/10 flex gap-2 overflow-x-auto">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-8 px-4 sm:px-8 py-2 mb-4 bg-white border-b border-admin-blue/10 flex gap-2 overflow-x-auto">
         <TabButton active={tab === "circuit"} onClick={() => setTab("circuit")}>Circuit du jeu</TabButton>
         <TabButton active={tab === "equipes"} onClick={() => setTab("equipes")}>Équipes</TabButton>
         <TabButton active={tab === "formation"} onClick={() => setTab("formation")}>Formation des équipes</TabButton>
@@ -695,7 +695,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       {loadError && (
         <div className="mb-6 flex items-center gap-3">
           <p className="text-stamp-red text-sm">{loadError}</p>
-          <button onClick={reload} className="text-brass-dark underline text-sm">
+          <button onClick={reload} className="text-admin-blue-dark underline text-sm">
             Réessayer
           </button>
         </div>
@@ -703,7 +703,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
       {!loading && tab === "equipes" && (
         <div className="grid lg:grid-cols-2 gap-8">
-          <section className="bg-brass-light rounded-2xl p-5 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
+          <section className="bg-admin-blue-light rounded-2xl p-5 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
             <h2 className="font-semibold mb-4 text-ink">{editingTeamId ? "Modifier l'équipe" : "Ajouter une équipe"}</h2>
 
             <label className="block text-sm text-ink/55 mb-1">Nom de l&apos;équipe</label>
@@ -711,7 +711,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               value={teamForm.nom}
               onChange={(e) => setTeamForm({ ...teamForm, nom: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && submitTeamForm()}
-              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-4 w-full"
+              className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-4 w-full"
               placeholder="Ex. Les Lions, Team Bassam..."
             />
             {!editingTeamId && (
@@ -722,7 +722,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             )}
 
             <div className="flex gap-3">
-              <button onClick={submitTeamForm} className="bg-brass hover:bg-brass-dark text-ink font-semibold px-6 py-2 rounded-full transition">
+              <button onClick={submitTeamForm} className="bg-admin-blue hover:bg-admin-blue-dark text-ink font-semibold px-6 py-2 rounded-full transition">
                 {editingTeamId ? "Enregistrer les modifications" : "Ajouter l'équipe"}
               </button>
               {editingTeamId && (
@@ -737,7 +737,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             {teams.length === 0 && <p className="text-ink/55 text-sm">Aucune équipe pour l&apos;instant.</p>}
             <div className="flex flex-col gap-3">
               {teams.map((t) => (
-                <div key={t.id} className="bg-brass-light rounded-xl p-4">
+                <div key={t.id} className="bg-admin-blue-light rounded-xl p-4">
                   <div className="flex justify-between items-start gap-2 mb-3">
                     <div>
                       <p className="font-medium text-sm text-ink">{t.nom}</p>
@@ -751,7 +751,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                       >
                         Tester
                       </a>
-                      <button onClick={() => editTeam(t)} className="text-brass-dark underline">
+                      <button onClick={() => editTeam(t)} className="text-admin-blue-dark underline">
                         Modifier
                       </button>
                       <button onClick={() => removeTeam(t.id)} className="text-stamp-red underline">
@@ -787,7 +787,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       )}
 
       {!loading && tab === "circuit" && teams.length === 0 && (
-        <div className="bg-brass-light rounded-2xl p-6 text-center text-ink">
+        <div className="bg-admin-blue-light rounded-2xl p-6 text-center text-ink">
           Aucune équipe pour l&apos;instant. Créez d&apos;abord une équipe dans l&apos;onglet{" "}
           <button className="underline font-semibold" onClick={() => setTab("equipes")}>
             Équipes
@@ -803,7 +803,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <select
               value={equipeCircuit?.id ?? ""}
               onChange={(e) => setEquipeCircuitId(e.target.value)}
-              className="bg-white border border-brass/20 rounded-lg px-3 py-2"
+              className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2"
             >
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -817,7 +817,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           </div>
           <div className="grid lg:grid-cols-2 gap-8">
           {/* Formulaire */}
-          <section className="bg-brass-light rounded-2xl p-5 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
+          <section className="bg-admin-blue-light rounded-2xl p-5 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
             <h2 className="font-semibold mb-4 text-ink">
               {editingQId ? "Modifier cette étape" : "Ajouter une étape à la fin"}
             </h2>
@@ -848,7 +848,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <textarea
               value={qForm.texte}
               onChange={(e) => setQForm({ ...qForm, texte: e.target.value })}
-              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+              className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-1 w-full"
               rows={qForm.type === "code" || qForm.type === "info" ? 3 : 2}
             />
             {qForm.type === "info" && (
@@ -868,7 +868,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                       name="correct"
                       checked={qForm.correctIndex === i}
                       onChange={() => setQForm({ ...qForm, correctIndex: i as 0 | 1 | 2 | 3 })}
-                      className="accent-brass"
+                      className="accent-admin-blue"
                     />
                     <input
                       value={p}
@@ -877,7 +877,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         next[i] = e.target.value;
                         setQForm({ ...qForm, propositions: next });
                       }}
-                      className="bg-white border border-brass/20 rounded-lg px-3 py-2 flex-1"
+                      className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 flex-1"
                       placeholder={`Proposition ${i + 1}`}
                     />
                   </div>
@@ -891,7 +891,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <input
                   value={qForm.reponse}
                   onChange={(e) => setQForm({ ...qForm, reponse: e.target.value })}
-                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Réponse exacte attendue"
                 />
                 <p className="text-ink/55 text-xs mb-3">
@@ -906,7 +906,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <input
                   value={qForm.reponse}
                   onChange={(e) => setQForm({ ...qForm, reponse: e.target.value })}
-                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Ex. IUA2026"
                 />
                 <p className="text-ink/55 text-xs mb-3">
@@ -923,7 +923,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <textarea
                   value={qForm.fragmentTexte}
                   onChange={(e) => setQForm({ ...qForm, fragmentTexte: e.target.value })}
-                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+                  className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-1 w-full"
                   rows={2}
                   placeholder="Ex. Le premier mot du code final est « TREMPLIN »."
                 />
@@ -940,7 +940,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <textarea
               value={qForm.qrTexte}
               onChange={(e) => setQForm({ ...qForm, qrTexte: e.target.value })}
-              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+              className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-1 w-full"
               rows={2}
               placeholder="Ex. Le code à saisir est **LUNE42**."
             />
@@ -963,14 +963,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 <input
                   value={qForm.feedbackCorrect}
                   onChange={(e) => setQForm({ ...qForm, feedbackCorrect: e.target.value })}
-                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Bravo, c'est la bonne réponse !"
                 />
                 <label className="block text-sm text-ink/55 mb-1">Message affiché si le code est incorrect</label>
                 <input
                   value={qForm.feedbackIncorrect}
                   onChange={(e) => setQForm({ ...qForm, feedbackIncorrect: e.target.value })}
-                  className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+                  className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Ce n'est pas ça, réessayez !"
                 />
               </>
@@ -980,7 +980,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               <button
                 onClick={submitQForm}
                 disabled={savingStep}
-                className="bg-brass hover:bg-brass-dark text-ink font-semibold px-6 py-2 rounded-full transition disabled:opacity-50"
+                className="bg-admin-blue hover:bg-admin-blue-dark text-ink font-semibold px-6 py-2 rounded-full transition disabled:opacity-50"
               >
                 {editingQId ? "Enregistrer les modifications" : "Ajouter à la fin du circuit"}
               </button>
@@ -995,13 +995,13 @@ function AdminPanel({ gameId }: { gameId: string }) {
           {/* Circuit ordonné */}
           <section>
             <div className="flex gap-2 mb-4 text-xs flex-wrap">
-              <button onClick={() => inserer(null, "libre")} disabled={savingStep} className="text-brass-dark underline disabled:text-ink/45">
+              <button onClick={() => inserer(null, "libre")} disabled={savingStep} className="text-admin-blue-dark underline disabled:text-ink/45">
                 + Énigme en tête de circuit
               </button>
-              <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-brass-dark underline disabled:text-ink/45">
+              <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-admin-blue-dark underline disabled:text-ink/45">
                 + Page code en tête de circuit
               </button>
-              <button onClick={() => inserer(null, "info")} disabled={savingStep} className="text-brass-dark underline disabled:text-ink/45">
+              <button onClick={() => inserer(null, "info")} disabled={savingStep} className="text-admin-blue-dark underline disabled:text-ink/45">
                 + Page vierge en tête de circuit
               </button>
             </div>
@@ -1019,7 +1019,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         ? "bg-amber-50 ring-1 ring-amber-200"
                         : q.type === "info"
                         ? "bg-violet-50 ring-1 ring-violet-200"
-                        : "bg-brass-light"
+                        : "bg-admin-blue-light"
                     }`}
                   >
                     <div className="flex justify-between items-start gap-2">
@@ -1028,8 +1028,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
                           {q.type === "code" ? `Page code ${i + 1}` : q.type === "info" ? `Page vierge ${i + 1}` : `Énigme ${i + 1}`}
                         </span>
                         {q.texte}
-                        {q.type === "qcm" && <span className="ml-2 text-[10px] uppercase tracking-wide text-brass-dark font-semibold">QCM</span>}
-                        {q.type === "libre" && <span className="ml-2 text-[10px] uppercase tracking-wide text-brass-dark font-semibold">Libre</span>}
+                        {q.type === "qcm" && <span className="ml-2 text-[10px] uppercase tracking-wide text-admin-blue-dark font-semibold">QCM</span>}
+                        {q.type === "libre" && <span className="ml-2 text-[10px] uppercase tracking-wide text-admin-blue-dark font-semibold">Libre</span>}
                         {q.fragmentTexte && (
                           <span className="ml-2 text-[10px] uppercase tracking-wide text-amber-600 font-semibold">🏆 Fragment</span>
                         )}
@@ -1047,12 +1047,12 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         {q.qrTexte && (
                           <button
                             onClick={() => setQrEtape({ id: q.id, nom: `${equipeCircuit?.nom ?? "Équipe"} - étape ${i + 1}` })}
-                            className="text-brass-dark underline"
+                            className="text-admin-blue-dark underline"
                           >
                             QR code
                           </button>
                         )}
-                        <button onClick={() => editQuestion(q)} className="text-brass-dark underline">
+                        <button onClick={() => editQuestion(q)} className="text-admin-blue-dark underline">
                           Modifier
                         </button>
                         <button onClick={() => removeQuestion(q.id)} className="text-stamp-red underline">
@@ -1084,13 +1084,13 @@ function AdminPanel({ gameId }: { gameId: string }) {
                     )}
                   </div>
                   <div className="flex gap-3 text-[11px] mt-1 mb-1 pl-1 flex-wrap">
-                    <button onClick={() => inserer(q, "libre")} disabled={savingStep} className="text-brass-dark underline disabled:text-ink/45">
+                    <button onClick={() => inserer(q, "libre")} disabled={savingStep} className="text-admin-blue-dark underline disabled:text-ink/45">
                       + Insérer une énigme après
                     </button>
-                    <button onClick={() => inserer(q, "code")} disabled={savingStep} className="text-brass-dark underline disabled:text-ink/45">
+                    <button onClick={() => inserer(q, "code")} disabled={savingStep} className="text-admin-blue-dark underline disabled:text-ink/45">
                       + Insérer une page code après
                     </button>
-                    <button onClick={() => inserer(q, "info")} disabled={savingStep} className="text-brass-dark underline disabled:text-ink/45">
+                    <button onClick={() => inserer(q, "info")} disabled={savingStep} className="text-admin-blue-dark underline disabled:text-ink/45">
                       + Insérer une page vierge après
                     </button>
                   </div>
@@ -1109,7 +1109,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             l&apos;onglet &quot;Circuit&quot;.
           </p>
 
-          <div className="bg-brass-light rounded-2xl p-5 mb-6">
+          <div className="bg-admin-blue-light rounded-2xl p-5 mb-6">
             <h2 className="font-semibold mb-2 text-ink">Vider le scénario actuel</h2>
             <p className="text-ink/65 text-sm mb-3">
               Supprime toutes les énigmes du circuit et le texte de l&apos;histoire, pour repartir d&apos;une page
@@ -1124,7 +1124,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             </button>
           </div>
 
-          <div className="bg-brass-light rounded-2xl p-5 mb-6">
+          <div className="bg-admin-blue-light rounded-2xl p-5 mb-6">
             <h2 className="font-semibold mb-2 text-ink">Importer un scénario (Word ou PDF)</h2>
             <p className="text-ink/65 text-sm mb-3">
               Choisissez un fichier <code>.docx</code> ou <code>.pdf</code> rédigé selon le format ci-dessous.
@@ -1139,7 +1139,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <button
               onClick={lancerImportFichier}
               disabled={importing || !importFile}
-              className="bg-brass hover:bg-brass-dark text-ink font-semibold px-5 py-2 rounded-full transition disabled:opacity-60"
+              className="bg-admin-blue hover:bg-admin-blue-dark text-ink font-semibold px-5 py-2 rounded-full transition disabled:opacity-60"
             >
               {importing ? "Import en cours..." : "Importer ce fichier"}
             </button>
@@ -1165,14 +1165,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
             value={histoire}
             onChange={(e) => setHistoire(e.target.value)}
             rows={10}
-            className="bg-brass-light border border-brass-light focus:border-brass outline-none rounded-lg px-3 py-2 mb-4 w-full"
+            className="bg-admin-blue-light border border-admin-blue-light focus:border-admin-blue outline-none rounded-lg px-3 py-2 mb-4 w-full"
             placeholder="Bienvenue, vous avez une mission..."
           />
 
           <button
             onClick={saveHistoire}
             disabled={savingHistoire}
-            className="bg-brass hover:bg-brass-dark text-ink font-semibold px-6 py-2 rounded-full transition"
+            className="bg-admin-blue hover:bg-admin-blue-dark text-ink font-semibold px-6 py-2 rounded-full transition"
           >
             {savingHistoire ? "Enregistrement..." : "Enregistrer l'histoire"}
           </button>
@@ -1277,14 +1277,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
               value={siteTexts.messagesReussite.join("\n")}
               onChange={(e) => setSiteText("messagesReussite", e.target.value.split("\n"))}
               rows={3}
-              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-3 w-full"
+              className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-3 w-full"
             />
             <label className="block text-sm text-ink/55 mb-1">Messages d&apos;échec</label>
             <textarea
               value={siteTexts.messagesEchec.join("\n")}
               onChange={(e) => setSiteText("messagesEchec", e.target.value.split("\n"))}
               rows={3}
-              className="bg-white border border-brass/20 rounded-lg px-3 py-2 mb-1 w-full"
+              className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 mb-1 w-full"
             />
           </TextGroup>
 
@@ -1292,7 +1292,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <button
               onClick={saveSiteTexts}
               disabled={savingTexts}
-              className="bg-brass hover:bg-brass-dark text-ink font-semibold px-6 py-2 rounded-full transition shadow-lg"
+              className="bg-admin-blue hover:bg-admin-blue-dark text-ink font-semibold px-6 py-2 rounded-full transition shadow-lg"
             >
               {savingTexts ? "Enregistrement..." : "Enregistrer tous ces textes"}
             </button>
@@ -1320,7 +1320,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
     <button
       onClick={onClick}
       className={`shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition ${
-        active ? "bg-brass text-ink" : "bg-brass-light text-ink"
+        active ? "bg-admin-blue text-ink" : "bg-admin-blue-light text-ink"
       }`}
     >
       {children}
@@ -1333,7 +1333,7 @@ function TypeButton({ active, onClick, children }: { active: boolean; onClick: (
     <button
       onClick={onClick}
       className={`px-4 py-1.5 rounded-full text-sm transition ${
-        active ? "bg-brass text-ink" : "bg-white border border-brass/20 text-ink"
+        active ? "bg-admin-blue text-ink" : "bg-white border border-admin-blue/20 text-ink"
       }`}
     >
       {children}
@@ -1343,7 +1343,7 @@ function TypeButton({ active, onClick, children }: { active: boolean; onClick: (
 
 function TextGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-brass-light/60 rounded-2xl p-5 mb-5">
+    <div className="bg-admin-blue-light/60 rounded-2xl p-5 mb-5">
       <h3 className="font-semibold mb-3 text-ink text-sm">{title}</h3>
       {children}
     </div>
@@ -1357,7 +1357,7 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-white border border-brass/20 rounded-lg px-3 py-2 w-full"
+        className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 w-full"
       />
     </div>
   );
@@ -1381,7 +1381,7 @@ function TextAreaField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="bg-white border border-brass/20 rounded-lg px-3 py-2 w-full"
+        className="bg-white border border-admin-blue/20 rounded-lg px-3 py-2 w-full"
       />
     </div>
   );

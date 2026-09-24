@@ -209,7 +209,7 @@ export default function ChecklistJourJ({ gameId, teams }: { gameId: string; team
                 ? `⚠️ ${nbAlertes} point${nbAlertes > 1 ? "s" : ""} à vérifier`
                 : "✅ Tout est prêt"}
         </p>
-        <button onClick={reverifier} className="shrink-0 rounded-full border border-brass/30 px-4 py-1.5 text-sm text-ink">
+        <button onClick={reverifier} className="shrink-0 rounded-full border border-admin-blue/30 px-4 py-1.5 text-sm text-ink">
           Revérifier
         </button>
       </div>
@@ -226,7 +226,7 @@ export default function ChecklistJourJ({ gameId, teams }: { gameId: string; team
                   ? "bg-red-50 ring-1 ring-red-200"
                   : p.niveau === "warn"
                     ? "bg-amber-50 ring-1 ring-amber-200"
-                    : "bg-brass-light"
+                    : "bg-admin-blue-light"
               }`}
             >
               <p className="font-medium text-ink">

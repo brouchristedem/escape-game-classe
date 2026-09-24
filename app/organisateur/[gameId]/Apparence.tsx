@@ -116,7 +116,7 @@ export default function Apparence({ gameId }: { gameId: string }) {
       </p>
 
       <div className="grid gap-6 sm:grid-cols-2 mb-6">
-        <div className="bg-brass-light rounded-xl p-4 flex flex-col gap-4">
+        <div className="bg-admin-blue-light rounded-xl p-4 flex flex-col gap-4">
           <label className="flex items-center justify-between gap-3 text-sm font-medium text-ink">
             Couleur de fond
             <input type="color" value={fond} onChange={(e) => setFond(e.target.value)} className="h-9 w-14 cursor-pointer rounded" />
@@ -128,7 +128,7 @@ export default function Apparence({ gameId }: { gameId: string }) {
           {erreurCouleurs && <p className="text-sm text-stamp-red">{erreurCouleurs}</p>}
         </div>
 
-        <div className="bg-brass-light rounded-xl p-4 flex flex-col gap-3">
+        <div className="bg-admin-blue-light rounded-xl p-4 flex flex-col gap-3">
           <p className="text-sm font-medium text-ink">Logo</p>
           <input
             type="file"
@@ -157,23 +157,23 @@ export default function Apparence({ gameId }: { gameId: string }) {
         )}
         <p className="text-xl font-bold">Titre du jeu</p>
         <div className="h-2 w-48 rounded-full bg-ink-2 overflow-hidden">
-          <div className="h-full w-2/3 rounded-full bg-brass" />
+          <div className="h-full w-2/3 rounded-full bg-admin-blue" />
         </div>
-        <span className="rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink">Commencer</span>
+        <span className="rounded-full bg-admin-blue px-6 py-2 text-sm font-semibold text-ink">Commencer</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={enregistrer}
           disabled={enregistrement || !!erreurCouleurs}
-          className="rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+          className="rounded-full bg-admin-blue px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50"
         >
           {enregistrement ? "Enregistrement..." : "Enregistrer l'apparence"}
         </button>
         <button
           onClick={reinitialiser}
           disabled={enregistrement}
-          className="rounded-full border border-brass/30 px-6 py-2 text-sm text-ink disabled:opacity-50"
+          className="rounded-full border border-admin-blue/30 px-6 py-2 text-sm text-ink disabled:opacity-50"
         >
           Revenir au thème par défaut
         </button>
