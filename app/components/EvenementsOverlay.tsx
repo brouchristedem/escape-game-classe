@@ -153,6 +153,22 @@ export default function EvenementsOverlay({
     return () => clearTimeout(id);
   }, [effet, gameId, teamId, test]);
 
+  const [erreurEnvoi, setErreurEnvoi] = useState(false);
+  const enAttenteConfirmation = useRef(false);
+
+  // La confirmation affichée au joueur ne doit reposer que sur ce que
+  // Firestore confirme réellement (via le listener dejaRepondu), pas sur le
+  // simple fait que la promesse d'écriture se soit résolue : sinon, si les
+  // règles Firestore bloquent l'écriture (ex. règles non déployées), le
+  // joueur voit "Bonne réponse" alors que rien n'est enregistré côté admin.
+  useEffect(() => {
+    if (dejaRepondu && enAttenteConfirmation.current && enigme) {
+      enAttenteConfirmation.current = false;
+      setConfirmeId(enigme.id);
+      setEnvoi(false);
+    }
+  }, [dejaRepondu, enigme]);
+
   async function valider() {
     if (!enigme || envoi || !reponse.trim()) return;
     if (normaliserReponse(reponse) !== normaliserReponse(enigme.reponse)) {
@@ -160,14 +176,25 @@ export default function EvenementsOverlay({
       return;
     }
     setErreur(false);
+    setErreurEnvoi(false);
     setEnvoi(true);
-    if (!test) {
-      // Un envoi refusé (déjà enregistré) n'est pas une erreur pour le joueur.
-      await signalerBonneReponseSurprise(gameId, enigme.id, teamId, nomEquipe).catch(() => {});
+    if (test) {
+      setConfirmeId(enigme.id);
+      setReponse("");
+      setEnvoi(false);
+      return;
     }
-    setConfirmeId(enigme.id);
+    enAttenteConfirmation.current = true;
+    // Un envoi refusé parce que l'équipe a déjà répondu n'est pas une erreur
+    // pour le joueur : le listener dejaRepondu confirmera quand même.
+    signalerBonneReponseSurprise(gameId, enigme.id, teamId, nomEquipe).catch(() => {});
+    setTimeout(() => {
+      if (!enAttenteConfirmation.current) return;
+      enAttenteConfirmation.current = false;
+      setEnvoi(false);
+      setErreurEnvoi(true);
+    }, 6000);
     setReponse("");
-    setEnvoi(false);
   }
 
   const blocageActif = effet?.type === "blocage" && !!effet.finTimestamp && effet.finTimestamp > maintenant;
@@ -273,6 +300,11 @@ export default function EvenementsOverlay({
                   className="w-full rounded-xl bg-ink-2 border border-brass/40 px-4 py-3 text-parchment placeholder:text-parchment/40 mb-2"
                 />
                 {erreur && <p className="text-sm text-stamp-red mb-2">Ce n&apos;est pas ça, réessayez.</p>}
+                {erreurEnvoi && (
+                  <p className="text-sm text-stamp-red mb-2">
+                    Votre réponse n&apos;a pas pu être enregistrée. Vérifiez votre connexion et réessayez.
+                  </p>
+                )}
                 <button
                   onClick={valider}
                   disabled={envoi || !reponse.trim()}
