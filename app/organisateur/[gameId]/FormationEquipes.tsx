@@ -246,8 +246,8 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                   ) : (
                     <ul className="flex flex-col gap-1">
                       {g.membres.map((i) => (
-                        <li key={i.id} className="flex items-center justify-between gap-2 text-sm text-ink">
-                          <span className="truncate">
+                        <li key={i.id} className="flex flex-col gap-1 text-sm text-ink">
+                          <span className="break-words">
                             {i.nom}
                             {i.niveau && <span className="text-ink/45"> · {i.niveau}</span>}
                             {(doublons.get(i.nom.trim().toLowerCase()) ?? 0) > 1 && (
@@ -256,7 +256,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                               </span>
                             )}
                           </span>
-                          <span className="flex items-center gap-2 shrink-0">
+                          <span className="flex items-center gap-2 self-end">
                             <select
                               value={estAffecte(i) ? i.equipeId ?? "" : ""}
                               onChange={(e) => deplacer(i, e.target.value)}
