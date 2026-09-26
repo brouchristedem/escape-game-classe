@@ -65,12 +65,12 @@ export default function Histoire({ params }: { params: Promise<{ gameId: string 
           multiline
           value={texte}
           onSave={saveHistoire}
-          className="mb-10 max-w-md rounded-2xl bg-parchment ring-1 ring-brass/30 px-6 sm:px-8 py-7 text-ink/80 leading-relaxed whitespace-pre-line text-left sm:text-center shadow-[0_10px_40px_rgba(0,0,0,0.35)]"
+          className="animate-card-in mb-10 max-w-md rounded-2xl bg-parchment ring-1 ring-brass/30 px-6 sm:px-8 py-7 text-ink/80 leading-relaxed whitespace-pre-line text-left sm:text-center shadow-[0_10px_40px_rgba(0,0,0,0.35)]"
         />
 
         <button
           onClick={continuer}
-          className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brass to-brass-dark px-10 py-3.5 text-lg font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brass/30 active:translate-y-0"
+          className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brass to-brass-dark px-10 py-3.5 text-lg font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brass/30 active:translate-y-0 active:scale-[0.98]"
         >
           <EditableText as="span" value={texts.histoireBouton} onSave={(v) => saveText("histoireBouton", v)} className="text-ink" />
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>

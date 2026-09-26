@@ -645,7 +645,7 @@ export default function JouerEquipe() {
         </div>
       </div>
 
-      <div className="rounded-3xl bg-parchment ring-1 ring-brass/15 shadow-[0_10px_30px_rgba(0,0,0,0.35)] p-6 sm:p-7 mb-6">
+      <div key={index} className="animate-card-in rounded-3xl bg-parchment ring-1 ring-brass/15 shadow-[0_10px_30px_rgba(0,0,0,0.35)] p-6 sm:p-7 mb-6">
         {isInfoPage && !editMode ? (
           <RichText text={question.texte} className="text-xl font-semibold leading-snug text-ink" />
         ) : (
@@ -664,7 +664,7 @@ export default function JouerEquipe() {
           {!editMode && (
             <button
               onClick={continuerPageInfo}
-              className="group self-center rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3.5 font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+              className="group self-center rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3.5 font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
             >
               <EditableText as="span" value={texts.infoPageBouton} onSave={(v) => saveGlobalText("infoPageBouton", v)} className="text-ink" />
               <span className="ml-2 transition-transform duration-200 inline-block group-hover:translate-x-1">→</span>
@@ -693,7 +693,7 @@ export default function JouerEquipe() {
             className={`px-5 py-4 rounded-2xl border-2 outline-none transition-all duration-200 text-center font-medium tracking-wide ${
               feedback
                 ? feedback.ok
-                  ? "bg-green-500 border-green-500 text-white"
+                  ? "bg-green-500 border-green-500 text-white animate-unlock"
                   : "bg-red-500 border-red-500 text-white"
                 : "bg-parchment/90 border-transparent focus:border-brass text-ink"
             }`}
@@ -702,7 +702,7 @@ export default function JouerEquipe() {
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
-              className="self-start rounded-full bg-gradient-to-r from-brass to-brass-dark px-6 py-3 font-semibold text-ink shadow-md shadow-brass/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-ink-2 disabled:text-parchment/30 disabled:shadow-none disabled:cursor-not-allowed"
+              className="self-start rounded-full bg-gradient-to-r from-brass to-brass-dark px-6 py-3 font-semibold text-ink shadow-md shadow-brass/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-ink-2 disabled:text-parchment/30 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {texts.codePageBouton}
             </button>
@@ -780,10 +780,11 @@ export default function JouerEquipe() {
               </div>
             ) : (
               <button
-                key={i}
+                key={`${index}-${i}`}
                 disabled={isDisabled || !!feedback}
                 onClick={() => handleAnswerQcm(i)}
-                className={`text-left px-5 py-4 rounded-2xl transition-all duration-200 ${style} disabled:cursor-not-allowed`}
+                style={{ animationDelay: `${i * 60}ms` }}
+                className={`animate-option-in text-left px-5 py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] ${style} disabled:cursor-not-allowed`}
               >
                 {prop}
                 {revealCorrect && <span className="ml-2 text-xs font-semibold uppercase tracking-wide">Bonne réponse</span>}
@@ -811,7 +812,7 @@ export default function JouerEquipe() {
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
-              className="self-start rounded-full bg-gradient-to-r from-brass to-brass-dark px-6 py-3 font-semibold text-ink shadow-md shadow-brass/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:bg-none disabled:bg-ink-2 disabled:text-parchment/30 disabled:shadow-none disabled:cursor-not-allowed"
+              className="self-start rounded-full bg-gradient-to-r from-brass to-brass-dark px-6 py-3 font-semibold text-ink shadow-md shadow-brass/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-ink-2 disabled:text-parchment/30 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {texts.jeuLabelValider}
             </button>
@@ -856,7 +857,7 @@ export default function JouerEquipe() {
       )}
 
       {!isCodePage && !isInfoPage && (editMode || (feedback && feedback.ok && fragmentTexte)) && (
-        <div className="mt-6 rounded-2xl bg-gradient-to-r from-brass/15 to-parchment ring-2 ring-brass/40 px-5 py-4 text-center shadow-sm">
+        <div className={`mt-6 rounded-2xl bg-gradient-to-r from-brass/15 to-parchment ring-2 ring-brass/40 px-5 py-4 text-center shadow-sm ${!editMode ? "animate-pop-in" : ""}`}>
           <p className="text-2xl mb-1">🏆</p>
           <EditableText
             as="p"
@@ -889,7 +890,7 @@ export default function JouerEquipe() {
 
       {feedback && (
         <div
-          className={`mt-6 rounded-2xl px-5 py-3.5 text-center font-medium ${
+          className={`animate-pop-in mt-6 rounded-2xl px-5 py-3.5 text-center font-medium ${
             feedback.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
           }`}
         >
@@ -900,7 +901,7 @@ export default function JouerEquipe() {
       {!isInfoPage && (needsRetryClick || editMode) && (
         <button
           onClick={handleRetry}
-          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3.5 font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3.5 font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
         >
           <EditableText as="span" value={texts.jeuLabelReessayer} onSave={(v) => saveGlobalText("jeuLabelReessayer", v)} className="text-ink" />
         </button>
@@ -909,7 +910,7 @@ export default function JouerEquipe() {
       {!isInfoPage && awaitingContinue && !editMode && (
         <button
           onClick={goNextQuestion}
-          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3.5 font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3.5 font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
         >
           {isLastQuestion ? texts.jeuLabelVoirResultat : texts.jeuLabelEnigmeSuivante}
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
