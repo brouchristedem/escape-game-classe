@@ -21,7 +21,6 @@ import {
   ajusterTempsGeneral,
   envoyerBroadcast,
   uploadImageEnigme,
-  deleteImageEnigme,
 } from "@/lib/data";
 import {
   Question,
@@ -148,10 +147,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
   const [qForm, setQForm] = useState({ ...emptyQuestionForm });
   const [editingQId, setEditingQId] = useState<string | null>(null);
-  // Upload d'image d'énigme : image déjà enregistrée sur l'étape en cours
-  // d'édition, pour savoir s'il faut la supprimer de Storage en cas de
-  // remplacement/retrait (voir handleImageChange / retirerImage).
-  const [imageOriginale, setImageOriginale] = useState<string>("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [savingStep, setSavingStep] = useState(false);
 
@@ -263,7 +258,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
   function resetQForm(type: TypeEnigme = "qcm") {
     setQForm({ ...emptyQuestionForm, salle: equipeCircuit?.salle ?? "", type });
     setEditingQId(null);
-    setImageOriginale("");
   }
 
   function editQuestion(q: Question) {
@@ -283,14 +277,12 @@ function AdminPanel({ gameId }: { gameId: string }) {
       imageUrl: q.imageUrl ?? "",
     });
     setEditingQId(q.id);
-    setImageOriginale(q.imageUrl ?? "");
     setTab("circuit");
   }
 
-  // Upload de l'image choisie par l'organisateur : stockée immédiatement sur
-  // Firebase Storage (avant même d'enregistrer l'étape), pour pouvoir
-  // afficher un aperçu tout de suite. L'ancienne image (si on en remplace
-  // une) n'est nettoyée qu'à l'enregistrement de l'étape.
+  // Upload de l'image choisie par l'organisateur vers Cloudinary : stockée
+  // immédiatement (avant même d'enregistrer l'étape), pour pouvoir afficher
+  // un aperçu tout de suite.
   async function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -342,12 +334,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
     setSavingStep(true);
     try {
-      // Si l'image a été remplacée ou retirée par rapport à ce qui était
-      // enregistré, on nettoie l'ancien fichier sur Storage (best-effort,
-      // ne bloque jamais l'enregistrement de l'étape).
-      if (imageOriginale && imageOriginale !== qForm.imageUrl) {
-        deleteImageEnigme(imageOriginale).catch(() => {});
-      }
       if (editingQId) {
         const payload =
           qForm.type === "qcm"

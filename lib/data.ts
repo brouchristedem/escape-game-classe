@@ -16,13 +16,7 @@ import {
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
-import {
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import { db, storage } from "./firebase";
+import { db } from "./firebase";
 import {
   Question,
   Salle,
@@ -198,30 +192,42 @@ export async function updateQuestion(gameId: string, id: string, q: Partial<Ques
   await updateDoc(questionDoc(gameId, id), q);
 }
 
+// --- Image d'énigme (upload depuis l'admin, "Circuit du jeu") ---
+// Upload vers Cloudinary (offre gratuite, sans carte bancaire requise —
+// contrairement à Firebase Storage qui exige le plan Blaze), même approche
+// que lib/storage.ts sur Ma Boutique CI : "unsigned upload preset", donc
+// l'upload se fait directement depuis le navigateur sans passer par un
+// serveur. Nécessite deux variables d'environnement :
+// - NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+// - NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+// Pas de suppression du fichier distant en cas de remplacement/retrait (même
+// choix que Ma Boutique CI : la suppression Cloudinary demande une requête
+// signée côté serveur, donc une clé API secrète — hors scope pour l'instant).
+export async function uploadImageEnigme(gameId: string, file: File): Promise<string> {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Cloudinary n'est pas configuré (variables d'environnement manquantes).");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+  formData.append("folder", `enigmes/${gameId}`);
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error("Échec de l'upload de l'image.");
+  }
+  const data = await response.json();
+  return data.secure_url as string;
+}
+
 export async function deleteQuestion(gameId: string, id: string): Promise<void> {
   await deleteDoc(questionDoc(gameId, id));
-}
-
-// --- Image d'énigme (upload depuis l'admin, "Circuit du jeu") ---
-// Stockée sous games/{gameId}/enigmes/{horodatage}-{nom du fichier} dans
-// Firebase Storage. Le champ Question.imageUrl (Firestore) ne garde que
-// l'URL de téléchargement retournée par uploadImageEnigme.
-export async function uploadImageEnigme(gameId: string, file: File): Promise<string> {
-  const chemin = `games/${gameId}/enigmes/${Date.now()}-${file.name}`;
-  const ref = storageRef(storage, chemin);
-  await uploadBytes(ref, file);
-  return getDownloadURL(ref);
-}
-
-// Supprime le fichier de Storage correspondant à une URL de téléchargement.
-// Best-effort : si l'URL n'est pas une image Storage valide ou déjà
-// supprimée, l'erreur est ignorée (ne doit jamais bloquer l'organisateur).
-export async function deleteImageEnigme(url: string): Promise<void> {
-  try {
-    await deleteObject(storageRef(storage, url));
-  } catch {
-    // Fichier déjà absent ou URL externe : rien à faire.
-  }
 }
 
 // Renumérote automatiquement le "ordre" de toutes les étapes d'une salle
