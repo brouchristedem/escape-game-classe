@@ -646,6 +646,14 @@ export default function JouerEquipe() {
       </div>
 
       <div key={index} className="animate-card-in rounded-3xl bg-parchment ring-1 ring-brass/15 shadow-[0_10px_30px_rgba(0,0,0,0.35)] p-6 sm:p-7 mb-6">
+        {question.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={question.imageUrl}
+            alt=""
+            className="w-full max-h-72 object-contain rounded-2xl mb-4 bg-white"
+          />
+        )}
         {isInfoPage && !editMode ? (
           <RichText text={question.texte} className="text-xl font-semibold leading-snug text-ink" />
         ) : (

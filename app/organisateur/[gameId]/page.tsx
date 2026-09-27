@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, use } from "react";
+import { useEffect, useMemo, useState, use, type ChangeEvent } from "react";
 import Link from "next/link";
 import {
   getAllQuestions,
@@ -20,6 +20,8 @@ import {
   arreterTempsGeneral,
   ajusterTempsGeneral,
   envoyerBroadcast,
+  uploadImageEnigme,
+  deleteImageEnigme,
 } from "@/lib/data";
 import {
   Question,
@@ -59,6 +61,7 @@ const emptyQuestionForm = {
   tempsUnite: "secondes" as UniteTemps,
   fragmentTexte: "",
   qrTexte: "",
+  imageUrl: "",
 };
 
 const emptyTeamForm = {
@@ -145,6 +148,11 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
   const [qForm, setQForm] = useState({ ...emptyQuestionForm });
   const [editingQId, setEditingQId] = useState<string | null>(null);
+  // Upload d'image d'énigme : image déjà enregistrée sur l'étape en cours
+  // d'édition, pour savoir s'il faut la supprimer de Storage en cas de
+  // remplacement/retrait (voir handleImageChange / retirerImage).
+  const [imageOriginale, setImageOriginale] = useState<string>("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [savingStep, setSavingStep] = useState(false);
 
   const [histoire, setHistoire] = useState("");
@@ -255,6 +263,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
   function resetQForm(type: TypeEnigme = "qcm") {
     setQForm({ ...emptyQuestionForm, salle: equipeCircuit?.salle ?? "", type });
     setEditingQId(null);
+    setImageOriginale("");
   }
 
   function editQuestion(q: Question) {
@@ -271,9 +280,34 @@ function AdminPanel({ gameId }: { gameId: string }) {
       tempsUnite: "secondes",
       fragmentTexte: q.fragmentTexte ?? "",
       qrTexte: q.qrTexte ?? "",
+      imageUrl: q.imageUrl ?? "",
     });
     setEditingQId(q.id);
+    setImageOriginale(q.imageUrl ?? "");
     setTab("circuit");
+  }
+
+  // Upload de l'image choisie par l'organisateur : stockée immédiatement sur
+  // Firebase Storage (avant même d'enregistrer l'étape), pour pouvoir
+  // afficher un aperçu tout de suite. L'ancienne image (si on en remplace
+  // une) n'est nettoyée qu'à l'enregistrement de l'étape.
+  async function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const url = await uploadImageEnigme(gameId, file);
+      setQForm((f) => ({ ...f, imageUrl: url }));
+    } catch {
+      alert("L'envoi de l'image a échoué. Réessayez.");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  function retirerImage() {
+    setQForm((f) => ({ ...f, imageUrl: "" }));
   }
 
   async function submitQForm() {
@@ -302,11 +336,18 @@ function AdminPanel({ gameId }: { gameId: string }) {
       feedbackIncorrect: qForm.feedbackIncorrect.trim(),
       tempsLimite,
       qrTexte: qForm.qrTexte.trim(),
+      imageUrl: qForm.imageUrl.trim(),
       ...((qForm.type === "qcm" || qForm.type === "libre") ? { fragmentTexte: qForm.fragmentTexte.trim() } : {}),
     };
 
     setSavingStep(true);
     try {
+      // Si l'image a été remplacée ou retirée par rapport à ce qui était
+      // enregistré, on nettoie l'ancien fichier sur Storage (best-effort,
+      // ne bloque jamais l'enregistrement de l'étape).
+      if (imageOriginale && imageOriginale !== qForm.imageUrl) {
+        deleteImageEnigme(imageOriginale).catch(() => {});
+      }
       if (editingQId) {
         const payload =
           qForm.type === "qcm"
@@ -857,6 +898,40 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 n&apos;est demandé sur cette page, juste un bouton pour continuer.
               </p>
             )}
+
+            <label className="block text-sm text-ink/55 mb-1">Image (facultatif)</label>
+            {qForm.imageUrl ? (
+              <div className="mb-3 flex items-start gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={qForm.imageUrl}
+                  alt="Aperçu de l'image de l'énigme"
+                  className="w-28 h-28 object-cover rounded-lg border border-admin-blue/20 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={retirerImage}
+                  className="text-stamp-red underline text-xs mt-1"
+                >
+                  Retirer l&apos;image
+                </button>
+              </div>
+            ) : (
+              <div className="mb-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={uploadingImage}
+                  className="text-xs text-ink/70 file:mr-3 file:rounded-full file:border-0 file:bg-admin-blue file:px-4 file:py-1.5 file:text-ink file:font-semibold file:text-xs disabled:opacity-50"
+                />
+                {uploadingImage && <p className="text-ink/55 text-xs mt-1">Envoi de l&apos;image…</p>}
+              </div>
+            )}
+            <p className="text-ink/55 text-xs mb-3">
+              Affichée au-dessus de l&apos;énoncé (utile pour une énigme visuelle, ex. calcul avec des émojis/images à
+              substituer).
+            </p>
 
             {qForm.type === "qcm" && (
               <>

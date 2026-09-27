@@ -16,7 +16,13 @@ import {
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { db, storage } from "./firebase";
 import {
   Question,
   Salle,
@@ -194,6 +200,28 @@ export async function updateQuestion(gameId: string, id: string, q: Partial<Ques
 
 export async function deleteQuestion(gameId: string, id: string): Promise<void> {
   await deleteDoc(questionDoc(gameId, id));
+}
+
+// --- Image d'énigme (upload depuis l'admin, "Circuit du jeu") ---
+// Stockée sous games/{gameId}/enigmes/{horodatage}-{nom du fichier} dans
+// Firebase Storage. Le champ Question.imageUrl (Firestore) ne garde que
+// l'URL de téléchargement retournée par uploadImageEnigme.
+export async function uploadImageEnigme(gameId: string, file: File): Promise<string> {
+  const chemin = `games/${gameId}/enigmes/${Date.now()}-${file.name}`;
+  const ref = storageRef(storage, chemin);
+  await uploadBytes(ref, file);
+  return getDownloadURL(ref);
+}
+
+// Supprime le fichier de Storage correspondant à une URL de téléchargement.
+// Best-effort : si l'URL n'est pas une image Storage valide ou déjà
+// supprimée, l'erreur est ignorée (ne doit jamais bloquer l'organisateur).
+export async function deleteImageEnigme(url: string): Promise<void> {
+  try {
+    await deleteObject(storageRef(storage, url));
+  } catch {
+    // Fichier déjà absent ou URL externe : rien à faire.
+  }
 }
 
 // Renumérote automatiquement le "ordre" de toutes les étapes d'une salle

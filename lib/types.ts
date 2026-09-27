@@ -51,6 +51,10 @@ export interface Question {
   // code à saisir...). Vide/absent = pas de QR code pour cette étape. Le QR
   // pointe vers /g/{gameId}/qr/{id de l'étape} et ne révèle que ce texte.
   qrTexte?: string;
+  // Image affichée au-dessus de l'énoncé (ex. énigme visuelle avec émojis/
+  // symboles à substituer). Hébergée sur Firebase Storage, uploadée depuis
+  // l'admin. Vide/absent = pas d'image sur cette étape.
+  imageUrl?: string;
 }
 
 // Chrono général du jeu, commun à toutes les équipes : affiché à l'écran
