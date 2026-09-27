@@ -7,6 +7,7 @@ import { fusionnerTextes, GameTexts } from "@/lib/types";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import GameLogo from "@/app/components/GameLogo";
+import Parallax from "@/app/components/gsap/Parallax";
 
 const HISTOIRE_PAR_DEFAUT = `Mr X est quelque part parmi nous, mais son identité reste un mystère.
 
@@ -54,8 +55,8 @@ export default function Histoire({ params }: { params: Promise<{ gameId: string 
 
   return (
     <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-ink text-center">
-      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
+      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center max-w-lg w-full">
         <GameLogo className="w-24 sm:w-28 h-auto mb-8" />

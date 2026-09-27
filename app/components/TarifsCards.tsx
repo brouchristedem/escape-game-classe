@@ -1,3 +1,7 @@
+"use client";
+
+import Reveal from "@/app/components/gsap/Reveal";
+
 const PALIERS = [
   {
     nom: "Petit événement",
@@ -24,7 +28,7 @@ export const WHATSAPP_NUMERO = "2250545177571";
 
 export default function TarifsCards() {
   return (
-    <div className="grid sm:grid-cols-3 gap-5">
+    <Reveal as="div" stagger staggerAmount={0.15} y={50} className="grid sm:grid-cols-3 gap-5">
       {PALIERS.map((p) => (
         <div
           key={p.nom}
@@ -52,6 +56,6 @@ export default function TarifsCards() {
           </ul>
         </div>
       ))}
-    </div>
+    </Reveal>
   );
 }

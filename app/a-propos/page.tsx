@@ -5,6 +5,9 @@ import path from "path";
 import { Bitter, IBM_Plex_Mono } from "next/font/google";
 import { WHATSAPP_NUMERO } from "@/app/components/TarifsCards";
 import GameLogo from "@/app/components/GameLogo";
+import Reveal from "@/app/components/gsap/Reveal";
+import SplitReveal from "@/app/components/gsap/SplitReveal";
+import Parallax from "@/app/components/gsap/Parallax";
 
 const bitter = Bitter({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-bitter", display: "swap" });
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-plexmono", display: "swap" });
@@ -37,8 +40,8 @@ export default async function AProposDuDeveloppeur({
 
   return (
     <main className={`${bitter.variable} ${plexMono.variable} relative min-h-screen bg-ink px-6 py-12 overflow-hidden`}>
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
+      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
 
       <div className="relative z-10 max-w-2xl mx-auto">
         <Link href={retourHref} className="text-sm text-brass-light underline">
@@ -46,32 +49,48 @@ export default async function AProposDuDeveloppeur({
         </Link>
 
         <div className="mt-8 flex flex-col items-center text-center">
-          <GameLogo className="w-16 h-auto mb-6 opacity-90" />
+          <Reveal y={20}>
+            <GameLogo className="w-16 h-auto mb-6 opacity-90" />
+          </Reveal>
 
-          {photo ? (
-            <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-brass/30 shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
-              <Image
-                src={photo}
-                alt="Christ Edem BROU"
-                width={480}
-                height={720}
-                className="w-full h-auto"
-                priority
-              />
-            </div>
-          ) : (
-            <div className="w-32 h-32 rounded-full bg-ink-2 flex items-center justify-center ring-4 ring-brass/30">
-              <span className="font-headline text-3xl font-extrabold text-brass-light">CE</span>
-            </div>
-          )}
+          <Reveal>
+            {photo ? (
+              <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-brass/30 shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
+                <Image
+                  src={photo}
+                  alt="Christ Edem BROU"
+                  width={480}
+                  height={720}
+                  className="w-full h-auto"
+                  priority
+                />
+              </div>
+            ) : (
+              <div className="w-32 h-32 rounded-full bg-ink-2 flex items-center justify-center ring-4 ring-brass/30">
+                <span className="font-headline text-3xl font-extrabold text-brass-light">CE</span>
+              </div>
+            )}
+          </Reveal>
 
-          <h1 className="font-headline mt-5 text-2xl font-bold text-parchment">Christ Edem BROU</h1>
-          <p className="text-brass-light font-medium text-sm mt-1">
-            Développeur web, applications &amp; plateformes SaaS · Entrepreneur
-          </p>
+          <SplitReveal
+            as="h1"
+            text="Christ Edem BROU"
+            type="words"
+            className="font-headline mt-5 text-2xl font-bold text-parchment"
+          />
+          <Reveal delay={0.2}>
+            <p className="text-brass-light font-medium text-sm mt-1">
+              Développeur web, applications &amp; plateformes SaaS · Entrepreneur
+            </p>
+          </Reveal>
         </div>
 
-        <section className="mt-10 bg-parchment rounded-2xl ring-1 ring-brass/25 shadow-[0_10px_30px_rgba(0,0,0,0.35)] p-6 text-ink/80 leading-relaxed space-y-4">
+        <Reveal
+          as="section"
+          stagger
+          staggerAmount={0.15}
+          className="mt-10 bg-parchment rounded-2xl ring-1 ring-brass/25 shadow-[0_10px_30px_rgba(0,0,0,0.35)] p-6 text-ink/80 leading-relaxed space-y-4"
+        >
           <p>
             Actuellement en Licence 3 Logistique, je poursuis un parcours à la croisée de deux mondes qui me
             passionnent : l&apos;informatique, notamment l&apos;intelligence artificielle, et la logistique
@@ -105,9 +124,9 @@ export default async function AProposDuDeveloppeur({
             temps réel, export PDF et paiement mobile (Wave), déployée en production et utilisée par des
             clients réels en Côte d&apos;Ivoire.
           </p>
-        </section>
+        </Reveal>
 
-        <section className="mt-6 flex flex-wrap gap-3 justify-center">
+        <Reveal as="section" className="mt-6 flex flex-wrap gap-3 justify-center">
           <a
             href={`https://wa.me/${WHATSAPP_NUMERO}`}
             target="_blank"
@@ -116,7 +135,7 @@ export default async function AProposDuDeveloppeur({
           >
             Me contacter
           </a>
-        </section>
+        </Reveal>
       </div>
     </main>
   );

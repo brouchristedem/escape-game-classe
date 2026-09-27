@@ -7,6 +7,9 @@ import { listerJeuxPublics, verifierCodeAcces } from "@/lib/data";
 import { GameMeta } from "@/lib/types";
 import GameLogo from "@/app/components/GameLogo";
 import LoadingScreen from "@/app/components/LoadingScreen";
+import Reveal from "@/app/components/gsap/Reveal";
+import SplitReveal from "@/app/components/gsap/SplitReveal";
+import Parallax from "@/app/components/gsap/Parallax";
 
 const bitter = Bitter({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-bitter", display: "swap" });
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-plexmono", display: "swap" });
@@ -54,24 +57,30 @@ export default function Accueil() {
     <main
       className={`${bitter.variable} ${plexMono.variable} relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-16 bg-ink`}
     >
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
+      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
-        <GameLogo className="w-24 sm:w-28 h-auto mb-6 drop-shadow-[0_0_20px_rgba(201,162,77,0.25)]" />
-        <h1 className="font-headline text-2xl sm:text-3xl font-bold mb-2 tracking-wide text-parchment text-center">
-          Escape Game
-        </h1>
-        <p className="font-codemono text-xs sm:text-sm text-brass-light mb-10 text-center">
-          Choisissez votre jeu et entrez le code de votre organisateur
-        </p>
+        <Reveal y={20}>
+          <GameLogo className="w-24 sm:w-28 h-auto mb-6 drop-shadow-[0_0_20px_rgba(201,162,77,0.25)]" />
+        </Reveal>
+        <SplitReveal
+          as="h1"
+          text="Escape Game"
+          className="font-headline text-2xl sm:text-3xl font-bold mb-2 tracking-wide text-parchment text-center"
+        />
+        <Reveal delay={0.3}>
+          <p className="font-codemono text-xs sm:text-sm text-brass-light mb-10 text-center">
+            Choisissez votre jeu et entrez le code de votre organisateur
+          </p>
+        </Reveal>
 
         {loading ? (
           <p className="text-parchment/50 text-sm">Chargement...</p>
         ) : jeux.length === 0 ? (
           <p className="text-parchment/50 text-sm text-center">Aucun jeu disponible pour l&apos;instant.</p>
         ) : (
-          <div className="flex flex-col gap-3 w-full">
+          <Reveal as="div" stagger staggerAmount={0.1} className="flex flex-col gap-3 w-full">
             {jeux.map((j) => (
               <button
                 key={j.id}
@@ -84,7 +93,7 @@ export default function Accueil() {
                 </span>
               </button>
             ))}
-          </div>
+          </Reveal>
         )}
       </div>
 
