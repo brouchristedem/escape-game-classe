@@ -220,7 +220,18 @@ export async function uploadImageEnigme(gameId: string, file: File): Promise<str
     body: formData,
   });
   if (!response.ok) {
-    throw new Error("Échec de l'upload de l'image.");
+    // On remonte le message d'erreur exact renvoyé par Cloudinary (preset
+    // introuvable, mode signé au lieu de non-signé, etc.) plutôt qu'un
+    // message générique, pour pouvoir diagnostiquer sans ouvrir les outils
+    // développeur du navigateur.
+    let detail = `HTTP ${response.status}`;
+    try {
+      const errBody = await response.json();
+      if (errBody?.error?.message) detail = errBody.error.message;
+    } catch {
+      // Réponse non-JSON : on garde le code HTTP tel quel.
+    }
+    throw new Error(`Échec de l'upload de l'image (Cloudinary) : ${detail}`);
   }
   const data = await response.json();
   return data.secure_url as string;

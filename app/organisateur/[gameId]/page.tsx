@@ -291,8 +291,8 @@ function AdminPanel({ gameId }: { gameId: string }) {
     try {
       const url = await uploadImageEnigme(gameId, file);
       setQForm((f) => ({ ...f, imageUrl: url }));
-    } catch {
-      alert("L'envoi de l'image a échoué. Réessayez.");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "L'envoi de l'image a échoué. Réessayez.");
     } finally {
       setUploadingImage(false);
     }
