@@ -51,4 +51,27 @@ export function oublierToutesLesSessions(): void {
     }
   }
   clesAOublier.forEach((cle) => window.sessionStorage.removeItem(cle));
+  // Progression hors-ligne (localStorage) : jamais conservée après un retour à l'accueil.
+  const progressions: string[] = [];
+  for (let i = 0; i < window.localStorage.length; i++) {
+    const cle = window.localStorage.key(i);
+    if (cle && cle.startsWith("escape_offline_progress_")) progressions.push(cle);
+  }
+  progressions.forEach((cle) => window.localStorage.removeItem(cle));
+}
+
+// Oublie le repère "partie démarrée" d'une seule équipe (appelé quand le
+// joueur quitte la page de jeu : retour arrière, navigation ailleurs...).
+export function oublierSession(teamId: string): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(cleStartee(teamId));
+}
+
+// Vrai uniquement si la page vient d'être rechargée (F5 / bouton actualiser).
+// Toute autre arrivée (lien rouvert, retour arrière, onglet rouvert) est une
+// nouvelle visite : la partie doit alors repartir du début, automatiquement.
+export function estRechargementPage(): boolean {
+  if (typeof window === "undefined" || typeof performance === "undefined") return false;
+  const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  return nav?.type === "reload";
 }

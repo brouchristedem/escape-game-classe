@@ -32,7 +32,13 @@ import {
   TempsGeneralAjustement,
   BroadcastMessage,
 } from "@/lib/types";
-import { getSessionId, aDejaDemarreCetteSession, marquerSessionDemarree } from "@/lib/session";
+import {
+  getSessionId,
+  aDejaDemarreCetteSession,
+  marquerSessionDemarree,
+  oublierSession,
+  estRechargementPage,
+} from "@/lib/session";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import EditableText from "@/app/components/EditableText";
 import RichText from "@/app/components/RichText";
@@ -40,7 +46,8 @@ import PauseOverlay from "@/app/components/PauseOverlay";
 import GlobalOverlays from "@/app/components/GlobalOverlays";
 import EvenementsOverlay from "@/app/components/EvenementsOverlay";
 import { useAdminMode, editModePersiste } from "@/lib/adminMode";
-import { sauvegarderCache, lireCache, sauvegarderProgressionHorsLigne, lireProgressionHorsLigne } from "@/lib/offlineCache";
+import { sauvegarderCache, lireCache, sauvegarderProgressionHorsLigne,
+  effacerProgressionHorsLigne, lireProgressionHorsLigne } from "@/lib/offlineCache";
 
 type Phase = "loading" | "error" | "playing" | "termine";
 
@@ -146,6 +153,15 @@ export default function JouerEquipe() {
         // Firestore).
         const previewOrganisateur = editModePersiste(gameId!);
 
+        // Reprise possible uniquement après un vrai rechargement (F5) de cette
+        // page dans le même onglet. Toute autre arrivée = nouvelle visite :
+        // on repart du début et on efface les anciennes traces de progression.
+        const repriseRechargement = !modeTest && estRechargementPage() && aDejaDemarreCetteSession(teamId);
+        if (!repriseRechargement) {
+          oublierSession(teamId);
+          effacerProgressionHorsLigne(gameId!, teamId);
+        }
+
         // Pas de connexion détectée dès le départ : on saute directement en
         // mode hors-ligne sans attendre l'échec (plus rapide, pas de gel de
         // plusieurs secondes le temps que Firestore abandonne).
@@ -199,7 +215,7 @@ export default function JouerEquipe() {
         // Reprise autorisée si cet appareil a déjà démarré cette équipe, OU si
         // l'organisateur a libéré le chef (nouveau téléphone, même progression).
         const reprendCetteSession =
-          !modeTest && (aDejaDemarreCetteSession(teamId) || !!dernierEtat?.reprisePermise);
+          !modeTest && (repriseRechargement || !!dernierEtat?.reprisePermise);
         if (reprendCetteSession && dernierEtat?.phase === "termine") {
           setPhase("termine");
           setStartedAt(dernierEtat.startedAt ?? null);
@@ -245,7 +261,7 @@ export default function JouerEquipe() {
           return;
         }
         setQuestions(qs);
-        const indexSauvegarde = lireProgressionHorsLigne(gameId!, teamId);
+        const indexSauvegarde = estRechargementPage() ? lireProgressionHorsLigne(gameId!, teamId) : null;
         if (indexSauvegarde !== null && indexSauvegarde > 0 && indexSauvegarde < qs.length) {
           setIndex(indexSauvegarde);
         }
@@ -253,6 +269,25 @@ export default function JouerEquipe() {
         setPhase("playing");
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Quitter la page de jeu (navigation interne) oublie la progression ; et si le
+  // navigateur restaure la page depuis son cache (retour arrière), on renvoie
+  // au début du jeu au lieu de réafficher l'ancien écran.
+  useEffect(() => {
+    if (modeTest || !teamId) return;
+    const surPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        oublierSession(teamId);
+        window.location.replace(`/g/${gameId}`);
+      }
+    };
+    window.addEventListener("pageshow", surPageShow);
+    return () => {
+      window.removeEventListener("pageshow", surPageShow);
+      oublierSession(teamId);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -594,7 +629,6 @@ export default function JouerEquipe() {
   if (!question) return <LoadingScreen />;
 
   const isLastQuestion = index + 1 >= questions.length;
-  const progress = ((index + (feedback?.ok ? 1 : 0)) / questions.length) * 100;
 
   return (
     <>
@@ -626,7 +660,7 @@ export default function JouerEquipe() {
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-parchment/60 mb-2">
           <span className="font-medium text-parchment">{team?.nom}</span>
-          <span>{isCodePage || isInfoPage ? "Page suivante" : `Énigme ${index + 1} / ${questions.length}`}</span>
+          <span>{isCodePage || isInfoPage ? "Page suivante" : "Énigme"}</span>
           {timeLeft !== null && (
             <span
               className={`font-codemono font-semibold rounded-full px-2.5 py-0.5 transition-colors ${
@@ -636,12 +670,6 @@ export default function JouerEquipe() {
               {timeLeft}s
             </span>
           )}
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-ink-2 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-brass to-brass-dark transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
         </div>
       </div>
 

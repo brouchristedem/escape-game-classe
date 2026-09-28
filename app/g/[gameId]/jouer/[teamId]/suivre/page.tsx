@@ -86,8 +86,6 @@ export default function SuivreEquipe() {
     );
   }
 
-  const progress = ((state.index + (state.feedbackOk ? 1 : 0)) / state.totalQuestions) * 100;
-
   return (
     <main className="min-h-screen bg-ink">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
@@ -97,7 +95,7 @@ export default function SuivreEquipe() {
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-parchment/60 mb-2">
           <span className="font-medium text-parchment">{team?.nom}</span>
-          <span>Énigme {state.index + 1} / {state.totalQuestions}</span>
+          <span>Énigme</span>
           {state.timeLeft !== null && (
             <span
               className={`font-codemono font-semibold rounded-full px-2.5 py-0.5 transition-colors ${
@@ -107,12 +105,6 @@ export default function SuivreEquipe() {
               {state.timeLeft}s
             </span>
           )}
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-ink-2 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-brass to-brass-dark transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
         </div>
       </div>
 
@@ -180,10 +172,6 @@ export default function SuivreEquipe() {
         >
           {state.feedbackText}
         </div>
-      )}
-
-      {state.questionType !== "info" && state.attempts === 1 && !state.feedbackText && (
-        <p className="mt-6 text-center text-brass-light text-sm font-medium">{texts.jeuTexteDerniereTentative}</p>
       )}
 
       {state.awaitingContinue && (

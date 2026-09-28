@@ -64,3 +64,12 @@ export function lireProgressionHorsLigne(gameId: string, teamId: string): number
     return null;
   }
 }
+
+export function effacerProgressionHorsLigne(gameId: string, teamId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(cleProgression(gameId, teamId));
+  } catch {
+    // best effort
+  }
+}

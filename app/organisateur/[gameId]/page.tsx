@@ -1285,7 +1285,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <TextField label="Bouton « Voir le résultat »" value={siteTexts.jeuLabelVoirResultat} onChange={(v) => setSiteText("jeuLabelVoirResultat", v)} />
             <TextField label="Texte « Temps écoulé »" value={siteTexts.jeuTexteTempsEcoule} onChange={(v) => setSiteText("jeuTexteTempsEcoule", v)} />
             <TextField label="Texte « Mauvaise réponse »" value={siteTexts.jeuTexteMauvaiseReponse} onChange={(v) => setSiteText("jeuTexteMauvaiseReponse", v)} />
-            <TextField label="Texte « Dernière tentative »" value={siteTexts.jeuTexteDerniereTentative} onChange={(v) => setSiteText("jeuTexteDerniereTentative", v)} />
             <TextField label="Étiquette « Bonne réponse : »" value={siteTexts.jeuTexteBonneReponseLabel} onChange={(v) => setSiteText("jeuTexteBonneReponseLabel", v)} />
             <TextField label="Titre écran fragment débloqué" value={siteTexts.jeuTexteFragmentTitre} onChange={(v) => setSiteText("jeuTexteFragmentTitre", v)} />
             <TextField label="Placeholder réponse libre" value={siteTexts.jeuPlaceholderReponseLibre} onChange={(v) => setSiteText("jeuPlaceholderReponseLibre", v)} />
