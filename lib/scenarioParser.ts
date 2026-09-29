@@ -15,13 +15,9 @@ HISTOIRE:
 EQUIPE: Nom de la première équipe
 
 ENIGME 1
-TYPE: QCM
+TYPE: LIBRE
 TEXTE: L'énoncé de l'énigme
-A) Première proposition
-B) Deuxième proposition
-C) Troisième proposition
-D) Quatrième proposition
-BONNE REPONSE: B
+REPONSE: la réponse attendue
 FEEDBACK CORRECT: Texte affiché si bonne réponse
 FEEDBACK INCORRECT: Texte affiché si mauvaise réponse
 TEMPS: 60
@@ -53,8 +49,7 @@ Règles :
 - Une ligne "ENIGME <numéro>" commence une nouvelle énigme (le numéro sert juste de repère pour vous, l'ordre réel est celui du document).
 - Une ligne "PAGE CODE" commence une page intercalaire (verrou par code, sans tentatives limitées).
 - Une ligne "PAGE INFO" commence une page vierge purement informative (juste un texte et un bouton pour continuer, pas de code à saisir).
-- "TYPE:" vaut QCM ou LIBRE.
-- Pour un QCM : exactement 4 propositions (A, B, C, D) et une ligne "BONNE REPONSE: <lettre>".
+- "TYPE:" vaut LIBRE (les QCM ne sont plus proposés).
 - Pour une énigme LIBRE ou une PAGE CODE : une ligne "REPONSE:" (énigme) ou "CODE:" (page) avec la réponse/le code attendu.
 - "TEMPS:" en secondes, laissez vide si pas de limite de temps.
 - "FRAGMENT:" est facultatif, uniquement sur une ENIGME : texte affiché juste après une bonne réponse à cette énigme précise (sans lien avec les autres énigmes).

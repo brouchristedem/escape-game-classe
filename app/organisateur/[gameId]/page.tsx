@@ -49,7 +49,7 @@ import GameLogo from "@/app/components/GameLogo";
 
 const emptyQuestionForm = {
   salle: "",
-  type: "qcm" as TypeEnigme,
+  type: "libre" as TypeEnigme,
   texte: "",
   propositions: ["", "", "", ""] as [string, string, string, string],
   correctIndex: 0 as 0 | 1 | 2 | 3,
@@ -255,7 +255,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
     [questions, equipeCircuit]
   );
 
-  function resetQForm(type: TypeEnigme = "qcm") {
+  function resetQForm(type: TypeEnigme = "libre") {
     setQForm({ ...emptyQuestionForm, salle: equipeCircuit?.salle ?? "", type });
     setEditingQId(null);
   }
@@ -851,9 +851,11 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
             <label className="block text-sm text-ink/55 mb-1">Type d&apos;étape</label>
             <div className="flex gap-2 mb-3 flex-wrap">
-              <TypeButton active={qForm.type === "qcm"} onClick={() => setQForm({ ...qForm, type: "qcm" })}>
-                Énigme QCM
-              </TypeButton>
+              {qForm.type === "qcm" && (
+                <TypeButton active onClick={() => {}}>
+                  Énigme QCM (ancienne)
+                </TypeButton>
+              )}
               <TypeButton active={qForm.type === "libre"} onClick={() => setQForm({ ...qForm, type: "libre" })}>
                 Énigme réponse libre
               </TypeButton>
