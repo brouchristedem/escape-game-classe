@@ -88,8 +88,8 @@ export interface BroadcastMessage {
 // Tous les champs sont facultatifs : absent = identité "Escape Game" par défaut.
 export interface Personnalisation {
   logo?: string; // image réduite, stockée en data URL (voir Apparence.tsx)
-  couleurFond?: string; // hex #rrggbb, doit rester sombre (le texte est clair)
-  couleurAccent?: string; // hex #rrggbb, boutons / barres / chrono
+  couleurFond?: string; // hex #rrggbb, doit rester clair ou moyen (le texte est sombre)
+  couleurAccent?: string; // hex #rrggbb, remplissage des boutons (texte sombre dessus)
 }
 
 // --- Événements surprise ---

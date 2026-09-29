@@ -2,15 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import fs from "fs";
 import path from "path";
-import { Bitter, IBM_Plex_Mono } from "next/font/google";
 import { WHATSAPP_NUMERO } from "@/app/components/TarifsCards";
 import GameLogo from "@/app/components/GameLogo";
 import Reveal from "@/app/components/gsap/Reveal";
 import SplitReveal from "@/app/components/gsap/SplitReveal";
 import Parallax from "@/app/components/gsap/Parallax";
 
-const bitter = Bitter({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-bitter", display: "swap" });
-const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-plexmono", display: "swap" });
 
 // Photo facultative : dépose un fichier à public/team/christ-edem.jpg (ou .png)
 // et il remplacera automatiquement l'avatar par défaut ci-dessous, sans
@@ -39,12 +36,12 @@ export default async function AProposDuDeveloppeur({
   const retourHref = jeu ? `/g/${jeu}` : "/organisateur";
 
   return (
-    <main className={`${bitter.variable} ${plexMono.variable} relative min-h-screen bg-ink px-6 py-12 overflow-hidden`}>
-      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
-      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+    <main className={`relative min-h-screen bg-fog px-6 py-12 overflow-hidden`}>
+      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
+      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
 
       <div className="relative z-10 max-w-2xl mx-auto">
-        <Link href={retourHref} className="text-sm text-brass-light underline">
+        <Link href={retourHref} className="text-sm text-violet underline">
           ← Retour à l&apos;accueil
         </Link>
 
@@ -55,7 +52,7 @@ export default async function AProposDuDeveloppeur({
 
           <Reveal>
             {photo ? (
-              <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-brass/30 shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
+              <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-violet/30 shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)]">
                 <Image
                   src={photo}
                   alt="Christ Edem BROU"
@@ -66,8 +63,8 @@ export default async function AProposDuDeveloppeur({
                 />
               </div>
             ) : (
-              <div className="w-32 h-32 rounded-full bg-ink-2 flex items-center justify-center ring-4 ring-brass/30">
-                <span className="font-headline text-3xl font-extrabold text-brass-light">CE</span>
+              <div className="w-32 h-32 rounded-full bg-fog-2 flex items-center justify-center ring-4 ring-violet/30">
+                <span className="font-headline text-3xl font-extrabold text-violet">CE</span>
               </div>
             )}
           </Reveal>
@@ -76,10 +73,10 @@ export default async function AProposDuDeveloppeur({
             as="h1"
             text="Christ Edem BROU"
             type="words"
-            className="font-headline mt-5 text-2xl font-bold text-parchment"
+            className="font-headline mt-5 text-2xl font-bold text-nuit"
           />
           <Reveal delay={0.2}>
-            <p className="text-brass-light font-medium text-sm mt-1">
+            <p className="text-violet font-medium text-sm mt-1">
               Développeur web, applications &amp; plateformes SaaS · Entrepreneur
             </p>
           </Reveal>
@@ -89,7 +86,7 @@ export default async function AProposDuDeveloppeur({
           as="section"
           stagger
           staggerAmount={0.15}
-          className="mt-10 bg-parchment rounded-2xl ring-1 ring-brass/25 shadow-[0_10px_30px_rgba(0,0,0,0.35)] p-6 text-ink/80 leading-relaxed space-y-4"
+          className="mt-10 bg-paper rounded-2xl ring-1 ring-violet/25 shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)] p-6 text-nuit/80 leading-relaxed space-y-4"
         >
           <p>
             Actuellement en Licence 3 Logistique, je poursuis un parcours à la croisée de deux mondes qui me
@@ -105,7 +102,7 @@ export default async function AProposDuDeveloppeur({
           </p>
           <p>
             Vous souhaitez créer votre propre jeu sur cette plateforme ?{" "}
-            <Link href="/tarifs" className="text-brass-dark underline font-semibold">
+            <Link href="/tarifs" className="text-violet-deep underline font-semibold">
               Voir les tarifs
             </Link>
             .
@@ -116,7 +113,7 @@ export default async function AProposDuDeveloppeur({
               href="https://moncvproci.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brass-dark underline font-semibold"
+              className="text-violet-deep underline font-semibold"
             >
               MON CV PRO CI
             </a>
@@ -131,7 +128,7 @@ export default async function AProposDuDeveloppeur({
             href={`https://wa.me/${WHATSAPP_NUMERO}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-gradient-to-r from-brass to-brass-dark text-ink font-semibold text-sm px-5 py-2.5 rounded-full shadow-md shadow-brass/20 transition hover:-translate-y-0.5"
+            className="bg-gradient-to-r from-signal to-signal-dark text-nuit font-semibold text-sm px-5 py-2.5 rounded-full shadow-md shadow-violet/20 transition hover:-translate-y-0.5"
           >
             Me contacter
           </a>

@@ -80,7 +80,7 @@ export default function EcranProjection() {
   const critique = secondesRestantes !== null && secondesRestantes > 0 && secondesRestantes <= 300;
 
   return (
-    <main className="h-dvh flex flex-col bg-ink text-parchment overflow-hidden px-[3vw] py-[2.5vh]">
+    <main className="h-dvh flex flex-col bg-fog text-nuit overflow-hidden px-[3vw] py-[2.5vh]">
       <header className="flex items-center justify-between gap-6 pb-[2vh]">
         <div className="flex items-center gap-4 min-w-0">
           <GameLogo className="h-[9vh] w-auto shrink-0" />
@@ -90,12 +90,12 @@ export default function EcranProjection() {
         </div>
         {secondesRestantes !== null && (
           <div
-            className={`font-codemono font-semibold text-[min(8vh,7vw)] leading-none rounded-xl px-[1.5vw] py-[1vh] border ${
+            className={`font-codemono font-semibold text-[min(8vh,7vw)] leading-none rounded-xl px-[1.5vw] py-[1vh] border-2 ${
               secondesRestantes === 0
-                ? "border-stamp-red text-stamp-red"
+                ? "border-alerte text-alerte"
                 : critique
-                  ? "border-stamp-red text-parchment animate-timer-critical"
-                  : "border-brass/40 text-brass-light"
+                  ? "border-alerte bg-alerte text-white animate-timer-critical"
+                  : "border-nuit bg-nuit text-signal"
             }`}
             aria-label="Temps restant"
           >
@@ -105,7 +105,7 @@ export default function EcranProjection() {
       </header>
 
       {classees.length === 0 ? (
-        <p className="m-auto text-[min(4vh,3vw)] text-parchment/60">Aucune équipe pour l&apos;instant.</p>
+        <p className="m-auto text-[min(4vh,3vw)] text-nuit/70">Aucune équipe pour l&apos;instant.</p>
       ) : (
         <ol
           className="relative flex-1 min-h-0"
@@ -131,7 +131,7 @@ export default function EcranProjection() {
               >
                 <span
                   className={`font-headline font-extrabold w-[6vw] text-center text-[min(6vh,5vw)] ${
-                    termine ? "text-brass" : "text-parchment/70"
+                    termine ? "text-violet" : "text-nuit/70"
                   }`}
                 >
                   {i + 1}
@@ -139,7 +139,7 @@ export default function EcranProjection() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-4 mb-[0.8vh]">
                     <p className="font-headline font-bold text-[min(4vh,3vw)] leading-tight truncate">{team.nom}</p>
-                    <span className="font-codemono font-medium text-[min(2.8vh,2.2vw)] shrink-0 text-parchment/80">
+                    <span className="font-codemono font-medium text-[min(2.8vh,2.2vw)] shrink-0 text-nuit/80">
                       {!commence
                         ? "En attente"
                         : termine
@@ -147,10 +147,10 @@ export default function EcranProjection() {
                           : `Énigme ${state!.index + 1} / ${state!.totalQuestions}`}
                     </span>
                   </div>
-                  <div className="h-[1.4vh] w-full rounded-full bg-ink-2 overflow-hidden">
+                  <div className="h-[1.4vh] w-full rounded-full bg-paper ring-1 ring-violet/25 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-[width] duration-700 motion-reduce:transition-none ${
-                        termine ? "bg-brass-light" : "bg-brass"
+                        termine ? "bg-signal-dark" : "bg-violet"
                       }`}
                       style={{ width: `${pct}%` }}
                     />
@@ -165,7 +165,7 @@ export default function EcranProjection() {
       {!plein && (
         <button
           onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}
-          className="fixed bottom-3 right-3 rounded-lg border border-brass/40 px-3 py-1.5 text-xs text-brass-light opacity-40 hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+          className="fixed bottom-3 right-3 rounded-lg border border-violet/40 px-3 py-1.5 text-xs text-violet opacity-40 hover:opacity-100 focus-visible:opacity-100 transition-opacity"
         >
           Plein écran
         </button>

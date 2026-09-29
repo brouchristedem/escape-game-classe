@@ -208,15 +208,15 @@ export default function EvenementsOverlay({
   return (
     <>
       {blocageActif && (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden bg-ink px-6 text-center">
-          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-stamp-red/20 blur-3xl" />
+        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden bg-fog px-6 text-center">
+          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-alerte/20 blur-3xl" />
           <div className="relative z-10 flex flex-col items-center max-w-sm">
             <p className="text-5xl mb-5">🔒</p>
-            <h1 className="font-headline text-2xl font-bold text-parchment mb-3">Écran bloqué</h1>
-            <p className="text-sm text-parchment/70 mb-6">
+            <h1 className="font-headline text-2xl font-bold text-nuit mb-3">Écran bloqué</h1>
+            <p className="text-sm text-nuit/70 mb-6">
               Votre équipe est bloquée pendant un moment. Le chrono général continue.
             </p>
-            <p className="font-codemono text-5xl font-semibold text-brass-light">
+            <p className="font-codemono text-5xl font-semibold text-violet">
               {formaterCompteARebours(((effet?.finTimestamp ?? 0) - maintenant) / 1000)}
             </p>
           </div>
@@ -224,20 +224,20 @@ export default function EvenementsOverlay({
       )}
 
       {fausseFinPhase && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-ink px-6 py-16 text-center">
-          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-fog px-6 py-16 text-center">
+          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
           <div className="relative z-10 flex flex-col items-center max-w-md w-full">
             {fausseFinPhase === "victoire" ? (
               <>
-                <p className="text-brass-light font-semibold mb-2">{nomEquipe}</p>
-                <h1 className="font-headline text-2xl font-bold mb-4 text-parchment">{t.finTitre}</h1>
-                <p className="text-parchment/60 max-w-sm">{t.finSousTitre}</p>
+                <p className="text-violet font-semibold mb-2">{nomEquipe}</p>
+                <h1 className="font-headline text-2xl font-bold mb-4 text-nuit">{t.finTitre}</h1>
+                <p className="text-nuit/70 max-w-sm">{t.finSousTitre}</p>
               </>
             ) : (
               <>
                 <p className="text-5xl mb-5">🎭</p>
-                <p className="font-headline text-xl font-bold text-parchment whitespace-pre-line">{t.fausseFinLeurre}</p>
+                <p className="font-headline text-xl font-bold text-nuit whitespace-pre-line">{t.fausseFinLeurre}</p>
               </>
             )}
           </div>
@@ -245,13 +245,13 @@ export default function EvenementsOverlay({
       )}
 
       {glitchVisible && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-ink px-6 py-16 text-center">
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-fog px-6 py-16 text-center">
           <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(178,58,46,0.06)_0px,rgba(178,58,46,0.06)_1px,transparent_1px,transparent_3px)]" />
           <div className="relative z-10 flex flex-col items-center max-w-md w-full animate-glitch-flicker">
-            <p className="font-codemono text-xs uppercase tracking-widest text-stamp-red mb-4 animate-glitch-shift">
+            <p className="font-codemono text-xs uppercase tracking-widest text-alerte mb-4 animate-glitch-shift">
               ⚠ ERREUR SYSTÈME ⚠
             </p>
-            <p className="font-headline text-xl font-bold text-parchment whitespace-pre-line animate-glitch-shift">
+            <p className="font-headline text-xl font-bold text-nuit whitespace-pre-line animate-glitch-shift">
               {effet?.type === "glitch" ? effet.texte : ""}
             </p>
           </div>
@@ -260,7 +260,7 @@ export default function EvenementsOverlay({
 
       {prisonActive && (
         <div className="fixed bottom-0 inset-x-0 z-40 flex justify-center px-4 pb-3 pointer-events-none">
-          <p className="pointer-events-auto max-w-md w-full rounded-xl bg-stamp-red text-parchment text-sm font-medium px-4 py-3 shadow-lg text-center">
+          <p className="pointer-events-auto max-w-md w-full rounded-xl bg-alerte text-white text-sm font-medium px-4 py-3 shadow-lg text-center">
             🔒 {effet.personne ? `${effet.personne} est` : "Un membre est"} en prison et quitte le jeu. Votre équipe
             continue avec un membre en moins.
           </p>
@@ -268,25 +268,25 @@ export default function EvenementsOverlay({
       )}
 
       {enigme && peutRepondre && (enigmeVisible || afficherConfirmation) && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-ink/97 backdrop-blur-sm px-6 py-10 text-center">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-fog/97 backdrop-blur-sm px-6 py-10 text-center">
           <div className="flex flex-col items-center max-w-md w-full">
             <p className="text-5xl mb-4">⚡</p>
-            <h1 className="font-headline text-2xl font-extrabold text-parchment mb-5">Événement surprise !</h1>
+            <h1 className="font-headline text-2xl font-extrabold text-nuit mb-5">Événement surprise !</h1>
 
             {afficherConfirmation ? (
               <>
-                <p className="text-parchment mb-2 text-lg font-semibold">Bonne réponse ✅</p>
-                <p className="text-sm text-parchment/70 mb-6">Attendez l&apos;annonce de l&apos;organisateur.</p>
+                <p className="text-nuit mb-2 text-lg font-semibold">Bonne réponse ✅</p>
+                <p className="text-sm text-nuit/70 mb-6">Attendez l&apos;annonce de l&apos;organisateur.</p>
                 <button
                   onClick={() => setFerme(enigme.id)}
-                  className="rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3 font-semibold text-ink"
+                  className="rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3 font-semibold text-nuit"
                 >
                   Continuer le jeu
                 </button>
               </>
             ) : (
               <>
-                <div className="mb-6 w-full rounded-2xl bg-parchment ring-1 ring-brass/30 px-6 py-6 text-ink/90 text-lg leading-relaxed text-left shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+                <div className="mb-6 w-full rounded-2xl bg-paper ring-1 ring-violet/30 px-6 py-6 text-nuit/90 text-lg leading-relaxed text-left shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)]">
                   <RichText text={enigme.enonce} />
                 </div>
                 <input
@@ -297,18 +297,18 @@ export default function EvenementsOverlay({
                   }}
                   onKeyDown={(e) => e.key === "Enter" && valider()}
                   placeholder="Votre réponse"
-                  className="w-full rounded-xl bg-ink-2 border border-brass/40 px-4 py-3 text-parchment placeholder:text-parchment/40 mb-2"
+                  className="w-full rounded-xl bg-fog-2 border border-violet/40 px-4 py-3 text-nuit placeholder:text-nuit/60 mb-2"
                 />
-                {erreur && <p className="text-sm text-stamp-red mb-2">Ce n&apos;est pas ça, réessayez.</p>}
+                {erreur && <p className="text-sm text-alerte mb-2">Ce n&apos;est pas ça, réessayez.</p>}
                 {erreurEnvoi && (
-                  <p className="text-sm text-stamp-red mb-2">
+                  <p className="text-sm text-alerte mb-2">
                     Votre réponse n&apos;a pas pu être enregistrée. Vérifiez votre connexion et réessayez.
                   </p>
                 )}
                 <button
                   onClick={valider}
                   disabled={envoi || !reponse.trim()}
-                  className="mt-2 rounded-full bg-gradient-to-r from-brass to-brass-dark px-8 py-3 font-semibold text-ink disabled:opacity-50"
+                  className="mt-2 rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3 font-semibold text-nuit disabled:opacity-50"
                 >
                   Valider
                 </button>
@@ -320,7 +320,7 @@ export default function EvenementsOverlay({
 
       {enigme && !peutRepondre && !dejaRepondu && (
         <div className="fixed bottom-0 inset-x-0 z-40 flex justify-center px-4 pb-3 pointer-events-none">
-          <div className="pointer-events-auto max-w-md w-full rounded-xl bg-parchment ring-1 ring-brass/40 text-ink/90 text-sm px-4 py-3 shadow-lg">
+          <div className="pointer-events-auto max-w-md w-full rounded-xl bg-paper ring-1 ring-violet/40 text-nuit/90 text-sm px-4 py-3 shadow-lg">
             <p className="font-semibold mb-1">⚡ Événement surprise : le chef d&apos;équipe doit répondre</p>
             <RichText text={enigme.enonce} />
           </div>

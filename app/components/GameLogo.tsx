@@ -2,10 +2,10 @@
 
 import { useLogoPersonnalise } from "@/app/components/GameTheme";
 
-// Identité visuelle du jeu : un cadran de coffre-fort/serrure à combinaison,
-// avec un trou de serrure d'où s'échappe la lumière. Seul élément animé de
-// façon continue (mais discrète) sur les écrans de jeu — le reste de
-// l'interface reste calme, conformément au principe "un seul moment fort".
+// Identité "Brume & Signal" — le logo s'appelle "la Faille" : une sphère de
+// nuit fendue en deux par une fissure en éclair. Les deux moitiés glissent
+// légèrement, et la lumière "signal" s'échappe par la brèche : c'est l'instant
+// où l'énigme cède. La fissure est le seul élément animé en continu.
 export default function GameLogo({ className = "" }: { className?: string }) {
   // Logo choisi par l'organisateur pour ce jeu (voir onglet "Apparence").
   const logoPersonnalise = useLogoPersonnalise();
@@ -15,53 +15,67 @@ export default function GameLogo({ className = "" }: { className?: string }) {
   }
 
   return (
-    <svg
-      viewBox="0 0 200 200"
-      className={className}
-      role="img"
-      aria-label="Escape Game"
-    >
+    <svg viewBox="0 0 200 200" className={className} role="img" aria-label="Escape Game">
       <defs>
-        <radialGradient id="gl-ink-bg" cx="50%" cy="42%" r="65%">
-          <stop offset="0%" stopColor="#1b2a4c" />
-          <stop offset="100%" stopColor="#0d1526" />
-        </radialGradient>
-        <linearGradient id="gl-brass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#e9cd85" />
-          <stop offset="100%" stopColor="#a97e2e" />
+        <clipPath id="lf-sphere">
+          <circle cx="100" cy="100" r="80" />
+        </clipPath>
+        <clipPath id="lf-gauche">
+          <path d="M 0 0 L 122 0 L 90 52 L 116 88 L 84 122 L 108 156 L 88 200 L 0 200 Z" />
+        </clipPath>
+        <clipPath id="lf-droite">
+          <path d="M 200 0 L 122 0 L 90 52 L 116 88 L 84 122 L 108 156 L 88 200 L 200 200 Z" />
+        </clipPath>
+        <linearGradient id="lf-nuit-a" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#3a2a9a" />
+          <stop offset="100%" stopColor="#1a1240" />
         </linearGradient>
-        <radialGradient id="gl-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f2d99a" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#f2d99a" stopOpacity="0" />
+        <linearGradient id="lf-nuit-b" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2b1d78" />
+          <stop offset="100%" stopColor="#120a33" />
+        </linearGradient>
+        <radialGradient id="lf-lumiere" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#e4fb7a" />
+          <stop offset="100%" stopColor="#c9f31d" />
         </radialGradient>
       </defs>
 
-      <circle cx="100" cy="100" r="98" fill="url(#gl-ink-bg)" />
+      {/* halo de fuite de lumière */}
+      <circle cx="100" cy="100" r="87" fill="none" stroke="#c9f31d" strokeWidth="7" opacity="0.7" className="lg-pulse" />
 
-      <circle cx="100" cy="100" r="90" fill="none" stroke="url(#gl-brass-grad)" strokeWidth="3" />
-      <circle cx="100" cy="100" r="79" fill="none" stroke="#c9a24d" strokeWidth="1" opacity="0.55" />
-
-      <g stroke="#c9a24d" strokeWidth="2.5" strokeLinecap="round" opacity="0.9">
-        <line x1="100" y1="11" x2="100" y2="23" />
-        <line x1="100" y1="177" x2="100" y2="189" />
-        <line x1="11" y1="100" x2="23" y2="100" />
-        <line x1="177" y1="100" x2="189" y2="100" />
-        <line x1="35" y1="35" x2="43" y2="43" />
-        <line x1="165" y1="35" x2="157" y2="43" />
-        <line x1="35" y1="165" x2="43" y2="157" />
-        <line x1="165" y1="165" x2="157" y2="157" />
+      {/* lumière derrière la fissure */}
+      <g clipPath="url(#lf-sphere)">
+        <rect x="0" y="0" width="200" height="200" fill="url(#lf-lumiere)" className="lg-crack" />
       </g>
 
-      <circle cx="100" cy="92" r="34" fill="url(#gl-glow)" className="gl-seal-glow" />
-
-      <g fill="#f2d99a">
-        <path d="M 114 84 L 152 60 L 146 66 L 118 92 Z" className="gl-beam gl-beam-1" />
-        <path d="M 118 96 L 160 90 L 158 96 L 120 100 Z" className="gl-beam gl-beam-2" />
-        <path d="M 113 106 L 145 118 L 141 123 L 116 112 Z" className="gl-beam gl-beam-3" />
+      {/* deux moitiés décalées */}
+      <g clipPath="url(#lf-sphere)">
+        <g transform="translate(-7 -3)">
+          <rect x="0" y="0" width="200" height="200" fill="url(#lf-nuit-a)" clipPath="url(#lf-gauche)" />
+        </g>
+        <g transform="translate(7 3)">
+          <rect x="0" y="0" width="200" height="200" fill="url(#lf-nuit-b)" clipPath="url(#lf-droite)" />
+        </g>
       </g>
 
-      <circle cx="100" cy="88" r="17" fill="#0d1526" />
-      <path d="M 89 99 L 111 99 L 104 132 L 96 132 Z" fill="#0d1526" />
+      {/* anneau de cadran, fin et brisé */}
+      <circle
+        cx="100"
+        cy="100"
+        r="90"
+        fill="none"
+        stroke="#1a1240"
+        strokeWidth="2.5"
+        strokeDasharray="4 7 30 7"
+        strokeLinecap="round"
+      />
+
+      {/* étincelles qui s'échappent de la brèche */}
+      <g fill="#c9f31d" stroke="#1a1240" strokeWidth="1.5">
+        <rect x="150" y="34" width="9" height="9" rx="2" transform="rotate(20 154 38)" />
+        <rect x="163" y="60" width="6" height="6" rx="1.5" transform="rotate(-15 166 63)" />
+        <circle cx="42" cy="152" r="4" />
+      </g>
     </svg>
   );
 }

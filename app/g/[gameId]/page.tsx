@@ -47,9 +47,9 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
   }
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-ink text-center">
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brass/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-ink-2 blur-3xl" />
+    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-fog text-center">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
         <GameLogo className="w-32 sm:w-36 h-auto mb-8 drop-shadow-[0_0_20px_rgba(201,162,77,0.25)]" />
@@ -58,39 +58,39 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
           as="h1"
           value={texts.accueilTitre}
           onSave={(v) => saveText("accueilTitre", v)}
-          className="font-headline text-3xl sm:text-4xl font-bold mb-3 tracking-wide text-parchment"
+          className="font-headline text-3xl sm:text-4xl font-bold mb-3 tracking-wide text-nuit"
         />
         <EditableText
           as="p"
           value={texts.accueilSousTitre}
           onSave={(v) => saveText("accueilSousTitre", v)}
-          className="font-codemono text-xs sm:text-sm text-brass-light mb-8"
+          className="font-codemono text-xs sm:text-sm text-violet mb-8"
         />
         <EditableText
           as="p"
           multiline
           value={texts.accueilDescription}
           onSave={(v) => saveText("accueilDescription", v)}
-          className="text-parchment/70 max-w-sm mb-10 leading-relaxed whitespace-pre-line"
+          className="text-nuit/70 max-w-sm mb-10 leading-relaxed whitespace-pre-line"
         />
 
         <button
           onClick={commencer}
-          className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brass to-brass-dark px-10 py-3.5 text-lg font-semibold text-ink shadow-lg shadow-brass/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brass/30 active:translate-y-0"
+          className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-signal to-signal-dark px-10 py-3.5 text-lg font-semibold text-nuit shadow-lg shadow-violet/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet/30 active:translate-y-0"
         >
-          <EditableText as="span" value={texts.accueilBouton} onSave={(v) => saveText("accueilBouton", v)} className="text-ink" />
+          <EditableText as="span" value={texts.accueilBouton} onSave={(v) => saveText("accueilBouton", v)} className="text-nuit" />
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </button>
 
         <Link
           href={`/a-propos?jeu=${gameId}`}
-          className="mt-10 text-xs text-parchment/40 hover:text-brass-light underline"
+          className="mt-10 text-xs text-nuit/70 hover:text-violet underline"
         >
           À propos du développeur
         </Link>
         <Link
           href={`/tarifs?jeu=${gameId}`}
-          className="mt-2 text-xs text-parchment/40 hover:text-brass-light underline"
+          className="mt-2 text-xs text-nuit/70 hover:text-violet underline"
         >
           Tarifs
         </Link>

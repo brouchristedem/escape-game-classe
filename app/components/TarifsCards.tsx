@@ -34,22 +34,22 @@ export default function TarifsCards() {
           key={p.nom}
           className={`rounded-2xl p-6 flex flex-col ${
             p.recommande
-              ? "bg-gradient-to-b from-brass/25 to-parchment ring-2 ring-brass shadow-lg shadow-brass/10 scale-[1.03]"
-              : "bg-parchment/95 ring-1 ring-brass/15"
+              ? "bg-gradient-to-b from-signal/25 to-paper ring-2 ring-violet shadow-lg shadow-violet/10 scale-[1.03]"
+              : "bg-paper/95 ring-1 ring-violet/15"
           }`}
         >
           {p.recommande && (
-            <span className="self-start text-[10px] font-bold uppercase tracking-wide bg-brass text-ink rounded-full px-2.5 py-1 mb-3">
+            <span className="self-start text-[10px] font-bold uppercase tracking-wide bg-signal text-nuit rounded-full px-2.5 py-1 mb-3">
               Le plus choisi
             </span>
           )}
-          <h3 className="font-headline font-bold text-lg text-ink">{p.nom}</h3>
-          <p className="text-xs mb-4 text-ink/60">{p.cible}</p>
-          <p className="text-3xl font-extrabold mb-5 text-brass-dark">{p.prix}</p>
-          <ul className="space-y-2 text-sm flex-1 text-ink/80">
+          <h3 className="font-headline font-bold text-lg text-nuit">{p.nom}</h3>
+          <p className="text-xs mb-4 text-nuit/70">{p.cible}</p>
+          <p className="text-3xl font-extrabold mb-5 text-violet-deep">{p.prix}</p>
+          <ul className="space-y-2 text-sm flex-1 text-nuit/80">
             {p.details.map((d) => (
               <li key={d} className="flex items-start gap-2">
-                <span className="text-brass-dark">✓</span>
+                <span className="text-violet-deep">✓</span>
                 {d}
               </li>
             ))}

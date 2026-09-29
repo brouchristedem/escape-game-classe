@@ -39,7 +39,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
 
   useEffect(() => {
     const url = `${window.location.origin}/g/${gameId}/inscription`;
-    QRCode.toDataURL(url, { width: 480, margin: 2, color: { dark: "#0d1526", light: "#ffffff" } })
+    QRCode.toDataURL(url, { width: 480, margin: 2, color: { dark: "#1a1240", light: "#ffffff" } })
       .then((dataUrl) => {
         setQr(dataUrl);
         setLien(url);
@@ -135,26 +135,26 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
     URL.revokeObjectURL(url);
   }
 
-  const bouton = "rounded-full bg-admin-blue px-6 py-2 text-sm font-semibold text-ink disabled:opacity-50";
-  const boutonSecondaire = "rounded-full border border-admin-blue/30 px-5 py-2 text-sm text-ink disabled:opacity-50";
+  const bouton = "rounded-full bg-signal px-6 py-2 text-sm font-semibold text-nuit disabled:opacity-50";
+  const boutonSecondaire = "rounded-full border border-violet/30 px-5 py-2 text-sm text-nuit disabled:opacity-50";
 
   const equipesAvecMembres = teams.map((t) => ({ team: t, membres: inscrits.filter((i) => i.equipeId === t.id) }));
 
   return (
     <section className="max-w-3xl flex flex-col gap-8">
       <div>
-        <h2 className="font-semibold text-ink mb-2">1. Inscriptions</h2>
-        <div className="bg-admin-blue-light rounded-xl p-4 flex flex-col sm:flex-row gap-5">
+        <h2 className="font-semibold text-nuit mb-2">1. Inscriptions</h2>
+        <div className="bg-violet-mist rounded-xl p-4 flex flex-col sm:flex-row gap-5">
           <div className="shrink-0">
             {qr ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={qr} alt="QR code d'inscription" className="h-40 w-40 rounded-lg ring-1 ring-admin-blue/15" />
+              <img src={qr} alt="QR code d'inscription" className="h-40 w-40 rounded-lg ring-1 ring-violet/15" />
             ) : (
-              <div className="h-40 w-40 rounded-lg bg-admin-blue/10 animate-pulse" />
+              <div className="h-40 w-40 rounded-lg bg-violet/10 animate-pulse" />
             )}
           </div>
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-ink/65">
+            <p className="text-sm text-nuit/70">
               Les participants scannent ce QR code et saisissent leur prénom et leur niveau d&apos;étude (utilisé
               pour répartir les niveaux équitablement entre équipes). Ouvre l&apos;affiche pour le projeter en
               plein écran ou l&apos;imprimer.
@@ -174,16 +174,16 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                 </a>
               )}
             </div>
-            {lien && <p className="text-xs text-ink/55 break-all">{lien}</p>}
+            {lien && <p className="text-xs text-nuit/70 break-all">{lien}</p>}
             <div className="flex flex-wrap items-center gap-3">
               <button onClick={basculerInscriptions} disabled={occupe} className={ouvertes ? boutonSecondaire : bouton}>
                 {ouvertes ? "Fermer les inscriptions" : "Ouvrir les inscriptions"}
               </button>
-              <span className={`text-sm font-medium ${ouvertes ? "text-green-600" : "text-ink/55"}`}>
+              <span className={`text-sm font-medium ${ouvertes ? "text-green-600" : "text-nuit/70"}`}>
                 {ouvertes ? "Inscriptions ouvertes" : "Inscriptions fermées"}
               </span>
             </div>
-            <p className="text-sm font-semibold text-ink">
+            <p className="text-sm font-semibold text-nuit">
               {inscrits.length} inscrit{inscrits.length > 1 ? "s" : ""}
               {inscrits.length > 0 && ` — ${sansEquipe.length} sans équipe`}
             </p>
@@ -192,14 +192,14 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
       </div>
 
       <div>
-        <h2 className="font-semibold text-ink mb-2">2. Former les équipes</h2>
-        <div className="bg-admin-blue-light rounded-xl p-4 flex flex-col gap-3">
+        <h2 className="font-semibold text-nuit mb-2">2. Former les équipes</h2>
+        <div className="bg-violet-mist rounded-xl p-4 flex flex-col gap-3">
           {teams.length === 0 ? (
             <p className="text-sm text-amber-700">
               Aucune équipe pour l&apos;instant : crée d&apos;abord les équipes dans l&apos;onglet &quot;Équipes&quot;.
             </p>
           ) : (
-            <p className="text-sm text-ink/65">
+            <p className="text-sm text-nuit/70">
               Répartit tous les inscrits dans les {teams.length} équipes du jeu, en équipes de même taille (à une
               personne près) et en équilibrant les niveaux d&apos;étude entre équipes
               {tailleApprox > 0 && <> : environ {tailleApprox} personnes par équipe</>}. Aucune équipe n&apos;est
@@ -219,37 +219,37 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
         </div>
       </div>
 
-      {message && <p className={`text-sm ${message.ok ? "text-green-600" : "text-stamp-red"}`}>{message.texte}</p>}
+      {message && <p className={`text-sm ${message.ok ? "text-green-600" : "text-alerte"}`}>{message.texte}</p>}
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold text-ink">3. Composition des équipes</h2>
+          <h2 className="font-semibold text-nuit">3. Composition des équipes</h2>
           {inscrits.length > 0 && (
-            <button onClick={exporterCsv} className="text-sm underline text-admin-blue-dark">
+            <button onClick={exporterCsv} className="text-sm underline text-violet-deep">
               Exporter en CSV
             </button>
           )}
         </div>
         {inscrits.length === 0 ? (
-          <p className="text-sm text-ink/55">Personne n&apos;est inscrit pour l&apos;instant.</p>
+          <p className="text-sm text-nuit/70">Personne n&apos;est inscrit pour l&apos;instant.</p>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
             {[...equipesAvecMembres, { team: null, membres: sansEquipe }]
               .filter((g) => g.team !== null || g.membres.length > 0)
               .map((g) => (
-                <div key={g.team?.id ?? "sans-equipe"} className="bg-admin-blue-light rounded-xl p-3">
-                  <p className="font-medium text-sm text-ink mb-2">
+                <div key={g.team?.id ?? "sans-equipe"} className="bg-violet-mist rounded-xl p-3">
+                  <p className="font-medium text-sm text-nuit mb-2">
                     {g.team ? g.team.nom : "Sans équipe"} ({g.membres.length})
                   </p>
                   {g.membres.length === 0 ? (
-                    <p className="text-xs text-ink/55">Personne pour l&apos;instant.</p>
+                    <p className="text-xs text-nuit/70">Personne pour l&apos;instant.</p>
                   ) : (
                     <ul className="flex flex-col gap-1">
                       {g.membres.map((i) => (
-                        <li key={i.id} className="flex flex-col gap-1 text-sm text-ink">
+                        <li key={i.id} className="flex flex-col gap-1 text-sm text-nuit">
                           <span className="break-words">
                             {i.nom}
-                            {i.niveau && <span className="text-ink/45"> · {i.niveau}</span>}
+                            {i.niveau && <span className="text-nuit/70"> · {i.niveau}</span>}
                             {(doublons.get(i.nom.trim().toLowerCase()) ?? 0) > 1 && (
                               <span className="ml-1 text-amber-600" title="Nom identique à une autre inscription">
                                 ⚠
@@ -261,7 +261,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                               value={estAffecte(i) ? i.equipeId ?? "" : ""}
                               onChange={(e) => deplacer(i, e.target.value)}
                               disabled={occupe}
-                              className="bg-white border border-admin-blue/20 rounded px-1 py-0.5 text-xs max-w-32"
+                              className="bg-white border border-violet/20 rounded px-1 py-0.5 text-xs max-w-32"
                               aria-label={`Déplacer ${i.nom}`}
                             >
                               <option value="">Sans équipe</option>
@@ -271,7 +271,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                                 </option>
                               ))}
                             </select>
-                            <button onClick={() => retirer(i)} disabled={occupe} className="text-stamp-red underline text-xs">
+                            <button onClick={() => retirer(i)} disabled={occupe} className="text-alerte underline text-xs">
                               Retirer
                             </button>
                           </span>

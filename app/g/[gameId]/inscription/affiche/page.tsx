@@ -24,7 +24,7 @@ export default function AfficheInscription() {
   useEffect(() => {
     if (!gameId) return;
     const url = `${window.location.origin}/g/${gameId}/inscription`;
-    QRCode.toDataURL(url, { width: 720, margin: 2, color: { dark: "#0d1526", light: "#ffffff" } })
+    QRCode.toDataURL(url, { width: 720, margin: 2, color: { dark: "#1a1240", light: "#ffffff" } })
       .then((dataUrl) => {
         setQr(dataUrl);
         setLien(url);
@@ -46,14 +46,14 @@ export default function AfficheInscription() {
   }, []);
 
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-center gap-[3vh] bg-ink px-6 py-8 text-center text-parchment print:bg-white print:text-black">
+    <main className="min-h-dvh flex flex-col items-center justify-center gap-[3vh] bg-fog px-6 py-8 text-center text-nuit print:bg-white print:text-black">
       <GameLogo className="h-[10vh] w-auto" />
       {nomJeu && <h1 className="font-headline font-extrabold text-[min(5vh,6vw)] leading-tight">{nomJeu}</h1>}
-      <p className="font-headline font-bold text-[min(6vh,7vw)] text-brass-light print:text-black">
+      <p className="font-headline font-bold text-[min(6vh,7vw)] text-violet print:text-black">
         Scanne pour t&apos;inscrire
       </p>
 
-      <div className="rounded-3xl bg-white p-[2vh] shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+      <div className="rounded-3xl bg-white p-[2vh] shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)]">
         {qr ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={qr} alt="QR code d'inscription" className="h-[min(48vh,80vw)] w-[min(48vh,80vw)]" />
@@ -62,28 +62,28 @@ export default function AfficheInscription() {
         )}
       </div>
 
-      {lien && <p className="text-[min(2.4vh,4vw)] text-parchment/70 break-all print:text-black">{lien}</p>}
+      {lien && <p className="text-[min(2.4vh,4vw)] text-nuit/70 break-all print:text-black">{lien}</p>}
 
       <div className="print:hidden flex flex-col items-center gap-3">
         {!ouvertes && (
-          <p className="rounded-full border border-stamp-red px-5 py-2 text-stamp-red">
+          <p className="rounded-full border border-alerte px-5 py-2 text-alerte">
             Les inscriptions sont fermées pour l&apos;instant
           </p>
         )}
-        <p className="font-codemono text-[min(4vh,6vw)] text-brass-light">
+        <p className="font-codemono text-[min(4vh,6vw)] text-violet">
           {nbInscrits} inscrit{nbInscrits > 1 ? "s" : ""}
         </p>
         <div className="flex gap-3">
           <button
             onClick={() => window.print()}
-            className="rounded-lg border border-brass/40 px-4 py-2 text-sm text-brass-light hover:bg-brass/10"
+            className="rounded-lg border border-violet/40 px-4 py-2 text-sm text-violet hover:bg-signal/10"
           >
             Imprimer
           </button>
           {!plein && (
             <button
               onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}
-              className="rounded-lg border border-brass/40 px-4 py-2 text-sm text-brass-light hover:bg-brass/10"
+              className="rounded-lg border border-violet/40 px-4 py-2 text-sm text-violet hover:bg-signal/10"
             >
               Plein écran
             </button>

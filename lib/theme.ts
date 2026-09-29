@@ -1,13 +1,17 @@
 // Personnalisation d'un jeu : conversion des deux couleurs choisies par
-// l'organisateur en variables CSS de l'identité "Escape Game" (voir
+// l'organisateur en variables CSS de l'identité "Brume & Signal" (voir
 // app/globals.css), et contrôles de lisibilité.
+//
+// Le texte du jeu est sombre (nuit) : le fond doit donc rester clair ou
+// moyen. L'accent sert de remplissage aux boutons, avec du texte sombre
+// dessus : il doit être assez clair pour rester lisible.
 
 import type { CSSProperties } from "react";
 import { Personnalisation } from "@/lib/types";
 
-export const FOND_PAR_DEFAUT = "#0d1526";
-export const ACCENT_PAR_DEFAUT = "#c9a24d";
-const TEXTE_CLAIR = "#f1e8d3"; // --parchment, couleur du texte sur le fond
+export const FOND_PAR_DEFAUT = "#d5d1f1";
+export const ACCENT_PAR_DEFAUT = "#c9f31d";
+const TEXTE_SOMBRE = "#1a1240"; // --nuit, couleur du texte sur le fond
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -41,33 +45,45 @@ export function contraste(a: string, b: string): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
+const CONTRASTE_FOND_MIN = 7;
+const CONTRASTE_ACCENT_MIN = 4.5;
+
 // Renvoie un message d'erreur si les couleurs rendraient le jeu illisible,
 // sinon null.
 export function verifierCouleurs(fond: string, accent: string): string | null {
   if (!HEX.test(fond) || !HEX.test(accent)) return "Couleur invalide.";
-  if (contraste(fond, TEXTE_CLAIR) < 7) {
-    return "La couleur de fond est trop claire : le texte du jeu est clair, choisis une couleur plus sombre.";
+  if (contraste(fond, TEXTE_SOMBRE) < CONTRASTE_FOND_MIN) {
+    return "La couleur de fond est trop sombre : le texte du jeu est sombre, choisis une couleur plus claire.";
   }
-  if (contraste(fond, accent) < 3) {
-    return "La couleur d'accent ne se distingue pas assez du fond : choisis-en une plus claire ou plus vive.";
+  if (contraste(accent, TEXTE_SOMBRE) < CONTRASTE_ACCENT_MIN) {
+    return "La couleur d'accent est trop sombre : le texte des boutons est sombre, choisis-en une plus claire ou plus vive.";
   }
   return null;
 }
 
 // Variables CSS à poser sur un conteneur ; vide si aucune couleur valide
 // n'est définie (le thème par défaut de globals.css s'applique alors).
+// Les anciennes personnalisations sombres (thème précédent) sont ignorées :
+// avec le texte sombre actuel, elles rendraient le jeu illisible.
 export function variablesTheme(p: Personnalisation | null | undefined): CSSProperties {
-  const fond = p?.couleurFond && HEX.test(p.couleurFond) ? p.couleurFond : null;
-  const accent = p?.couleurAccent && HEX.test(p.couleurAccent) ? p.couleurAccent : null;
+  const fond =
+    p?.couleurFond && HEX.test(p.couleurFond) && contraste(p.couleurFond, TEXTE_SOMBRE) >= CONTRASTE_FOND_MIN
+      ? p.couleurFond
+      : null;
+  const accent =
+    p?.couleurAccent && HEX.test(p.couleurAccent) && contraste(p.couleurAccent, TEXTE_SOMBRE) >= CONTRASTE_ACCENT_MIN
+      ? p.couleurAccent
+      : null;
   const vars: Record<string, string> = {};
   if (fond) {
-    vars["--ink"] = fond;
-    vars["--ink-2"] = melanger(fond, "#ffffff", 0.06);
+    vars["--fog"] = fond;
+    vars["--fog-2"] = melanger(fond, TEXTE_SOMBRE, 0.07);
+    vars["--paper"] = melanger(fond, "#ffffff", 0.75);
   }
   if (accent) {
-    vars["--brass"] = accent;
-    vars["--brass-light"] = melanger(accent, "#ffffff", 0.4);
-    vars["--brass-dark"] = melanger(accent, "#000000", 0.35);
+    vars["--signal"] = accent;
+    vars["--signal-light"] = melanger(accent, "#ffffff", 0.4);
+    vars["--signal-dark"] = melanger(accent, "#000000", 0.2);
   }
   return vars as CSSProperties;
 }

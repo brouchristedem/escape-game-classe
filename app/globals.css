@@ -1,82 +1,109 @@
 @import "tailwindcss";
 
 :root {
+  /* Identité "Brume & Signal" : un fond de brume violette (ni sombre, ni
+     pâle) sur lequel une encre nuit très lisible et un vert "signal" acide
+     désignent ce qui est actionnable. Le violet sert aux accents de texte. */
   --background: #ffffff;
-  --foreground: #14213d;
-  --brand-navy: #1e3a6e;
-  --brand-blue: #14a3dd;
-  --brand-blue-light: #eaf6fc;
+  --foreground: #1a1240;
 
-  /* Identité "Escape Game" (ink/brass/parchment) : utilisée sur les pages de
-     jeu (voir app/g/layout.tsx) ET sur /admin + /organisateur, pour un design
-     unifié sur toute la plateforme. Les variables brand-navy/brand-blue
-     ci-dessus ne servent plus qu'aux pages marketing (/, /a-propos, /tarifs). */
-  --ink: #0d1526;
-  --ink-2: #17233d;
-  --brass: #c9a24d;
-  --brass-light: #f2d99a;
-  --brass-dark: #8f6f2e;
-  --parchment: #f1e8d3;
-  --stamp-red: #b23a2e;
-
-  /* Accent bleu clair réservé à /admin et /organisateur (fond blanc, logo
-     inchangé) : remplace l'accent brass utilisé sur ces deux routes. */
-  --admin-blue: #3b82f6;
-  --admin-blue-light: #dbeafe;
-  --admin-blue-dark: #1d4ed8;
+  --fog: #d5d1f1;        /* fond des pages de jeu */
+  --fog-2: #c6c1e8;      /* surfaces en creux : champs, pistes, halos */
+  --paper: #f7f5ff;      /* cartes */
+  --nuit: #1a1240;       /* texte + surfaces sombres ponctuelles */
+  --violet: #5033cf;     /* accents de texte, liens, bordures */
+  --violet-deep: #3a20a8;
+  --violet-mist: #ebe7fc; /* panneaux clairs (espace organisateur) */
+  --signal: #c9f31d;     /* boutons et éléments actionnables */
+  --signal-light: #e4fb7a;
+  --signal-dark: #a8d20f;
+  --alerte: #ad1538;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand-navy: var(--brand-navy);
-  --color-brand-blue: var(--brand-blue);
-  --color-brand-blue-light: var(--brand-blue-light);
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-brass: var(--brass);
-  --color-brass-light: var(--brass-light);
-  --color-brass-dark: var(--brass-dark);
-  --color-parchment: var(--parchment);
-  --color-stamp-red: var(--stamp-red);
-  --color-admin-blue: var(--admin-blue);
-  --color-admin-blue-light: var(--admin-blue-light);
-  --color-admin-blue-dark: var(--admin-blue-dark);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-headline: var(--font-bitter);
-  --font-codemono: var(--font-plexmono);
+  --color-fog: var(--fog);
+  --color-fog-2: var(--fog-2);
+  --color-paper: var(--paper);
+  --color-nuit: var(--nuit);
+  --color-violet: var(--violet);
+  --color-violet-deep: var(--violet-deep);
+  --color-violet-mist: var(--violet-mist);
+  --color-signal: var(--signal);
+  --color-signal-light: var(--signal-light);
+  --color-signal-dark: var(--signal-dark);
+  --color-alerte: var(--alerte);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-jbmono);
+  --font-headline: var(--font-syne);
+  --font-codemono: var(--font-jbmono);
 }
 
-/* Espace organisateur : fond blanc constant, pas de bascule sombre automatique */
-
 body {
-  background: radial-gradient(circle at top, #f6fbfe 0%, #ffffff 55%);
+  background: #ffffff;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), system-ui, sans-serif;
 }
 
 .font-headline {
-  font-family: var(--font-bitter), Georgia, serif;
+  font-family: var(--font-syne), system-ui, sans-serif;
+  letter-spacing: -0.01em;
 }
 .font-codemono {
-  font-family: var(--font-plexmono), monospace;
+  font-family: var(--font-jbmono), ui-monospace, monospace;
 }
 
-/* Animations de l'identité "Escape Game" (logo + chrono critique) */
-@keyframes gl-seal-glow {
+/* Fond des pages de jeu : brume + deux halos (signal / violet) + quadrillage
+   de "table de décryptage" très discret. */
+.bg-fog {
+  background-image:
+    radial-gradient(52rem 34rem at 100% -8%, rgba(201, 243, 29, 0.32), transparent 62%),
+    radial-gradient(46rem 36rem at -8% 108%, rgba(80, 51, 207, 0.26), transparent 62%),
+    linear-gradient(rgba(26, 18, 64, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 18, 64, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, 28px 28px, 28px 28px;
+  background-attachment: fixed, fixed, scroll, scroll;
+}
+
+/* Boutons principaux (remplissage "signal") : liseré nuit + ombre pleine,
+   ils s'enfoncent au clic. */
+button[class*="from-signal"],
+a[class*="from-signal"] {
+  border: 2px solid var(--nuit);
+  box-shadow: 0 4px 0 0 var(--nuit);
+  background-image: none;
+  background-color: var(--signal);
+}
+button[class*="from-signal"]:hover:not(:disabled),
+a[class*="from-signal"]:hover {
+  background-color: var(--signal-light);
+}
+button[class*="from-signal"]:active:not(:disabled),
+a[class*="from-signal"]:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 0 var(--nuit);
+}
+button[class*="from-signal"]:disabled {
+  box-shadow: none;
+  border-color: transparent;
+  background-color: var(--fog-2);
+}
+
+/* Animations de l'identité "Brume & Signal" (logo + chrono critique) */
+@keyframes lg-pulse {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
 }
-@keyframes gl-beam-flicker {
+@keyframes lg-flicker {
   0%, 100% { opacity: 0.3; }
   30% { opacity: 1; }
   55% { opacity: 0.45; }
   80% { opacity: 0.9; }
 }
 @keyframes timer-critical-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.55); }
-  50% { box-shadow: 0 0 0 8px rgba(178, 58, 46, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(173, 21, 56, 0.55); }
+  50% { box-shadow: 0 0 0 8px rgba(173, 21, 56, 0); }
 }
 
 /* Effet "site piraté" (glitch) : décalage rapide du texte + tremblement,
@@ -101,10 +128,10 @@ body {
   64% { opacity: 1; }
 }
 
-.gl-seal-glow { animation: gl-seal-glow 3.2s ease-in-out infinite; transform-origin: center; }
-.gl-beam { animation: gl-beam-flicker 2.6s ease-in-out infinite; transform-origin: center; }
-.gl-beam-2 { animation-delay: 0.4s; }
-.gl-beam-3 { animation-delay: 0.8s; }
+.lg-pulse { animation: lg-pulse 3.2s ease-in-out infinite; transform-origin: center; }
+.lg-crack { animation: lg-flicker 2.6s ease-in-out infinite; transform-origin: center; }
+.lg-crack-2 { animation-delay: 0.4s; }
+.lg-crack-3 { animation-delay: 0.8s; }
 .animate-timer-critical { animation: timer-critical-pulse 1.4s ease-in-out infinite; }
 .animate-glitch-shift { animation: glitch-shift 0.35s steps(2, end) infinite; }
 .animate-glitch-flicker { animation: glitch-flicker 1.8s linear infinite; }
@@ -122,9 +149,9 @@ body {
   100% { opacity: 1; transform: scale(1); }
 }
 @keyframes unlock-flash {
-  0% { box-shadow: 0 0 0 0 rgba(201, 162, 77, 0.6); }
-  60% { box-shadow: 0 0 0 14px rgba(201, 162, 77, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(201, 162, 77, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(80, 51, 207, 0.55); }
+  60% { box-shadow: 0 0 0 14px rgba(80, 51, 207, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(80, 51, 207, 0); }
 }
 @keyframes option-in {
   0% { opacity: 0; transform: translateY(6px); }
@@ -137,7 +164,7 @@ body {
 .animate-option-in { animation: option-in 0.35s ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .gl-seal-glow, .gl-beam, .animate-timer-critical, .animate-glitch-shift, .animate-glitch-flicker,
+  .lg-pulse, .lg-crack, .animate-timer-critical, .animate-glitch-shift, .animate-glitch-flicker,
   .animate-card-in, .animate-pop-in, .animate-unlock, .animate-option-in {
     animation: none !important;
   }
