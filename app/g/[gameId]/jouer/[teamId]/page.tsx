@@ -24,6 +24,7 @@ import {
   Team,
   normaliserReponse,
   messagePourEnigme,
+  messagePourCode,
   LiveState,
   fusionnerTextes,
   GameTexts,
@@ -539,16 +540,18 @@ export default function JouerEquipe() {
     if (correct) {
       setFragmentTexte(question.fragmentTexte?.trim() ? question.fragmentTexte : null);
       setFeedback({
-        // Tous les feedback (pages code comprises) viennent uniquement de
-        // "Textes du site" : jamais des messages du fichier de scénario.
-        text: messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec),
+        // Tous les feedback viennent uniquement de "Textes du site" (jamais du
+        // fichier de scénario) : pages code = leurs propres messages.
+        text: isCodePage
+          ? messagePourCode(index, true, texts.messagesCodeCorrect, texts.messagesCodeIncorrect)
+          : messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec),
         ok: true,
       });
       setAwaitingContinue(true);
     } else if (isCodePage) {
       // Page "code" : pas de limite de tentatives, on laisse réessayer directement.
       setFeedback({
-        text: messagePourEnigme(index + totalTentatives, false, texts.messagesReussite, texts.messagesEchec),
+        text: messagePourCode(index + totalTentatives, false, texts.messagesCodeCorrect, texts.messagesCodeIncorrect),
         ok: false,
       });
       setNeedsRetryClick(true);

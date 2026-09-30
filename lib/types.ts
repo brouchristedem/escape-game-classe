@@ -236,6 +236,8 @@ export interface GameTexts {
 
   messagesReussite: string[];
   messagesEchec: string[];
+  messagesCodeCorrect: string[];
+  messagesCodeIncorrect: string[];
 }
 
 export const DEFAULT_GAME_TEXTS: GameTexts = {
@@ -302,6 +304,8 @@ export const DEFAULT_GAME_TEXTS: GameTexts = {
 
   messagesReussite: ["GREEN FLAG", "C'EST TCHÔ", "JOLIIIIIE"],
   messagesEchec: ["ÈCHOUWEY", "RED FLAG"],
+  messagesCodeCorrect: ["Bravo, c'est le bon code !"],
+  messagesCodeIncorrect: ["Ce code n'est pas le bon. Réessayez."],
 };
 
 // Fusionne les textes enregistrés (éventuellement partiels/absents) avec les
@@ -403,4 +407,19 @@ export function messagePourEnigme(
   const listeReussite = messagesReussite.length ? messagesReussite : DEFAULT_GAME_TEXTS.messagesReussite;
   const listeEchec = messagesEchec.length ? messagesEchec : DEFAULT_GAME_TEXTS.messagesEchec;
   return correct ? listeReussite[index % listeReussite.length] : listeEchec[index % listeEchec.length];
+}
+
+// Pages "code" : leurs propres messages (Textes du site), distincts de ceux
+// des énigmes. Un message par ligne, en alternance ; repli sur les défauts
+// si la liste est vide.
+export function messagePourCode(
+  index: number,
+  correct: boolean,
+  messagesCodeCorrect: string[] = DEFAULT_GAME_TEXTS.messagesCodeCorrect,
+  messagesCodeIncorrect: string[] = DEFAULT_GAME_TEXTS.messagesCodeIncorrect
+): string {
+  const ok = messagesCodeCorrect.filter((m) => m.trim()).length ? messagesCodeCorrect.filter((m) => m.trim()) : DEFAULT_GAME_TEXTS.messagesCodeCorrect;
+  const ko = messagesCodeIncorrect.filter((m) => m.trim()).length ? messagesCodeIncorrect.filter((m) => m.trim()) : DEFAULT_GAME_TEXTS.messagesCodeIncorrect;
+  const liste = correct ? ok : ko;
+  return liste[index % liste.length];
 }

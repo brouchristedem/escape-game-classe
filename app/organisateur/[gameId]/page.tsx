@@ -1330,6 +1330,24 @@ function AdminPanel({ gameId }: { gameId: string }) {
             />
           </TextGroup>
 
+          <TextGroup title="Messages des pages code">
+            <p className="text-nuit/75 text-xs mb-2">Un message par ligne (en alternance). Ils ne servent que pour les pages code, pas pour les énigmes.</p>
+            <label className="block text-sm text-nuit/75 mb-1">Si le code est correct</label>
+            <textarea
+              value={siteTexts.messagesCodeCorrect.join("\n")}
+              onChange={(e) => setSiteText("messagesCodeCorrect", e.target.value.split("\n"))}
+              rows={3}
+              className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-3 w-full"
+            />
+            <label className="block text-sm text-nuit/75 mb-1">Si le code est incorrect</label>
+            <textarea
+              value={siteTexts.messagesCodeIncorrect.join("\n")}
+              onChange={(e) => setSiteText("messagesCodeIncorrect", e.target.value.split("\n"))}
+              rows={3}
+              className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-1 w-full"
+            />
+          </TextGroup>
+
           <div className="flex items-center gap-3 mt-6 sticky bottom-4">
             <button
               onClick={saveSiteTexts}
