@@ -87,7 +87,7 @@ export default function SuivreEquipe() {
   }
 
   return (
-    <main className="min-h-screen bg-brume">
+    <main className="min-h-screen bg-brume text-center">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
       <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre={false} texts={texts} />
@@ -132,7 +132,7 @@ export default function SuivreEquipe() {
             }
 
             return (
-              <div key={i} className={`text-left px-5 py-4 rounded-2xl ${style}`}>
+              <div key={i} className={`text-center px-5 py-4 rounded-2xl ${style}`}>
                 {prop}
               </div>
             );

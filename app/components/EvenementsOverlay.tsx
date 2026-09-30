@@ -286,7 +286,7 @@ export default function EvenementsOverlay({
               </>
             ) : (
               <>
-                <div className="cadre mb-6 w-full rounded-2xl bg-dalle ring-1 ring-acier/30 px-6 py-6 text-nuit/90 text-lg leading-relaxed text-left shadow-[0_18px_40px_-14px_rgba(8,16,40,0.45)]">
+                <div className="cadre mb-6 w-full rounded-2xl bg-dalle ring-1 ring-acier/30 px-6 py-6 text-nuit/90 text-lg leading-relaxed text-center shadow-[0_18px_40px_-14px_rgba(8,16,40,0.45)]">
                   <RichText text={enigme.enonce} />
                 </div>
                 <input

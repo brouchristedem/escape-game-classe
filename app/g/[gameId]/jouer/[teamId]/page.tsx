@@ -655,7 +655,7 @@ export default function JouerEquipe() {
           </span>
         </div>
       )}
-      <main className="min-h-screen bg-brume">
+      <main className="min-h-screen bg-brume text-center">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-nuit/75 mb-2">
@@ -811,7 +811,7 @@ export default function JouerEquipe() {
                     next[i] = v;
                     saveQuestionField("propositions", next);
                   }}
-                  className="flex-1 text-left"
+                  className="flex-1 text-center"
                 />
               </div>
             ) : (
@@ -820,7 +820,7 @@ export default function JouerEquipe() {
                 disabled={isDisabled || !!feedback}
                 onClick={() => handleAnswerQcm(i)}
                 style={{ animationDelay: `${i * 60}ms` }}
-                className={`animate-option-in text-left px-5 py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] ${style} disabled:cursor-not-allowed`}
+                className={`animate-option-in text-center px-5 py-4 rounded-2xl transition-all duration-200 active:scale-[0.98] ${style} disabled:cursor-not-allowed`}
               >
                 {prop}
                 {revealCorrect && <span className="ml-2 text-xs font-semibold uppercase tracking-wide">Bonne réponse</span>}
@@ -907,7 +907,7 @@ export default function JouerEquipe() {
             </p>
           )}
           {editMode && (
-            <div className="mt-3 pt-3 border-t border-acier/30 text-left">
+            <div className="mt-3 pt-3 border-t border-acier/30 text-center">
               <p className="text-[10px] font-semibold text-nuit/75 uppercase tracking-wide mb-1">
                 Fragment affiché après cette énigme (texte libre, facultatif — Maj+Entrée pour une nouvelle ligne)
               </p>

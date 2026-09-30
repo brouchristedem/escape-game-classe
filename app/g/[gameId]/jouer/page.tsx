@@ -88,7 +88,7 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
   if (navigating) return <LoadingScreen label={texts.equipeNavigationLabel} />;
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-14 bg-brume">
+    <main className="relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-14 bg-brume text-center">
       <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-lueur/30 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-lueur/25 blur-3xl" />
 
@@ -123,7 +123,7 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
               <button
                 key={t.id}
                 onClick={() => selectionner(t.id)}
-                className={`rounded-2xl px-4 py-3.5 text-left font-semibold transition-all duration-200 ring-1 ${
+                className={`rounded-2xl px-4 py-3.5 text-center font-semibold transition-all duration-200 ring-1 ${
                   isSelected
                     ? "bg-gradient-to-r from-lueur to-lueur-fonce text-nuit shadow-lg shadow-acier/20 ring-transparent scale-[1.02]"
                     : "bg-dalle/95 text-nuit ring-acier/15 hover:ring-acier/40 hover:-translate-y-0.5 hover:shadow-md"

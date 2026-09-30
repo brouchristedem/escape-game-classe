@@ -152,7 +152,7 @@ export default function InscriptionParticipant() {
         ) : (
           <>
             <h1 className="font-headline font-extrabold text-2xl text-nuit mb-6">Inscris-toi</h1>
-            <div className="flex flex-col gap-3 w-full text-left">
+            <div className="flex flex-col gap-3 w-full text-center">
               <input
                 value={prenom}
                 onChange={(e) => setPrenom(e.target.value)}

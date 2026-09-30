@@ -91,10 +91,10 @@ export default function Accueil() {
               <button
                 key={j.id}
                 onClick={() => setJeuOuvert(j)}
-                className="cadre flex items-center justify-between rounded-2xl bg-dalle/95 ring-1 ring-acier/15 px-5 py-4 text-left font-semibold text-nuit transition-all duration-200 hover:ring-acier/40 hover:-translate-y-0.5 hover:shadow-md"
+                className="cadre relative flex items-center justify-center rounded-2xl bg-dalle/95 ring-1 ring-acier/15 px-5 py-4 text-center font-semibold text-nuit transition-all duration-200 hover:ring-acier/40 hover:-translate-y-0.5 hover:shadow-md"
               >
-                <span>{j.nom}</span>
-                <span className="text-acier-deep text-lg" aria-hidden>
+                <span className="px-8">{j.nom}</span>
+                <span className="absolute right-4 text-acier-deep text-lg" aria-hidden>
                   🔒
                 </span>
               </button>

@@ -1,14 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Alegreya_Sans, Cinzel, IBM_Plex_Mono } from "next/font/google";
+import { Cinzel, IBM_Plex_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { AdminModeProvider } from "@/lib/adminMode";
 import { AuthProvider } from "@/lib/auth";
 import Lanterne from "@/app/components/Lanterne";
 
 // Polices de l'identité "Le Gardien" : Cinzel (titres gravés), Alegreya Sans
-// (texte courant, chaleureux et lisible), IBM Plex Mono (chrono, codes).
+// (texte courant, auto-hébergé pour garantir les chiffres alignés), IBM Plex Mono (chrono, codes).
 const cinzel = Cinzel({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-cinzel", display: "swap" });
-const alegreya = Alegreya_Sans({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-alegreya", display: "swap" });
+const alegreya = localFont({
+  src: [
+    { path: "./fonts/AlegreyaSans-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/AlegreyaSans-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/AlegreyaSans-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-alegreya",
+  display: "swap",
+});
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-plexmono", display: "swap" });
 
 export const metadata: Metadata = {
