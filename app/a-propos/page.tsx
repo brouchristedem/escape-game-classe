@@ -36,23 +36,23 @@ export default async function AProposDuDeveloppeur({
   const retourHref = jeu ? `/g/${jeu}` : "/organisateur";
 
   return (
-    <main className={`relative min-h-screen bg-parchemin px-6 py-12 overflow-hidden`}>
-      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
-      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
+    <main className={`relative min-h-screen bg-brume px-6 py-12 overflow-hidden`}>
+      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-lueur/30 blur-3xl" />
+      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-lueur/25 blur-3xl" />
 
       <div className="relative z-10 max-w-2xl mx-auto">
-        <Link href={retourHref} className="text-sm text-bronze underline">
+        <Link href={retourHref} className="text-sm text-acier underline">
           ← Retour à l&apos;accueil
         </Link>
 
         <div className="mt-8 flex flex-col items-center text-center">
           <Reveal y={20}>
-            <GameLogo className="w-16 h-auto mb-6 opacity-90" />
+            <GameLogo className="w-16 h-auto mb-6 drop-shadow-[0_6px_16px_rgba(8,16,40,0.5)]" />
           </Reveal>
 
           <Reveal>
             {photo ? (
-              <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-bronze/30 shadow-[0_18px_40px_-14px_rgba(60,38,10,0.45)]">
+              <div className="relative w-44 sm:w-52 rounded-2xl overflow-hidden ring-4 ring-acier/30 shadow-[0_18px_40px_-14px_rgba(8,16,40,0.45)]">
                 <Image
                   src={photo}
                   alt="Christ Edem BROU"
@@ -63,8 +63,8 @@ export default async function AProposDuDeveloppeur({
                 />
               </div>
             ) : (
-              <div className="w-32 h-32 rounded-full bg-parchemin-2 flex items-center justify-center ring-4 ring-bronze/30">
-                <span className="font-headline text-3xl font-extrabold text-bronze">CE</span>
+              <div className="w-32 h-32 rounded-full bg-brume-2 flex items-center justify-center ring-4 ring-acier/30">
+                <span className="font-headline text-3xl font-extrabold text-acier">CE</span>
               </div>
             )}
           </Reveal>
@@ -73,10 +73,10 @@ export default async function AProposDuDeveloppeur({
             as="h1"
             text="Christ Edem BROU"
             type="words"
-            className="font-headline mt-5 text-2xl font-bold text-encre"
+            className="font-headline mt-5 text-2xl font-bold text-nuit"
           />
           <Reveal delay={0.2}>
-            <p className="text-bronze font-medium text-sm mt-1">
+            <p className="text-acier font-medium text-sm mt-1">
               Développeur web, applications &amp; plateformes SaaS · Entrepreneur
             </p>
           </Reveal>
@@ -86,7 +86,7 @@ export default async function AProposDuDeveloppeur({
           as="section"
           stagger
           staggerAmount={0.15}
-          className="cadre mt-10 bg-velin rounded-2xl ring-1 ring-bronze/25 shadow-[0_18px_40px_-14px_rgba(60,38,10,0.45)] p-6 text-encre/80 leading-relaxed space-y-4"
+          className="cadre mt-10 bg-dalle rounded-2xl ring-1 ring-acier/25 shadow-[0_18px_40px_-14px_rgba(8,16,40,0.45)] p-6 text-nuit/80 leading-relaxed space-y-4"
         >
           <p>
             Actuellement en Licence 3 Logistique, je poursuis un parcours à la croisée de deux mondes qui me
@@ -102,7 +102,7 @@ export default async function AProposDuDeveloppeur({
           </p>
           <p>
             Vous souhaitez créer votre propre jeu sur cette plateforme ?{" "}
-            <Link href="/tarifs" className="text-bronze-deep underline font-semibold">
+            <Link href="/tarifs" className="text-acier-deep underline font-semibold">
               Voir les tarifs
             </Link>
             .
@@ -113,7 +113,7 @@ export default async function AProposDuDeveloppeur({
               href="https://moncvproci.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-bronze-deep underline font-semibold"
+              className="text-acier-deep underline font-semibold"
             >
               MON CV PRO CI
             </a>
@@ -128,7 +128,7 @@ export default async function AProposDuDeveloppeur({
             href={`https://wa.me/${WHATSAPP_NUMERO}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-gradient-to-r from-or to-or-fonce text-encre font-semibold text-sm px-5 py-2.5 rounded-full shadow-md shadow-bronze/20 transition hover:-translate-y-0.5"
+            className="bg-gradient-to-r from-lueur to-lueur-fonce text-nuit font-semibold text-sm px-5 py-2.5 rounded-full shadow-md shadow-acier/20 transition hover:-translate-y-0.5"
           >
             Me contacter
           </a>

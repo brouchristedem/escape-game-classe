@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 // La "lanterne" : une lueur chaude qui suit le doigt ou la souris sur le
-// parchemin (voir .bg-parchemin dans globals.css). Sans mouvement, la lueur
+// parchemin (voir .bg-brume dans globals.css). Sans mouvement, la lueur
 // reste en haut de page. Ne fait rien si l'utilisateur réduit les animations.
 export default function Lanterne() {
   useEffect(() => {

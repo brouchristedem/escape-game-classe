@@ -3,7 +3,7 @@
 // Applique la personnalisation d'un jeu (couleurs + logo) à toutes ses pages
 // (/g/[gameId]/...). Le conteneur est en `display: contents` : il ne change
 // aucune mise en page, il ne fait que poser les variables CSS que les
-// classes du jeu (bg-parchemin, text-bronze, ...) lisent déjà.
+// classes du jeu (bg-brume, text-acier, ...) lisent déjà.
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";

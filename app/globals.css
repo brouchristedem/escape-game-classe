@@ -1,42 +1,47 @@
 @import "tailwindcss";
 
-/* Identité "Grimoire" : un parchemin chaud (ni sombre, ni pâle) gravé de
-   symboles alchimiques en relief, des cadres et plaques d'or, une patine de
-   bronze vert-de-gris pour ce qui est validé, et une encre brune très lisible.
-   Les runes, le médaillon au serpent et la lanterne qui suit le doigt font le
-   reste du mystère. */
+/* Identité "Le Gardien" : tout découle du personnage du site (une silhouette
+   à capuche, robe bleu nuit brodée de fil d'or, écrans bleus dans un cachot).
+   Le fond reste une brume de pierre claire pour que tout soit lisible ; la
+   nuit, la lueur électrique des écrans et le fil d'or viennent de lui. */
 :root {
-  --background: #f6f0e0;
-  --foreground: #2a1c12;
+  --background: #e3e8f1;
+  --foreground: #0c1733;
 
-  --parchemin: #e9dfc4;   /* fond des pages de jeu */
-  --parchemin-2: #d9cba6; /* surfaces en creux : champs, pistes */
-  --velin: #f8f2e2;       /* cartes */
-  --sable: #efe6cf;       /* panneaux clairs (espace organisateur) */
-  --encre: #2a1c12;       /* texte + surfaces sombres ponctuelles */
-  --bronze: #7b5316;      /* accents de texte, liens, bordures */
-  --bronze-deep: #5c3c0c;
-  --or: #c9a04a;         /* plaques et boutons */
-  --or-clair: #e2c169;
-  --or-fonce: #a17a2c;
-  --patine: #2f6b5e;     /* vert-de-gris : progression, validé */
-  --alerte: #9b2a1c;     /* rouge sceau */
+  --brume: #cdd5e2;       /* fond des pages de jeu */
+  --brume-2: #b9c4d6;     /* surfaces en creux : champs, pistes */
+  --brume-clair: #e3e8f1; /* panneaux clairs (espace organisateur) */
+  --dalle: #eef1f7;       /* cartes */
+  --nuit: #0c1733;        /* texte + surfaces sombres (robe du Gardien) */
+  --nuit-2: #14284f;
+  --acier: #21497f;       /* accents de texte, liens */
+  --acier-deep: #16335c;
+  --lueur: #4db3ff;       /* lueur des écrans : bordures, progression */
+  --lueur-clair: #a5d8ff;
+  --lueur-fonce: #2a86d6;
+  --fil: #c9a75a;         /* fil d'or des broderies */
+  --fil-clair: #e6c877;
+  --spectre: #1b8a86;     /* validé */
+  --alerte: #b3241b;      /* sang */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-parchemin: var(--parchemin);
-  --color-parchemin-2: var(--parchemin-2);
-  --color-velin: var(--velin);
-  --color-sable: var(--sable);
-  --color-encre: var(--encre);
-  --color-bronze: var(--bronze);
-  --color-bronze-deep: var(--bronze-deep);
-  --color-or: var(--or);
-  --color-or-clair: var(--or-clair);
-  --color-or-fonce: var(--or-fonce);
-  --color-patine: var(--patine);
+  --color-brume: var(--brume);
+  --color-brume-2: var(--brume-2);
+  --color-brume-clair: var(--brume-clair);
+  --color-dalle: var(--dalle);
+  --color-nuit: var(--nuit);
+  --color-nuit-2: var(--nuit-2);
+  --color-acier: var(--acier);
+  --color-acier-deep: var(--acier-deep);
+  --color-lueur: var(--lueur);
+  --color-lueur-clair: var(--lueur-clair);
+  --color-lueur-fonce: var(--lueur-fonce);
+  --color-fil: var(--fil);
+  --color-fil-clair: var(--fil-clair);
+  --color-spectre: var(--spectre);
   --color-alerte: var(--alerte);
   --font-sans: var(--font-alegreya);
   --font-mono: var(--font-plexmono);
@@ -51,7 +56,7 @@ body {
   font-size: 1.05rem;
 }
 
-::selection { background: rgba(201, 160, 74, 0.45); color: var(--encre); }
+::selection { background: rgba(77, 179, 255, 0.4); color: var(--nuit); }
 
 .font-headline {
   font-family: var(--font-cinzel), Georgia, serif;
@@ -61,84 +66,88 @@ body {
   font-family: var(--font-plexmono), ui-monospace, monospace;
 }
 
-/* Fond des pages de jeu : parchemin vieilli (vignette + grain), symboles
-   alchimiques gravés en relief, et une lanterne qui suit le doigt / la souris
-   (variables --mx / --my posées par le composant Lanterne). */
-.bg-parchemin {
+/* Fond des pages de jeu : brume de pierre, coins assombris comme un cachot,
+   toiles d'araignée dans deux coins, symboles du Gardien gravés (cercle de
+   chiffre, capuche, œil, crâne, bougie...) cernés d'un halo bleu, et une
+   lueur bleue qui suit le doigt (variables --mx / --my posées par Lanterne). */
+.bg-brume {
   isolation: isolate;
   background-image:
-    radial-gradient(22rem 22rem at var(--mx, 50%) var(--my, 18%), rgba(255, 232, 160, 0.38), transparent 70%),
-    radial-gradient(70rem 46rem at 50% -6%, rgba(255, 249, 226, 0.75), transparent 62%),
-    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(120, 84, 30, 0.30) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cdefs%3E%3Cg id='s' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%22150%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%22136%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%22100%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%2234%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%229%22/%3E%3Cpath d=%22M346.0 610.0L360.0 610.0M343.9 633.6L357.7 636.0M337.8 656.5L351.0 661.3M327.8 678.0L339.9 685.0M314.2 697.4L324.9 706.4M297.4 714.2L306.4 724.9M278.0 727.8L285.0 739.9M256.5 737.8L261.3 751.0M233.6 743.9L236.0 757.7M210.0 746.0L210.0 760.0M186.4 743.9L184.0 757.7M163.5 737.8L158.7 751.0M142.0 727.8L135.0 739.9M122.6 714.2L113.6 724.9M105.8 697.4L95.1 706.4M92.2 678.0L80.1 685.0M82.2 656.5L69.0 661.3M76.1 633.6L62.3 636.0M74.0 610.0L60.0 610.0M76.1 586.4L62.3 584.0M82.2 563.5L69.0 558.7M92.2 542.0L80.1 535.0M105.8 522.6L95.1 513.6M122.6 505.8L113.6 495.1M142.0 492.2L135.0 480.1M163.5 482.2L158.7 469.0M186.4 476.1L184.0 462.3M210.0 474.0L210.0 460.0M233.6 476.1L236.0 462.3M256.5 482.2L261.3 469.0M278.0 492.2L285.0 480.1M297.4 505.8L306.4 495.1M314.2 522.6L324.9 513.6M327.8 542.0L339.9 535.0M337.8 563.5L351.0 558.7M343.9 586.4L357.7 584.0%22/%3E%3Cpath d=%22M210.0 510.0L296.6 660.0L123.4 660.0Z%22/%3E%3Cpath d=%22M210.0 710.0L123.4 560.0L296.6 560.0Z%22/%3E%3Cpath d=%22M560 110L625 175M625 175L705 140M625 175L668 258M668 258L560 300M668 258L742 312M560 110L560 300%22/%3E%3Ccircle cx=%22560%22 cy=%22110%22 r=%226%22/%3E%3Ccircle cx=%22625%22 cy=%22175%22 r=%226%22/%3E%3Ccircle cx=%22705%22 cy=%22140%22 r=%226%22/%3E%3Ccircle cx=%22668%22 cy=%22258%22 r=%226%22/%3E%3Ccircle cx=%22560%22 cy=%22300%22 r=%226%22/%3E%3Ccircle cx=%22742%22 cy=%22312%22 r=%226%22/%3E%3Cpath d=%22M742.0 298.0L744.8 309.2L756.0 312.0L744.8 314.8L742.0 326.0L739.2 314.8L728.0 312.0L739.2 309.2Z%22/%3E%3Ccircle cx=%22330%22 cy=%22156%22 r=%2211%22/%3E%3Cpath d=%22M330 167V196M317 181H343M316 130A14 14 0 0 0 344 130%22/%3E%3Cpath d=%22M92.0 188.0L114.5 227.0L69.5 227.0Z%22/%3E%3Cpath d=%22M92 240V268M80 254H104%22/%3E%3Cpath d=%22M420 430Q462 396 504 430Q462 464 420 430Z%22/%3E%3Ccircle cx=%22462%22 cy=%22430%22 r=%2211%22/%3E%3Ccircle cx=%22462%22 cy=%22430%22 r=%223%22/%3E%3Cpath d=%22M462 380V392M430 396L438 405M494 396L486 405%22/%3E%3Ccircle cx=%22632%22 cy=%22566%22 r=%2217%22/%3E%3Ccircle cx=%22632%22 cy=%22566%22 r=%227%22/%3E%3Cpath d=%22M632 583V640M632 610H650M632 626H646M632 640H654%22/%3E%3Cpath d=%22M96 96A30 30 0 1 0 120 150A24 24 0 1 1 96 96Z%22/%3E%3Ccircle cx=%22520%22 cy=%22716%22 r=%2216%22/%3E%3Ccircle cx=%22520%22 cy=%22716%22 r=%223%22/%3E%3Cpath d=%22M542.0 716.0L554.0 716.0M539.1 727.0L549.4 733.0M531.0 735.1L537.0 745.4M520.0 738.0L520.0 750.0M509.0 735.1L503.0 745.4M500.9 727.0L490.6 733.0M498.0 716.0L486.0 716.0M500.9 705.0L490.6 699.0M509.0 696.9L503.0 686.6M520.0 694.0L520.0 682.0M531.0 696.9L537.0 686.6M539.1 705.0L549.4 699.0%22/%3E%3Cpath d=%22M430.0 180.0L430.6 180.2L431.1 180.6L431.3 181.3L431.2 182.1L430.8 183.0L430.0 183.7L428.9 184.1L427.6 184.2L426.1 183.9L424.7 183.1L423.5 181.7L422.7 180.0L422.3 177.9L422.6 175.7L423.5 173.5L425.1 171.5L427.3 170.0L430.0 169.0L433.0 168.8L436.1 169.4L439.1 170.9L441.6 173.3L443.6 176.4L444.7 180.0L444.8 184.0L443.8 187.9L441.7 191.7L438.6 194.8L434.6 197.1L430.0 198.3L425.1 198.3L420.2 196.9L415.7 194.3L412.0 190.4L409.3 185.5L408.0 180.0L408.2 174.1L409.9 168.4L413.1 163.1L417.8 158.8L423.5 155.8L430.0 154.3L436.8 154.6L443.4 156.7L449.4 160.6L454.3 165.9L457.7 172.6L459.3 180.0L458.9 187.8L456.5 195.3L452.0 202.0L445.9 207.5L438.4 211.3L430.0 213.0L421.3 212.5L412.9 209.6L405.4 204.6L399.3 197.7L395.2 189.3L393.3 180.0L394.0 170.4L397.2 161.1L402.8 152.8L410.4 146.1L419.7 141.6L430.0 139.7L440.6 140.5L450.8 144.0L459.8 150.2L467.0 158.6L471.9 168.8L474.0 180.0%22/%3E%3Ccircle cx=%22708%22 cy=%22470%22 r=%2240%22/%3E%3Ccircle cx=%22708%22 cy=%22470%22 r=%2230%22/%3E%3Cpath d=%22M708 430V440M708 500V510M668 470H678M738 470H748M708 452L714 470L708 488L702 470Z%22/%3E%3Cpath d=%22M330 330L346 366L384 372L356 398L364 436L330 416L296 436L304 398L276 372L314 366Z%22/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23s' stroke='%23fffaf0' opacity='.85' transform='translate%282 2%29'/%3E%3Cuse href='%23s' stroke='%236f5222' opacity='.34'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .27 0 0 0 0 .12 0 0 0 .32 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: auto, auto, auto, min(820px, 170vw) auto, 220px 220px;
-  background-attachment: fixed, fixed, fixed, scroll, scroll;
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
+    radial-gradient(22rem 22rem at var(--mx, 50%) var(--my, 16%), rgba(120, 195, 255, 0.34), transparent 70%),
+    radial-gradient(70rem 46rem at 50% -6%, rgba(244, 248, 255, 0.8), transparent 62%),
+    radial-gradient(120% 92% at 50% 42%, transparent 52%, rgba(12, 23, 51, 0.42) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cg  fill='none' stroke-linecap='round'%3E%3Cpath d='M0 0L290.0 0.0M0 0L280.1 75.1M0 0L251.1 145.0M0 0L205.1 205.1M0 0L145.0 251.1M0 0L75.1 280.1M0 0L0.0 290.0M38.0 0.0Q30.1 4.0 36.7 9.8M36.7 9.8Q28.1 11.6 32.9 19.0M32.9 19.0Q24.1 18.5 26.9 26.9M26.9 26.9Q18.5 24.1 19.0 32.9M19.0 32.9Q11.6 28.1 9.8 36.7M9.8 36.7Q4.0 30.1 0.0 38.0M78.0 0.0Q61.9 8.1 75.3 20.2M75.3 20.2Q57.7 23.9 67.5 39.0M67.5 39.0Q49.5 38.0 55.2 55.2M55.2 55.2Q38.0 49.5 39.0 67.5M39.0 67.5Q23.9 57.7 20.2 75.3M20.2 75.3Q8.1 61.9 0.0 78.0M122.0 0.0Q96.8 12.7 117.8 31.6M117.8 31.6Q90.2 37.3 105.7 61.0M105.7 61.0Q77.4 59.4 86.3 86.3M86.3 86.3Q59.4 77.4 61.0 105.7M61.0 105.7Q37.3 90.2 31.6 117.8M31.6 117.8Q12.7 96.8 0.0 122.0M170.0 0.0Q134.8 17.8 164.2 44.0M164.2 44.0Q125.6 52.0 147.2 85.0M147.2 85.0Q107.9 82.8 120.2 120.2M120.2 120.2Q82.8 107.9 85.0 147.2M85.0 147.2Q52.0 125.6 44.0 164.2M44.0 164.2Q17.8 134.8 0.0 170.0M224.0 0.0Q177.7 23.4 216.4 58.0M216.4 58.0Q165.6 68.6 194.0 112.0M194.0 112.0Q142.2 109.1 158.4 158.4M158.4 158.4Q109.1 142.2 112.0 194.0M112.0 194.0Q68.6 165.6 58.0 216.4M58.0 216.4Q23.4 177.7 0.0 224.0' stroke='%230c1733' stroke-width='1' stroke-opacity='.42'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cg transform='translate%28300 300%29 rotate%28180%29' fill='none' stroke-linecap='round'%3E%3Cpath d='M0 0L290.0 0.0M0 0L280.1 75.1M0 0L251.1 145.0M0 0L205.1 205.1M0 0L145.0 251.1M0 0L75.1 280.1M0 0L0.0 290.0M38.0 0.0Q30.1 4.0 36.7 9.8M36.7 9.8Q28.1 11.6 32.9 19.0M32.9 19.0Q24.1 18.5 26.9 26.9M26.9 26.9Q18.5 24.1 19.0 32.9M19.0 32.9Q11.6 28.1 9.8 36.7M9.8 36.7Q4.0 30.1 0.0 38.0M78.0 0.0Q61.9 8.1 75.3 20.2M75.3 20.2Q57.7 23.9 67.5 39.0M67.5 39.0Q49.5 38.0 55.2 55.2M55.2 55.2Q38.0 49.5 39.0 67.5M39.0 67.5Q23.9 57.7 20.2 75.3M20.2 75.3Q8.1 61.9 0.0 78.0M122.0 0.0Q96.8 12.7 117.8 31.6M117.8 31.6Q90.2 37.3 105.7 61.0M105.7 61.0Q77.4 59.4 86.3 86.3M86.3 86.3Q59.4 77.4 61.0 105.7M61.0 105.7Q37.3 90.2 31.6 117.8M31.6 117.8Q12.7 96.8 0.0 122.0M170.0 0.0Q134.8 17.8 164.2 44.0M164.2 44.0Q125.6 52.0 147.2 85.0M147.2 85.0Q107.9 82.8 120.2 120.2M120.2 120.2Q82.8 107.9 85.0 147.2M85.0 147.2Q52.0 125.6 44.0 164.2M44.0 164.2Q17.8 134.8 0.0 170.0M224.0 0.0Q177.7 23.4 216.4 58.0M216.4 58.0Q165.6 68.6 194.0 112.0M194.0 112.0Q142.2 109.1 158.4 158.4M158.4 158.4Q109.1 142.2 112.0 194.0M112.0 194.0Q68.6 165.6 58.0 216.4M58.0 216.4Q23.4 177.7 0.0 224.0' stroke='%230c1733' stroke-width='1' stroke-opacity='.42'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cdefs%3E%3Cg id='s' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx=%22205%22 cy=%22610%22 r=%22150%22/%3E%3Ccircle cx=%22205%22 cy=%22610%22 r=%22138%22/%3E%3Ccircle cx=%22205%22 cy=%22610%22 r=%22104%22/%3E%3Ccircle cx=%22205%22 cy=%22610%22 r=%2262%22/%3E%3Ccircle cx=%22205%22 cy=%22610%22 r=%2226%22/%3E%3Cpath d=%22M343.0 610.0L355.0 610.0M341.8 628.0L353.7 629.6M338.3 645.7L349.9 648.8M332.5 662.8L343.6 667.4M324.5 679.0L334.9 685.0M314.5 694.0L324.0 701.3M302.6 707.6L311.1 716.1M289.0 719.5L296.3 729.0M274.0 729.5L280.0 739.9M257.8 737.5L262.4 748.6M240.7 743.3L243.8 754.9M223.0 746.8L224.6 758.7M205.0 748.0L205.0 760.0M187.0 746.8L185.4 758.7M169.3 743.3L166.2 754.9M152.2 737.5L147.6 748.6M136.0 729.5L130.0 739.9M121.0 719.5L113.7 729.0M107.4 707.6L98.9 716.1M95.5 694.0L86.0 701.3M85.5 679.0L75.1 685.0M77.5 662.8L66.4 667.4M71.7 645.7L60.1 648.8M68.2 628.0L56.3 629.6M67.0 610.0L55.0 610.0M68.2 592.0L56.3 590.4M71.7 574.3L60.1 571.2M77.5 557.2L66.4 552.6M85.5 541.0L75.1 535.0M95.5 526.0L86.0 518.7M107.4 512.4L98.9 503.9M121.0 500.5L113.7 491.0M136.0 490.5L130.0 480.1M152.2 482.5L147.6 471.4M169.3 476.7L166.2 465.1M187.0 473.2L185.4 461.3M205.0 472.0L205.0 460.0M223.0 473.2L224.6 461.3M240.7 476.7L243.8 465.1M257.8 482.5L262.4 471.4M274.0 490.5L280.0 480.1M289.0 500.5L296.3 491.0M302.6 512.4L311.1 503.9M314.5 526.0L324.0 518.7M324.5 541.0L334.9 535.0M332.5 557.2L343.6 552.6M338.3 574.3L349.9 571.2M341.8 592.0L353.7 590.4%22/%3E%3Cpath d=%22M-3 -5V5M-3 -5L3 0V5%22 transform=%22translate%28205 610%29 rotate%280.0%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M3 -5L-3 0L3 5%22 transform=%22translate%28205 610%29 rotate%2812.9%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M0 -5V5%22 transform=%22translate%28205 610%29 rotate%2825.7%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M0 -5V5M0 -2L4 -6M0 1L4 -3%22 transform=%22translate%28205 610%29 rotate%2838.6%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1M-2 1L3 5%22 transform=%22translate%28205 610%29 rotate%2851.4%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1%22 transform=%22translate%28205 610%29 rotate%2864.3%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M2 -5L-2 -1L2 1L-2 5%22 transform=%22translate%28205 610%29 rotate%2877.1%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-1 -5V5M-1 -3L4 0L-1 3%22 transform=%22translate%28205 610%29 rotate%2890.0%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-3 -5L3 5M3 -5L-3 5%22 transform=%22translate%28205 610%29 rotate%28102.9%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2M-2 0L3 3%22 transform=%22translate%28205 610%29 rotate%28115.7%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-3 -5V5M-3 -5L3 0V5%22 transform=%22translate%28205 610%29 rotate%28128.6%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M3 -5L-3 0L3 5%22 transform=%22translate%28205 610%29 rotate%28141.4%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M0 -5V5%22 transform=%22translate%28205 610%29 rotate%28154.3%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M0 -5V5M0 -2L4 -6M0 1L4 -3%22 transform=%22translate%28205 610%29 rotate%28167.1%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1M-2 1L3 5%22 transform=%22translate%28205 610%29 rotate%28180.0%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1%22 transform=%22translate%28205 610%29 rotate%28192.9%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M2 -5L-2 -1L2 1L-2 5%22 transform=%22translate%28205 610%29 rotate%28205.7%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-1 -5V5M-1 -3L4 0L-1 3%22 transform=%22translate%28205 610%29 rotate%28218.6%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-3 -5L3 5M3 -5L-3 5%22 transform=%22translate%28205 610%29 rotate%28231.4%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2M-2 0L3 3%22 transform=%22translate%28205 610%29 rotate%28244.3%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-3 -5V5M-3 -5L3 0V5%22 transform=%22translate%28205 610%29 rotate%28257.1%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M3 -5L-3 0L3 5%22 transform=%22translate%28205 610%29 rotate%28270.0%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M0 -5V5%22 transform=%22translate%28205 610%29 rotate%28282.9%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M0 -5V5M0 -2L4 -6M0 1L4 -3%22 transform=%22translate%28205 610%29 rotate%28295.7%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1M-2 1L3 5%22 transform=%22translate%28205 610%29 rotate%28308.6%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1%22 transform=%22translate%28205 610%29 rotate%28321.4%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M2 -5L-2 -1L2 1L-2 5%22 transform=%22translate%28205 610%29 rotate%28334.3%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M-1 -5V5M-1 -3L4 0L-1 3%22 transform=%22translate%28205 610%29 rotate%28347.1%29 translate%280 -121%29 scale%281.15%29%22/%3E%3Cpath d=%22M229.0 619.9L262.3 633.7M214.9 634.0L228.7 667.3M195.1 634.0L181.3 667.3M181.0 619.9L147.7 633.7M181.0 600.1L147.7 586.3M195.1 586.0L181.3 552.7M214.9 586.0L228.7 552.7M229.0 600.1L262.3 586.3%22/%3E%3Ccircle cx=%22205%22 cy=%22605%22 r=%227%22/%3E%3Cpath d=%22M201 611L198 625H212L209 611%22/%3E%3Cpath d=%22M610 58C580 82 566 122 562 160C558 192 546 216 518 240L506 272H714L702 240C674 216 662 192 658 160C654 122 640 82 610 58Z%22/%3E%3Cpath d=%22M610 92C594 112 590 146 594 172C598 190 604 198 610 200C616 198 622 190 626 172C630 146 626 112 610 92Z%22/%3E%3Cpath d=%22M574 236C590 226 630 226 646 236M560 252H660%22/%3E%3Cpath d=%22M596 262C600 252 620 252 624 262%22/%3E%3Cpath d=%22M392 440Q436 404 480 440Q436 476 392 440Z%22/%3E%3Ccircle cx=%22436%22 cy=%22440%22 r=%2212%22/%3E%3Cpath d=%22M436 431V449%22/%3E%3Cpath d=%22M436 388V400M406 398L413 408M466 398L459 408%22/%3E%3Cpath d=%22M72 148C58 118 72 88 100 88S142 118 128 148L124 164H76Z%22/%3E%3Ccircle cx=%2286%22 cy=%22126%22 r=%228%22/%3E%3Ccircle cx=%22114%22 cy=%22126%22 r=%228%22/%3E%3Cpath d=%22M100 136L94 150H106Z%22/%3E%3Cpath d=%22M84 164V176M92 164V178M100 164V178M108 164V178M116 164V176M80 176H120%22/%3E%3Cpath d=%22M330 128C316 150 320 166 330 174C340 166 344 150 330 128Z%22/%3E%3Cpath d=%22M330 174V182%22/%3E%3Crect x=%22316%22 y=%22182%22 width=%2228%22 height=%2260%22 rx=%222%22/%3E%3Cpath d=%22M322 196C321 204 324 206 324 212M338 200C339 208 337 212 337 218%22/%3E%3Cpath d=%22M304 246H356M310 254H350%22/%3E%3Ccircle cx=%22470%22 cy=%22120%22 r=%2242%22 stroke-dasharray=%2210 5 3 5%22/%3E%3Cpath d=%22M470 88L500 140H440Z%22/%3E%3Ccircle cx=%22470%22 cy=%2288%22 r=%224%22/%3E%3Ccircle cx=%22500%22 cy=%22140%22 r=%224%22/%3E%3Ccircle cx=%22440%22 cy=%22140%22 r=%224%22/%3E%3Ccircle cx=%22640%22 cy=%22470%22 r=%2236%22/%3E%3Ccircle cx=%22640%22 cy=%22470%22 r=%2228%22/%3E%3Ccircle cx=%22640%22 cy=%22463%22 r=%228%22/%3E%3Cpath d=%22M635 470L631 490H649L645 470Z%22/%3E%3Cpath d=%22M-1 -5V5M-1 -3L4 0L-1 3%22 transform=%22translate%28752 352%29 scale%281.5%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1%22 transform=%22translate%28752 372%29 scale%281.5%29%22/%3E%3Cpath d=%22M0 -5V5M0 -2L4 -6M0 1L4 -3%22 transform=%22translate%28752 392%29 scale%281.5%29%22/%3E%3Cpath d=%22M3 -5L-3 0L3 5%22 transform=%22translate%28752 412%29 scale%281.5%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2M-2 0L3 3%22 transform=%22translate%28752 432%29 scale%281.5%29%22/%3E%3Cpath d=%22M-1 -5V5M-1 -3L4 0L-1 3%22 transform=%22translate%28752 452%29 scale%281.5%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1%22 transform=%22translate%28752 472%29 scale%281.5%29%22/%3E%3Cpath d=%22M0 -5V5M0 -2L4 -6M0 1L4 -3%22 transform=%22translate%28752 492%29 scale%281.5%29%22/%3E%3Cpath d=%22M3 -5L-3 0L3 5%22 transform=%22translate%28752 512%29 scale%281.5%29%22/%3E%3Cpath d=%22M-3 -5L3 5M3 -5L-3 5%22 transform=%22translate%2848 420%29 scale%281.5%29%22/%3E%3Cpath d=%22M2 -5L-2 -1L2 1L-2 5%22 transform=%22translate%2848 440%29 scale%281.5%29%22/%3E%3Cpath d=%22M-2 -5V5M-2 -5L3 -2L-2 1M-2 1L3 5%22 transform=%22translate%2848 460%29 scale%281.5%29%22/%3E%3Cpath d=%22M0 -5V5%22 transform=%22translate%2848 480%29 scale%281.5%29%22/%3E%3Cpath d=%22M-3 -5V5M-3 -5L3 0V5%22 transform=%22translate%2848 500%29 scale%281.5%29%22/%3E%3Ccircle cx=%22520%22 cy=%22700%22 r=%227%22/%3E%3Ccircle cx=%22520%22 cy=%22689%22 r=%224.5%22/%3E%3Cpath d=%22M520 660V684%22 stroke-dasharray=%222 3%22/%3E%3Cpath d=%22M517 697L506 686L494 670%22/%3E%3Cpath d=%22M517 699L502 696L486 694%22/%3E%3Cpath d=%22M517 701L502 706L486 714%22/%3E%3Cpath d=%22M517 703L508 714L498 732%22/%3E%3Cpath d=%22M523 697L534 686L546 670%22/%3E%3Cpath d=%22M523 699L538 696L554 694%22/%3E%3Cpath d=%22M523 701L538 706L554 714%22/%3E%3Cpath d=%22M523 703L532 714L542 732%22/%3E%3Cpath d=%22M40 296H80M40 384H80M46 296H74L60 340ZM46 384H74L60 340Z%22/%3E%3Cpath d=%22M60 340V362%22/%3E%3Ccircle cx=%22700%22 cy=%22620%22 r=%2216%22/%3E%3Ccircle cx=%22700%22 cy=%22620%22 r=%226%22/%3E%3Cpath d=%22M700 636V704M700 668H716M700 684H712M700 704H720%22/%3E%3Cpath d=%22M360 350A26 26 0 1 0 380 396A20 20 0 1 1 360 350Z%22/%3E%3Cpath d=%22M400 330L403 338L411 338L405 343L407 351L400 346L393 351L395 343L389 338L397 338Z%22/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23s' stroke='%234db3ff' stroke-width='5.5' stroke-opacity='.17'/%3E%3Cuse href='%23s' stroke='%230c1733' stroke-width='1.7' stroke-opacity='.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .05 0 0 0 0 .09 0 0 0 0 .2 0 0 0 .3 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: auto, auto, auto, min(300px, 62vw) auto, min(300px, 62vw) auto, min(820px, 170vw) auto, 220px 220px;
+  background-position: 0 0, 0 0, 0 0, left top, right bottom, 0 0, 0 0;
+  background-attachment: fixed, fixed, fixed, fixed, fixed, scroll, scroll;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
 }
 
-/* Cadre doré à double filet : les cartes importantes. */
+/* Cadre de cachot : acier sombre, filet intérieur bleu, losanges bleus aux
+   coins. Pour les cartes importantes. */
 .cadre {
   position: relative;
-  border: 2px solid var(--or);
+  border: 2px solid var(--nuit);
   box-shadow:
-    inset 0 0 0 4px var(--velin),
-    inset 0 0 0 5px rgba(161, 122, 44, 0.85),
-    0 0 0 1px rgba(92, 60, 12, 0.35),
-    0 18px 34px -16px rgba(60, 38, 10, 0.5);
+    inset 0 0 0 4px var(--dalle),
+    inset 0 0 0 5px var(--lueur-fonce),
+    0 0 0 1px rgba(77, 179, 255, 0.35),
+    0 18px 36px -16px rgba(8, 16, 40, 0.6);
 }
 .cadre::before,
 .cadre::after {
   content: "";
   position: absolute;
-  width: 9px;
-  height: 9px;
-  background: var(--or);
-  border: 1px solid var(--bronze-deep);
+  width: 10px;
+  height: 10px;
+  background: var(--lueur);
+  border: 1.5px solid var(--nuit);
   transform: rotate(45deg);
   pointer-events: none;
 }
-.cadre::before { top: -6px; left: -6px; }
-.cadre::after { bottom: -6px; right: -6px; }
+.cadre::before { top: -7px; left: -7px; }
+.cadre::after { bottom: -7px; right: -7px; }
 
-/* Plaques de bronze doré : tous les boutons principaux. */
-button[class*="from-or"],
-a[class*="from-or"] {
+/* Plaques de nuit brodées d'or : tous les boutons principaux. */
+button[class*="from-lueur"],
+a[class*="from-lueur"] {
   font-family: var(--font-cinzel), Georgia, serif;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--encre);
-  border: 1px solid var(--bronze-deep);
+  color: var(--fil-clair);
+  border: 1px solid var(--lueur-fonce);
   border-radius: 12px;
-  outline: 1px solid rgba(42, 28, 18, 0.5);
+  outline: 1px dashed rgba(230, 200, 119, 0.7);
   outline-offset: -5px;
-  background-image: linear-gradient(180deg, var(--or-clair) 0%, var(--or) 48%, var(--or-fonce) 100%);
+  background-image: linear-gradient(180deg, var(--nuit-2) 0%, var(--nuit) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 246, 210, 0.85),
-    0 3px 0 var(--bronze-deep),
-    0 12px 20px -8px rgba(60, 38, 10, 0.6);
-  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.6);
+    inset 0 1px 0 rgba(120, 190, 255, 0.35),
+    0 0 18px -2px rgba(77, 179, 255, 0.55),
+    0 10px 18px -8px rgba(8, 16, 40, 0.7);
+  text-shadow: 0 0 10px rgba(230, 200, 119, 0.45);
 }
-button[class*="from-or"] *,
-a[class*="from-or"] * { color: inherit; }
-button[class*="from-or"]:hover:not(:disabled),
-a[class*="from-or"]:hover {
-  filter: brightness(1.07) saturate(1.05);
+button[class*="from-lueur"] *,
+a[class*="from-lueur"] * { color: inherit; }
+button[class*="from-lueur"]:hover:not(:disabled),
+a[class*="from-lueur"]:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(120, 190, 255, 0.5),
+    0 0 26px 0 rgba(77, 179, 255, 0.8),
+    0 10px 18px -8px rgba(8, 16, 40, 0.7);
 }
-button[class*="from-or"]:active:not(:disabled),
-a[class*="from-or"]:active {
+button[class*="from-lueur"]:active:not(:disabled),
+a[class*="from-lueur"]:active {
   transform: translateY(2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 246, 210, 0.85),
-    0 1px 0 var(--bronze-deep),
-    0 6px 12px -8px rgba(60, 38, 10, 0.6);
 }
-button[class*="from-or"]:disabled {
+button[class*="from-lueur"]:disabled {
   background-image: none;
-  background-color: var(--parchemin-2);
-  color: rgba(42, 28, 18, 0.5);
-  border-color: rgba(92, 60, 12, 0.25);
+  background-color: var(--brume-2);
+  color: rgba(12, 23, 51, 0.5);
+  border-color: rgba(12, 23, 51, 0.2);
   outline-color: transparent;
   box-shadow: none;
   text-shadow: none;
@@ -149,14 +158,14 @@ button[class*="from-or"]:disabled {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--bronze);
+  color: var(--acier);
 }
 .filet-orne::before,
 .filet-orne::after {
   content: "";
   height: 1px;
   flex: 1;
-  background: linear-gradient(90deg, transparent, var(--bronze) 60%);
+  background: linear-gradient(90deg, transparent, var(--acier) 60%);
 }
 .filet-orne::after { transform: scaleX(-1); }
 
@@ -165,13 +174,19 @@ button[class*="from-or"]:disabled {
   to { transform: rotate(360deg); }
 }
 @keyframes lueur-respire {
-  0%, 100% { opacity: 0.55; }
+  0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
+@keyframes yeux-veillent {
+  0%, 68% { opacity: 0; }
+  74%, 86% { opacity: 0.95; }
+  92%, 100% { opacity: 0; }
+}
 .lg-rotate { animation: derive-lente 90s linear infinite; transform-origin: 100px 100px; }
-.lg-lueur { animation: lueur-respire 3.6s ease-in-out infinite; }
+.lg-lueur { animation: lueur-respire 4s ease-in-out infinite; }
+.lg-yeux { opacity: 0; animation: yeux-veillent 9s ease-in-out infinite; }
 
-/* Animations de l'identité "Grimoire" (logo + chrono critique) */
+/* Animations de l'identité "Le Gardien" (logo + chrono critique) */
 @keyframes lg-pulse {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
@@ -230,9 +245,9 @@ button[class*="from-or"]:disabled {
   100% { opacity: 1; transform: scale(1); }
 }
 @keyframes unlock-flash {
-  0% { box-shadow: 0 0 0 0 rgba(201, 160, 74, 0.55); }
-  60% { box-shadow: 0 0 0 14px rgba(201, 160, 74, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(201, 160, 74, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(77, 179, 255, 0.55); }
+  60% { box-shadow: 0 0 0 14px rgba(77, 179, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(77, 179, 255, 0); }
 }
 @keyframes option-in {
   0% { opacity: 0; transform: translateY(6px); }
@@ -245,6 +260,7 @@ button[class*="from-or"]:disabled {
 .animate-option-in { animation: option-in 0.35s ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
+  .lg-yeux { animation: none !important; opacity: 0.6; }
   .lg-rotate, .lg-lueur, .lg-pulse, .lg-crack, .animate-timer-critical, .animate-glitch-shift, .animate-glitch-flicker,
   .animate-card-in, .animate-pop-in, .animate-unlock, .animate-option-in {
     animation: none !important;

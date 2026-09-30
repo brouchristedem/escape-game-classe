@@ -1,17 +1,17 @@
 // Personnalisation d'un jeu : conversion des deux couleurs choisies par
-// l'organisateur en variables CSS de l'identité "Grimoire" (voir
+// l'organisateur en variables CSS de l'identité "Le Gardien" (voir
 // app/globals.css), et contrôles de lisibilité.
 //
-// Le texte du jeu est sombre (encre) : le fond doit donc rester clair ou
+// Le texte du jeu est sombre (nuit) : le fond doit donc rester clair ou
 // moyen. L'accent sert de remplissage aux boutons, avec du texte sombre
 // dessus : il doit être assez clair pour rester lisible.
 
 import type { CSSProperties } from "react";
 import { Personnalisation } from "@/lib/types";
 
-export const FOND_PAR_DEFAUT = "#e9dfc4";
-export const ACCENT_PAR_DEFAUT = "#c9a04a";
-const TEXTE_SOMBRE = "#2a1c12"; // --encre, couleur du texte sur le fond
+export const FOND_PAR_DEFAUT = "#cdd5e2";
+export const ACCENT_PAR_DEFAUT = "#4db3ff";
+const TEXTE_SOMBRE = "#0c1733"; // --nuit, couleur du texte sur le fond
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -76,14 +76,14 @@ export function variablesTheme(p: Personnalisation | null | undefined): CSSPrope
       : null;
   const vars: Record<string, string> = {};
   if (fond) {
-    vars["--parchemin"] = fond;
-    vars["--parchemin-2"] = melanger(fond, TEXTE_SOMBRE, 0.07);
-    vars["--velin"] = melanger(fond, "#ffffff", 0.75);
+    vars["--brume"] = fond;
+    vars["--brume-2"] = melanger(fond, TEXTE_SOMBRE, 0.07);
+    vars["--dalle"] = melanger(fond, "#ffffff", 0.75);
   }
   if (accent) {
-    vars["--or"] = accent;
-    vars["--or-clair"] = melanger(accent, "#ffffff", 0.4);
-    vars["--or-fonce"] = melanger(accent, "#000000", 0.2);
+    vars["--lueur"] = accent;
+    vars["--lueur-clair"] = melanger(accent, "#ffffff", 0.45);
+    vars["--lueur-fonce"] = melanger(accent, "#000000", 0.2);
   }
   return vars as CSSProperties;
 }

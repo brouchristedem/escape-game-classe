@@ -88,22 +88,22 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
   if (navigating) return <LoadingScreen label={texts.equipeNavigationLabel} />;
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-14 bg-parchemin">
-      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
+    <main className="relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-14 bg-brume">
+      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-lueur/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-lueur/25 blur-3xl" />
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         <EditableText
           as="h1"
           value={texts.equipeTitre}
           onSave={(v) => saveText("equipeTitre", v)}
-          className="font-headline text-2xl font-bold mb-2 text-center text-encre"
+          className="font-headline text-2xl font-bold mb-2 text-center text-nuit"
         />
         <EditableText
           as="p"
           value={texts.equipeSousTitre}
           onSave={(v) => saveText("equipeSousTitre", v)}
-          className="text-sm text-encre/75 mb-8 text-center"
+          className="text-sm text-nuit/75 mb-8 text-center"
         />
 
         {(!loading && teams.length === 0) || editMode ? (
@@ -112,7 +112,7 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
             multiline
             value={texts.equipeAucuneEquipe}
             onSave={(v) => saveText("equipeAucuneEquipe", v)}
-            className="text-encre/75 mb-8 text-center max-w-sm"
+            className="text-nuit/75 mb-8 text-center max-w-sm"
           />
         ) : null}
 
@@ -125,8 +125,8 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
                 onClick={() => selectionner(t.id)}
                 className={`rounded-2xl px-4 py-3.5 text-left font-semibold transition-all duration-200 ring-1 ${
                   isSelected
-                    ? "bg-gradient-to-r from-or to-or-fonce text-encre shadow-lg shadow-bronze/20 ring-transparent scale-[1.02]"
-                    : "bg-velin/95 text-encre ring-bronze/15 hover:ring-bronze/40 hover:-translate-y-0.5 hover:shadow-md"
+                    ? "bg-gradient-to-r from-lueur to-lueur-fonce text-nuit shadow-lg shadow-acier/20 ring-transparent scale-[1.02]"
+                    : "bg-dalle/95 text-nuit ring-acier/15 hover:ring-acier/40 hover:-translate-y-0.5 hover:shadow-md"
                 }`}
               >
                 {t.nom}
@@ -139,14 +139,14 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
           <button
             onClick={commencerMeneur}
             disabled={!selected && !editMode}
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-or to-or-fonce px-8 py-3.5 text-lg font-semibold text-encre shadow-lg shadow-bronze/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:bg-none disabled:bg-parchemin-2 disabled:text-encre/30 disabled:shadow-none disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-8 py-3.5 text-lg font-semibold text-nuit shadow-lg shadow-acier/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:bg-none disabled:bg-brume-2 disabled:text-nuit/30 disabled:shadow-none disabled:cursor-not-allowed"
           >
-            <EditableText as="span" value={texts.equipeBoutonChef} onSave={(v) => saveText("equipeBoutonChef", v)} className="text-encre" />
+            <EditableText as="span" value={texts.equipeBoutonChef} onSave={(v) => saveText("equipeBoutonChef", v)} className="text-nuit" />
           </button>
           <button
             onClick={commencerSuiveur}
             disabled={!selected && !editMode}
-            className="inline-flex items-center gap-2 rounded-full bg-parchemin-2 ring-1 ring-bronze/25 px-8 py-3 font-medium text-encre transition-all duration-200 hover:ring-bronze/50 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-full bg-brume-2 ring-1 ring-acier/25 px-8 py-3 font-medium text-nuit transition-all duration-200 hover:ring-acier/50 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <EditableText as="span" value={texts.equipeBoutonSuiveur} onSave={(v) => saveText("equipeBoutonSuiveur", v)} />
           </button>

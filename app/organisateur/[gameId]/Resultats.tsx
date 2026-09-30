@@ -102,16 +102,16 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
   }
 
   if (teams.length === 0) {
-    return <p className="text-encre/75 text-sm">Aucune équipe pour l&apos;instant.</p>;
+    return <p className="text-nuit/75 text-sm">Aucune équipe pour l&apos;instant.</p>;
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-encre/75">Mis à jour en direct pendant que les équipes jouent.</p>
+        <p className="text-sm text-nuit/75">Mis à jour en direct pendant que les équipes jouent.</p>
         <button
           onClick={exporterCsv}
-          className="bg-or hover:bg-or-fonce text-encre text-sm font-semibold px-4 py-2 rounded-full transition"
+          className="bg-lueur hover:bg-lueur-fonce text-nuit text-sm font-semibold px-4 py-2 rounded-full transition"
         >
           Exporter en CSV
         </button>
@@ -120,7 +120,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-encre/75 border-b border-bronze/20">
+            <tr className="text-left text-xs uppercase tracking-wide text-nuit/75 border-b border-acier/20">
               <th className="py-2 pr-4">Équipe</th>
               <th className="py-2 pr-4">Statut</th>
               <th className="py-2 pr-4">Démarré à</th>
@@ -137,21 +137,21 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
               const duree =
                 state?.startedAt && state?.finishedAt ? formaterDuree(state.finishedAt - state.startedAt) : "—";
               return (
-                <tr key={team.id} className="border-b border-bronze/10">
-                  <td className="py-2 pr-4 font-medium text-encre">{team.nom}</td>
-                  <td className={`py-2 pr-4 ${termine ? "text-green-600 font-semibold" : "text-encre/75"}`}>
+                <tr key={team.id} className="border-b border-acier/10">
+                  <td className="py-2 pr-4 font-medium text-nuit">{team.nom}</td>
+                  <td className={`py-2 pr-4 ${termine ? "text-green-600 font-semibold" : "text-nuit/75"}`}>
                     {statutTexte(state)}
                   </td>
-                  <td className="py-2 pr-4 text-encre/75">{state?.startedAt ? formaterHeure(state.startedAt) : "—"}</td>
-                  <td className="py-2 pr-4 text-encre/75">{state?.finishedAt ? formaterHeure(state.finishedAt) : "—"}</td>
-                  <td className="py-2 pr-4 text-encre/75">{duree}</td>
-                  <td className="py-2 pr-4 text-encre/75">{state?.totalTentatives ?? 0}</td>
+                  <td className="py-2 pr-4 text-nuit/75">{state?.startedAt ? formaterHeure(state.startedAt) : "—"}</td>
+                  <td className="py-2 pr-4 text-nuit/75">{state?.finishedAt ? formaterHeure(state.finishedAt) : "—"}</td>
+                  <td className="py-2 pr-4 text-nuit/75">{duree}</td>
+                  <td className="py-2 pr-4 text-nuit/75">{state?.totalTentatives ?? 0}</td>
                   <td className="py-2 pr-4">
                     {state && (
                       <button
                         onClick={() => reinitialiserEquipe(team)}
                         disabled={enCours}
-                        className="text-bronze-deep underline text-xs disabled:opacity-50"
+                        className="text-acier-deep underline text-xs disabled:opacity-50"
                       >
                         Réinitialiser
                       </button>
@@ -168,7 +168,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
         <p className="font-semibold text-alerte mb-1">Réinitialiser les statistiques</p>
         {!confirmation ? (
           <>
-            <p className="text-sm text-encre/75 mb-3">
+            <p className="text-sm text-nuit/75 mb-3">
               Efface la progression, la durée et les tentatives de toutes les équipes, et retire l&apos;énigme
               surprise et les effets en cours. Les équipes, les circuits et les énigmes ne sont pas touchés.
             </p>
@@ -184,20 +184,20 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
           </>
         ) : (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-encre/75">
+            <p className="text-sm text-nuit/75">
               Cette action est <strong>irréversible</strong>. Exporte d&apos;abord les résultats si tu veux les
               garder, et vérifie qu&apos;aucune équipe n&apos;est en train de jouer : une page de jeu encore ouverte
               republierait son ancien état.
             </p>
-            <button onClick={exporterCsv} className="self-start text-sm underline text-bronze-deep">
+            <button onClick={exporterCsv} className="self-start text-sm underline text-acier-deep">
               Exporter en CSV d&apos;abord
             </button>
-            <label className="text-sm text-encre/75">
+            <label className="text-sm text-nuit/75">
               Tape <strong>REINITIALISER</strong> pour confirmer :
               <input
                 value={motConfirmation}
                 onChange={(e) => setMotConfirmation(e.target.value)}
-                className="mt-1 block w-full max-w-xs rounded-lg border border-bronze/30 bg-white px-3 py-2"
+                className="mt-1 block w-full max-w-xs rounded-lg border border-acier/30 bg-white px-3 py-2"
               />
             </label>
             <div className="flex gap-3">
@@ -214,7 +214,7 @@ export default function Resultats({ gameId, teams }: { gameId: string; teams: Te
                   setMotConfirmation("");
                 }}
                 disabled={enCours}
-                className="rounded-full border border-bronze/30 px-5 py-2 text-sm text-encre/75"
+                className="rounded-full border border-acier/30 px-5 py-2 text-sm text-nuit/75"
               >
                 Annuler
               </button>

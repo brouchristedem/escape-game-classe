@@ -5,7 +5,7 @@ import { AdminModeProvider } from "@/lib/adminMode";
 import { AuthProvider } from "@/lib/auth";
 import Lanterne from "@/app/components/Lanterne";
 
-// Polices de l'identité "Grimoire" : Cinzel (titres gravés), Alegreya Sans
+// Polices de l'identité "Le Gardien" : Cinzel (titres gravés), Alegreya Sans
 // (texte courant, chaleureux et lisible), IBM Plex Mono (chrono, codes).
 const cinzel = Cinzel({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-cinzel", display: "swap" });
 const alegreya = Alegreya_Sans({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-alegreya", display: "swap" });
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#e9dfc4",
+  themeColor: "#cdd5e2",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

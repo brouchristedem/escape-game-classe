@@ -71,7 +71,7 @@ export default function EditableText({
           }
         }}
         rows={multiline ? 4 : undefined}
-        className={`${className ?? ""} bg-white outline-none ring-2 ring-bronze rounded-md px-1 w-full`}
+        className={`${className ?? ""} bg-white outline-none ring-2 ring-acier rounded-md px-1 w-full`}
       />
     );
   }
@@ -86,11 +86,11 @@ export default function EditableText({
         setEditing(true);
       }}
       title="Cliquer pour modifier ce texte"
-      className={`${className ?? ""} cursor-text rounded-md outline-dashed outline-1 outline-offset-2 outline-bronze/50 hover:bg-violet-light/50 transition ${
+      className={`${className ?? ""} cursor-text rounded-md outline-dashed outline-1 outline-offset-2 outline-acier/50 hover:bg-violet-light/50 transition ${
         saving ? "opacity-50" : ""
       }`}
     >
-      {value || <span className="text-bronze/60 italic">{placeholder ?? "(cliquer pour écrire)"}</span>}
+      {value || <span className="text-acier/60 italic">{placeholder ?? "(cliquer pour écrire)"}</span>}
     </Tag>
   );
 }

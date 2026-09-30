@@ -137,16 +137,16 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
     .map((t) => ({ team: t, effet: effets[t.id] ?? null }))
     .filter((x): x is { team: Team; effet: EffetEquipe } => !!x.effet && (x.effet.type === "prison" || x.effet.type === "blocage"));
 
-  const champ = "bg-white border border-bronze/20 rounded-lg px-3 py-2 w-full";
-  const bouton = "rounded-full bg-or px-6 py-2 text-sm font-semibold text-encre disabled:opacity-50";
+  const champ = "bg-white border border-acier/20 rounded-lg px-3 py-2 w-full";
+  const bouton = "rounded-full bg-lueur px-6 py-2 text-sm font-semibold text-nuit disabled:opacity-50";
 
   return (
     <section className="max-w-2xl flex flex-col gap-8">
       <div>
-        <h2 className="font-semibold text-encre mb-2">1. Énigme surprise</h2>
+        <h2 className="font-semibold text-nuit mb-2">1. Énigme surprise</h2>
         {!enigme ? (
-          <div className="bg-sable rounded-xl p-4 flex flex-col gap-3">
-            <p className="text-sm text-encre/75">
+          <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
+            <p className="text-sm text-nuit/75">
               L&apos;énigme s&apos;affiche en plein écran chez toutes les équipes, sans dire ce qui est en jeu. La
               première équipe à répondre juste apparaît ici.
             </p>
@@ -157,15 +157,15 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             </button>
           </div>
         ) : (
-          <div className="bg-sable rounded-xl p-4 flex flex-col gap-3">
-            <p className="text-sm text-encre whitespace-pre-line">{enigme.enonce}</p>
-            <p className="text-xs text-encre/75">Réponse attendue : {enigme.reponse}</p>
+          <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
+            <p className="text-sm text-nuit whitespace-pre-line">{enigme.enonce}</p>
+            <p className="text-xs text-nuit/75">Réponse attendue : {enigme.reponse}</p>
             <div>
-              <p className="text-sm font-medium text-encre mb-1">Équipes ayant répondu juste</p>
+              <p className="text-sm font-medium text-nuit mb-1">Équipes ayant répondu juste</p>
               {bonnes.length === 0 ? (
-                <p className="text-sm text-encre/75">Aucune pour l&apos;instant.</p>
+                <p className="text-sm text-nuit/75">Aucune pour l&apos;instant.</p>
               ) : (
-                <ol className="text-sm text-encre space-y-0.5">
+                <ol className="text-sm text-nuit space-y-0.5">
                   {bonnes.map((b, i) => (
                     <li key={b.teamId} className={i === 0 ? "font-semibold" : ""}>
                       {i === 0 ? "🥇 " : `${i + 1}. `}
@@ -178,7 +178,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             <button
               onClick={() => executer(() => terminerEnigmeSurprise(gameId), "Énigme surprise terminée.")}
               disabled={occupe}
-              className="self-start rounded-full border border-bronze/30 px-6 py-2 text-sm text-encre disabled:opacity-50"
+              className="self-start rounded-full border border-acier/30 px-6 py-2 text-sm text-nuit disabled:opacity-50"
             >
               Terminer l&apos;énigme surprise
             </button>
@@ -187,9 +187,9 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
       </div>
 
       <div>
-        <h2 className="font-semibold text-encre mb-2">2. Appliquer un effet à une équipe</h2>
-        <div className="bg-sable rounded-xl p-4 flex flex-col gap-3">
-          <p className="text-sm text-encre/75">
+        <h2 className="font-semibold text-nuit mb-2">2. Appliquer un effet à une équipe</h2>
+        <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
+          <p className="text-sm text-nuit/75">
             L&apos;équipe gagnante annonce sa cible à l&apos;oral : applique ici l&apos;effet choisi.
           </p>
           <select value={teamCible} onChange={(e) => setTeamCible(e.target.value)} className={champ}>
@@ -206,7 +206,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                 key={t}
                 onClick={() => setTypeEffet(t)}
                 className={`px-4 py-1.5 rounded-full text-sm transition ${
-                  typeEffet === t ? "bg-or text-encre" : "bg-white border border-bronze/20 text-encre"
+                  typeEffet === t ? "bg-lueur text-nuit" : "bg-white border border-acier/20 text-nuit"
                 }`}
               >
                 {t === "prison" ? "Prison" : "Écran bloqué"}
@@ -216,7 +216,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
           {typeEffet === "prison" ? (
             <>
               <input value={personne} onChange={(e) => setPersonne(e.target.value)} className={champ} placeholder="Nom de la personne mise en prison" />
-              <label className="flex items-center gap-2 text-sm text-encre/75">
+              <label className="flex items-center gap-2 text-sm text-nuit/75">
                 <input type="checkbox" checked={prisonDureeLimitee} onChange={(e) => setPrisonDureeLimitee(e.target.checked)} />
                 Durée limitée (sinon jusqu&apos;à ce que tu libères la personne)
               </label>
@@ -250,9 +250,9 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
       </div>
 
       <div>
-        <h2 className="font-semibold text-encre mb-2">3. Fausse fin / Glitch</h2>
-        <div className="bg-sable rounded-xl p-4 flex flex-col gap-3">
-          <p className="text-sm text-encre/75">
+        <h2 className="font-semibold text-nuit mb-2">3. Fausse fin / Glitch</h2>
+        <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
+          <p className="text-sm text-nuit/75">
             À déclencher au moment de ton choix, chez une équipe précise ou chez toutes en même temps. L&apos;effet
             se joue automatiquement (quelques secondes) puis le jeu reprend tout seul.
           </p>
@@ -262,7 +262,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                 key={v}
                 onClick={() => setTypeSurprise(v)}
                 className={`px-4 py-1.5 rounded-full text-sm transition ${
-                  typeSurprise === v ? "bg-or text-encre" : "bg-white border border-bronze/20 text-encre"
+                  typeSurprise === v ? "bg-lueur text-nuit" : "bg-white border border-acier/20 text-nuit"
                 }`}
               >
                 {v === "fausseFin" ? "Fausse fin" : "Glitch (site piraté)"}
@@ -279,7 +279,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             />
           )}
           <div>
-            <p className="text-xs text-encre/75 mb-1">
+            <p className="text-xs text-nuit/75 mb-1">
               {typeSurprise === "glitch" ? "Durée d'affichage du glitch" : "Durée de l'écran de victoire (avant la révélation)"}
             </p>
             <div className="flex gap-2">
@@ -291,7 +291,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             </div>
           </div>
           {typeSurprise === "glitch" && (
-            <label className="flex items-center gap-2 text-sm text-encre/75">
+            <label className="flex items-center gap-2 text-sm text-nuit/75">
               <input type="checkbox" checked={vibrer} onChange={(e) => setVibrer(e.target.checked)} />
               Faire vibrer l&apos;appareil pendant le glitch (si le téléphone le permet)
             </label>
@@ -302,7 +302,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                 key={v}
                 onClick={() => setCibleSurprise(v)}
                 className={`px-4 py-1.5 rounded-full text-sm transition ${
-                  cibleSurprise === v ? "bg-or text-encre" : "bg-white border border-bronze/20 text-encre"
+                  cibleSurprise === v ? "bg-lueur text-nuit" : "bg-white border border-acier/20 text-nuit"
                 }`}
               >
                 {v === "toutes" ? "Toutes les équipes" : "Une équipe précise"}
@@ -335,12 +335,12 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
 
       {effetsActifs.length > 0 && (
         <div>
-          <h2 className="font-semibold text-encre mb-2">Effets en cours</h2>
+          <h2 className="font-semibold text-nuit mb-2">Effets en cours</h2>
           <ul className="flex flex-col gap-2">
             {effetsActifs.map(({ team, effet }) => {
               const termine = effet.type === "blocage" && !!effet.finTimestamp && effet.finTimestamp <= maintenant;
               return (
-                <li key={team.id} className="bg-sable rounded-xl p-3 flex items-center justify-between gap-3 text-sm text-encre">
+                <li key={team.id} className="bg-brume-clair rounded-xl p-3 flex items-center justify-between gap-3 text-sm text-nuit">
                   <span>
                     <strong>{team.nom}</strong> —{" "}
                     {effet.type === "prison"
@@ -352,7 +352,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
                   <button
                     onClick={() => executer(() => retirerEffetEquipe(gameId, team.id), `Effet retiré pour ${team.nom}.`)}
                     disabled={occupe}
-                    className="underline text-bronze-deep shrink-0 disabled:opacity-50"
+                    className="underline text-acier-deep shrink-0 disabled:opacity-50"
                   >
                     {effet.type === "prison" ? "Libérer" : "Retirer"}
                   </button>
