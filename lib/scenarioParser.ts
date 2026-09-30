@@ -18,8 +18,6 @@ ENIGME 1
 TYPE: LIBRE
 TEXTE: L'énoncé de l'énigme
 REPONSE: la réponse attendue
-FEEDBACK CORRECT: Texte affiché si bonne réponse
-FEEDBACK INCORRECT: Texte affiché si mauvaise réponse
 TEMPS: 60
 FRAGMENT: Texte libre affiché juste après une bonne réponse (facultatif)
 
@@ -27,8 +25,6 @@ ENIGME 2
 TYPE: LIBRE
 TEXTE: L'énoncé de l'énigme
 REPONSE: la réponse attendue
-FEEDBACK CORRECT: Texte affiché si bonne réponse
-FEEDBACK INCORRECT: Texte affiché si mauvaise réponse
 TEMPS:
 
 PAGE CODE

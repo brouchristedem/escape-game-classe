@@ -1268,8 +1268,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
             <TextField label="Bouton « Énigme suivante »" value={siteTexts.jeuLabelEnigmeSuivante} onChange={(v) => setSiteText("jeuLabelEnigmeSuivante", v)} />
             <TextField label="Bouton « Voir le résultat »" value={siteTexts.jeuLabelVoirResultat} onChange={(v) => setSiteText("jeuLabelVoirResultat", v)} />
             <TextField label="Texte « Temps écoulé »" value={siteTexts.jeuTexteTempsEcoule} onChange={(v) => setSiteText("jeuTexteTempsEcoule", v)} />
-            <TextField label="Texte « Mauvaise réponse »" value={siteTexts.jeuTexteMauvaiseReponse} onChange={(v) => setSiteText("jeuTexteMauvaiseReponse", v)} />
-            <TextField label="Étiquette « Bonne réponse : »" value={siteTexts.jeuTexteBonneReponseLabel} onChange={(v) => setSiteText("jeuTexteBonneReponseLabel", v)} />
             <TextField label="Titre écran fragment débloqué" value={siteTexts.jeuTexteFragmentTitre} onChange={(v) => setSiteText("jeuTexteFragmentTitre", v)} />
             <TextField label="Placeholder réponse libre" value={siteTexts.jeuPlaceholderReponseLibre} onChange={(v) => setSiteText("jeuPlaceholderReponseLibre", v)} />
           </TextGroup>
