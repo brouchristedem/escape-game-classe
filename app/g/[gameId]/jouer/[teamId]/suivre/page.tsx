@@ -58,8 +58,8 @@ export default function SuivreEquipe() {
   // avec une vraie phase avant d'afficher quoi que ce soit.
   if (!state || !state.phase) {
     return (
-      <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-fog text-nuit">
-        <EditableText as="p" multiline value={texts.suivreAttente} onSave={(v) => saveText("suivreAttente", v)} className="max-w-sm text-nuit/70" />
+      <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-parchemin text-encre">
+        <EditableText as="p" multiline value={texts.suivreAttente} onSave={(v) => saveText("suivreAttente", v)} className="max-w-sm text-encre/75" />
       </main>
     );
   }
@@ -69,37 +69,37 @@ export default function SuivreEquipe() {
       as="div"
       value={texts.suivreBanniere}
       onSave={(v) => saveText("suivreBanniere", v)}
-      className="mb-4 rounded-full bg-paper/90 px-4 py-2 text-center text-xs font-medium text-nuit"
+      className="mb-4 rounded-full bg-velin/90 px-4 py-2 text-center text-xs font-medium text-encre"
     />
   );
 
   if (state.phase === "termine") {
     return (
-      <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-fog text-center">
+      <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-parchemin text-center">
         <div className="relative z-10 flex flex-col items-center max-w-md w-full">
           {banner}
-          <p className="text-violet font-semibold mb-2">{team?.nom}</p>
-          <h1 className="font-headline text-2xl font-bold mb-4 text-nuit">{texts.finTitre}</h1>
-          <p className="text-nuit/70 max-w-sm">{texts.finSousTitre}</p>
+          <p className="text-bronze font-semibold mb-2">{team?.nom}</p>
+          <h1 className="font-headline text-2xl font-bold mb-4 text-encre">{texts.finTitre}</h1>
+          <p className="text-encre/75 max-w-sm">{texts.finSousTitre}</p>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-fog">
+    <main className="min-h-screen bg-parchemin">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <GlobalOverlays tempsGeneral={tempsGeneral} tempsGeneralAjustement={tempsGeneralAjustement} broadcast={broadcast} />
       <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre={false} texts={texts} />
       {banner}
       <div className="mb-6">
-        <div className="flex items-center justify-between text-sm text-nuit/70 mb-2">
-          <span className="font-medium text-nuit">{team?.nom}</span>
+        <div className="flex items-center justify-between text-sm text-encre/75 mb-2">
+          <span className="font-medium text-encre">{team?.nom}</span>
           <span>Énigme</span>
           {state.timeLeft !== null && (
             <span
               className={`font-codemono font-semibold rounded-full px-2.5 py-0.5 transition-colors ${
-                state.timeLeft <= 5 ? "bg-alerte text-white animate-timer-critical" : "bg-paper text-nuit"
+                state.timeLeft <= 5 ? "bg-alerte text-white animate-timer-critical" : "bg-velin text-encre"
               }`}
             >
               {state.timeLeft}s
@@ -108,11 +108,11 @@ export default function SuivreEquipe() {
         </div>
       </div>
 
-      <div className="rounded-3xl bg-paper ring-1 ring-violet/15 shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)] p-6 sm:p-7 mb-6">
+      <div className="cadre rounded-3xl bg-velin ring-1 ring-bronze/15 shadow-[0_18px_40px_-14px_rgba(60,38,10,0.45)] p-6 sm:p-7 mb-6">
         {state.questionType === "info" ? (
-          <RichText text={state.questionTexte} className="text-xl font-semibold leading-snug text-nuit" />
+          <RichText text={state.questionTexte} className="text-xl font-semibold leading-snug text-encre" />
         ) : (
-          <h1 className="text-xl font-semibold leading-snug text-nuit">{state.questionTexte}</h1>
+          <h1 className="text-xl font-semibold leading-snug text-encre">{state.questionTexte}</h1>
         )}
       </div>
 
@@ -122,7 +122,7 @@ export default function SuivreEquipe() {
             const isDisabled = state.disabledOptions.includes(i);
             const isSelected = state.selected === i;
 
-            let style = "bg-paper/90 ring-1 ring-violet/10 text-nuit";
+            let style = "bg-velin/90 ring-1 ring-bronze/10 text-encre";
             if (state.feedbackText && isSelected) {
               style = state.feedbackOk
                 ? "bg-green-500 text-white ring-1 ring-green-500 shadow-md shadow-green-500/20"
@@ -150,17 +150,17 @@ export default function SuivreEquipe() {
                 ? state.feedbackOk
                   ? "bg-green-500 border-green-500 text-white"
                   : "bg-red-500 border-red-500 text-white"
-                : "bg-paper/90 border-transparent text-nuit"
+                : "bg-velin/90 border-transparent text-encre"
             }`}
           />
         </div>
       )}
 
       {state.feedbackOk && state.fragmentTexte && (
-        <div className="mt-6 rounded-2xl bg-gradient-to-r from-signal/15 to-paper ring-2 ring-violet/40 px-5 py-4 text-center shadow-sm">
+        <div className="mt-6 rounded-2xl bg-gradient-to-r from-or/15 to-velin ring-2 ring-bronze/40 px-5 py-4 text-center shadow-sm">
           <p className="text-2xl mb-1">🏆</p>
-          <p className="font-semibold text-nuit">{texts.suivreFragmentTitre}</p>
-          <p className="my-2 text-lg font-bold text-violet-deep">{state.fragmentTexte}</p>
+          <p className="font-semibold text-encre">{texts.suivreFragmentTitre}</p>
+          <p className="my-2 text-lg font-bold text-bronze-deep">{state.fragmentTexte}</p>
         </div>
       )}
 
@@ -175,7 +175,7 @@ export default function SuivreEquipe() {
       )}
 
       {state.awaitingContinue && (
-        <p className="mt-6 text-center text-nuit/70 text-sm">{texts.suivreAttenteContinuer}</p>
+        <p className="mt-6 text-center text-encre/75 text-sm">{texts.suivreAttenteContinuer}</p>
       )}
       </div>
     </main>

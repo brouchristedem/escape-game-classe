@@ -1,14 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Syne, JetBrains_Mono } from "next/font/google";
+import { Alegreya_Sans, Cinzel, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { AdminModeProvider } from "@/lib/adminMode";
 import { AuthProvider } from "@/lib/auth";
+import Lanterne from "@/app/components/Lanterne";
 
-// Polices de l'identité "Brume & Signal" : Syne (titres, large et atypique),
-// Manrope (texte courant), JetBrains Mono (chrono, codes, données).
-const syne = Syne({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-syne", display: "swap" });
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
-const jbMono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-jbmono", display: "swap" });
+// Polices de l'identité "Grimoire" : Cinzel (titres gravés), Alegreya Sans
+// (texte courant, chaleureux et lisible), IBM Plex Mono (chrono, codes).
+const cinzel = Cinzel({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-cinzel", display: "swap" });
+const alegreya = Alegreya_Sans({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-alegreya", display: "swap" });
+const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-plexmono", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Escape Game",
@@ -16,14 +17,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#d5d1f1",
+  themeColor: "#e9dfc4",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${syne.variable} ${manrope.variable} ${jbMono.variable} h-full antialiased`}>
+    <html lang="fr" className={`${cinzel.variable} ${alegreya.variable} ${plexMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <AuthProvider>
+          <Lanterne />
           <AdminModeProvider>
             <div className="flex-1 flex flex-col">{children}</div>
           </AdminModeProvider>

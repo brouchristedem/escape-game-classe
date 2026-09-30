@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { listerJeuxPublics, verifierCodeAcces } from "@/lib/data";
 import { GameMeta } from "@/lib/types";
 import GameLogo from "@/app/components/GameLogo";
+import Runes from "@/app/components/Runes";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import Reveal from "@/app/components/gsap/Reveal";
 import SplitReveal from "@/app/components/gsap/SplitReveal";
@@ -52,40 +53,45 @@ export default function Accueil() {
 
   return (
     <main
-      className={`relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-16 bg-fog`}
+      className={`relative min-h-screen flex flex-col items-center overflow-hidden px-6 py-16 bg-parchemin`}
     >
-      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
-      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
+      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
+      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
         <Reveal y={20}>
-          <GameLogo className="w-24 sm:w-28 h-auto mb-6 drop-shadow-[0_0_20px_rgba(201,162,77,0.25)]" />
+          <GameLogo className="w-24 sm:w-28 h-auto mb-6 drop-shadow-[0_6px_18px_rgba(60,38,10,0.35)]" />
         </Reveal>
         <SplitReveal
           as="h1"
           text="Escape Game"
-          className="font-headline text-2xl sm:text-3xl font-bold mb-2 tracking-wide text-nuit text-center"
+          className="font-headline text-2xl sm:text-3xl font-bold mb-2 tracking-wide text-encre text-center"
         />
+        <Reveal delay={0.2}>
+          <div className="filet-orne w-64 my-3">
+            <Runes className="h-3.5 w-auto text-bronze" />
+          </div>
+        </Reveal>
         <Reveal delay={0.3}>
-          <p className="font-codemono text-xs sm:text-sm text-violet mb-10 text-center">
+          <p className="font-codemono text-xs sm:text-sm text-bronze-deep mb-10 text-center">
             Choisissez votre jeu et entrez le code de votre organisateur
           </p>
         </Reveal>
 
         {loading ? (
-          <p className="text-nuit/70 text-sm">Chargement...</p>
+          <p className="text-encre/75 text-sm">Chargement...</p>
         ) : jeux.length === 0 ? (
-          <p className="text-nuit/70 text-sm text-center">Aucun jeu disponible pour l&apos;instant.</p>
+          <p className="text-encre/75 text-sm text-center">Aucun jeu disponible pour l&apos;instant.</p>
         ) : (
           <Reveal as="div" stagger staggerAmount={0.1} className="flex flex-col gap-3 w-full">
             {jeux.map((j) => (
               <button
                 key={j.id}
                 onClick={() => setJeuOuvert(j)}
-                className="flex items-center justify-between rounded-2xl bg-paper/95 ring-1 ring-violet/15 px-5 py-4 text-left font-semibold text-nuit transition-all duration-200 hover:ring-violet/40 hover:-translate-y-0.5 hover:shadow-md"
+                className="cadre flex items-center justify-between rounded-2xl bg-velin/95 ring-1 ring-bronze/15 px-5 py-4 text-left font-semibold text-encre transition-all duration-200 hover:ring-bronze/40 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <span>{j.nom}</span>
-                <span className="text-violet-deep text-lg" aria-hidden>
+                <span className="text-bronze-deep text-lg" aria-hidden>
                   🔒
                 </span>
               </button>
@@ -155,11 +161,11 @@ function ModalCode({ jeu, onClose }: { jeu: GameMeta; onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="bg-fog-2 ring-1 ring-violet/20 rounded-2xl px-6 py-6 w-full max-w-xs"
+        className="cadre bg-velin rounded-2xl px-6 py-6 w-full max-w-xs"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-headline font-bold text-nuit mb-1">{jeu.nom}</h2>
-        <p className="text-xs text-nuit/70 mb-4">Entrez le code donné par votre organisateur.</p>
+        <h2 className="font-headline font-bold text-encre mb-1">{jeu.nom}</h2>
+        <p className="text-xs text-encre/75 mb-4">Entrez le code donné par votre organisateur.</p>
         <input
           autoFocus
           value={code}
@@ -167,18 +173,18 @@ function ModalCode({ jeu, onClose }: { jeu: GameMeta; onClose: () => void }) {
           onKeyDown={(e) => e.key === "Enter" && valider()}
           disabled={bloque}
           placeholder="Code"
-          className="w-full bg-fog border border-violet/20 focus:border-violet rounded-lg px-4 py-2.5 text-sm text-nuit outline-none mb-3 disabled:opacity-50"
+          className="w-full bg-parchemin border border-bronze/20 focus:border-bronze rounded-lg px-4 py-2.5 text-sm text-encre outline-none mb-3 disabled:opacity-50"
         />
         {erreur && <p className="text-red-400 text-xs mb-3">{erreur}</p>}
         <div className="flex gap-2">
           <button
             onClick={valider}
             disabled={!code.trim() || verifying || bloque}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-signal to-signal-dark px-4 py-2.5 font-semibold text-nuit transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-40 disabled:translate-y-0"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-or to-or-fonce px-4 py-2.5 font-semibold text-encre transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-40 disabled:translate-y-0"
           >
             {verifying ? "..." : "Valider"}
           </button>
-          <button onClick={onClose} className="text-sm text-nuit/70 hover:text-nuit px-3">
+          <button onClick={onClose} className="text-sm text-encre/75 hover:text-encre px-3">
             Annuler
           </button>
         </div>

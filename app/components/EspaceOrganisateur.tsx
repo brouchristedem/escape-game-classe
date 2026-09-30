@@ -26,13 +26,13 @@ export default function EspaceOrganisateur({
   if (restrictedEmail && user.email !== restrictedEmail) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
-        <p className="text-nuit font-semibold mb-2">Accès réservé.</p>
-        <p className="text-sm text-nuit/70 mb-6">
+        <p className="text-encre font-semibold mb-2">Accès réservé.</p>
+        <p className="text-sm text-encre/75 mb-6">
           Ce compte ({user.email}) n&apos;est pas autorisé sur cette page.
         </p>
         <button
           onClick={() => signOut()}
-          className="text-sm font-semibold text-violet-deep hover:text-nuit"
+          className="text-sm font-semibold text-bronze-deep hover:text-encre"
         >
           Se déconnecter
         </button>
@@ -68,21 +68,21 @@ function ConnexionOrganisateur({ titre }: { titre: string }) {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
       <GameLogo className="h-14 w-14 mb-4" />
-      <h1 className="font-headline text-xl font-semibold mb-1 text-nuit">{titre}</h1>
-      <p className="text-sm text-nuit/70 mb-6">Connectez-vous à votre compte</p>
+      <h1 className="font-headline text-xl font-semibold mb-1 text-encre">{titre}</h1>
+      <p className="text-sm text-encre/75 mb-6">Connectez-vous à votre compte</p>
 
       <div className="flex flex-col gap-3 w-72">
         <button
           onClick={connexionGoogle}
-          className="flex items-center justify-center gap-2 border border-violet/20 hover:bg-violet/5 rounded-lg px-4 py-2 text-sm font-medium text-nuit transition"
+          className="flex items-center justify-center gap-2 border border-bronze/20 hover:bg-bronze/5 rounded-lg px-4 py-2 text-sm font-medium text-encre transition"
         >
           Se connecter avec Google
         </button>
 
-        <div className="flex items-center gap-2 text-xs text-nuit/70 my-1">
-          <div className="h-px flex-1 bg-violet/15" />
+        <div className="flex items-center gap-2 text-xs text-encre/75 my-1">
+          <div className="h-px flex-1 bg-bronze/15" />
           ou
-          <div className="h-px flex-1 bg-violet/15" />
+          <div className="h-px flex-1 bg-bronze/15" />
         </div>
 
         <input
@@ -90,7 +90,7 @@ function ConnexionOrganisateur({ titre }: { titre: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="E-mail"
-          className="bg-violet-mist border border-violet-mist focus:border-violet outline-none rounded-lg px-4 py-2 text-nuit"
+          className="bg-sable border border-sable focus:border-bronze outline-none rounded-lg px-4 py-2 text-encre"
         />
         <input
           type="password"
@@ -98,19 +98,19 @@ function ConnexionOrganisateur({ titre }: { titre: string }) {
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && valider()}
           placeholder="Mot de passe"
-          className="bg-violet-mist border border-violet-mist focus:border-violet outline-none rounded-lg px-4 py-2 text-nuit"
+          className="bg-sable border border-sable focus:border-bronze outline-none rounded-lg px-4 py-2 text-encre"
         />
         <button
           onClick={valider}
           disabled={submitting || !email.trim() || !password}
-          className="bg-signal hover:bg-signal-dark text-nuit font-semibold px-6 py-2 rounded-full transition disabled:opacity-40"
+          className="bg-or hover:bg-or-fonce text-encre font-semibold px-6 py-2 rounded-full transition disabled:opacity-40"
         >
           {submitting ? "..." : "Se connecter"}
         </button>
         {error && <p className="text-alerte text-sm text-center">{error}</p>}
       </div>
 
-      <Link href="/a-propos" className="mt-10 text-xs text-nuit/70 hover:text-violet-deep underline">
+      <Link href="/a-propos" className="mt-10 text-xs text-encre/75 hover:text-bronze-deep underline">
         À propos du développeur
       </Link>
     </main>
@@ -176,13 +176,13 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
       <div className="flex items-start justify-between mb-1">
         <div className="flex items-center gap-3">
           <GameLogo className="h-10 w-10 shrink-0" />
-          <h1 className="font-headline text-2xl font-extrabold text-nuit">{titre}</h1>
+          <h1 className="font-headline text-2xl font-extrabold text-encre">{titre}</h1>
         </div>
-        <button onClick={() => signOut()} className="text-xs text-nuit/70 hover:text-nuit/70">
+        <button onClick={() => signOut()} className="text-xs text-encre/75 hover:text-encre/75">
           Déconnexion ({email})
         </button>
       </div>
-      <p className="text-sm text-nuit/70 mb-8">
+      <p className="text-sm text-encre/75 mb-8">
         La racine du site liste désormais tous les jeux publiquement, chacun verrouillé par un code. Donnez le code
         affiché ci-dessous à vos joueurs — vous pouvez le changer à tout moment. Le lien direct par jeu reste
         disponible ci-dessous si vous préférez le partager tel quel.
@@ -194,27 +194,27 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
           onChange={(e) => setNouveauNom(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && creer()}
           placeholder="Nom du nouveau jeu (ex. Semaine d'intégration)"
-          className="flex-1 border border-violet/20 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-violet"
+          className="flex-1 border border-bronze/20 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-bronze"
         />
         <button
           onClick={creer}
           disabled={!nouveauNom.trim() || creating}
-          className="bg-signal hover:bg-signal-dark text-nuit font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-or hover:bg-or-fonce text-encre font-semibold px-5 py-2.5 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {creating ? "Création..." : "+ Créer un jeu"}
         </button>
       </div>
 
       {loading ? (
-        <p className="text-nuit/70 text-sm">Chargement...</p>
+        <p className="text-encre/75 text-sm">Chargement...</p>
       ) : jeux.length === 0 ? (
-        <p className="text-nuit/70 text-sm">Aucun jeu pour l&apos;instant. Créez-en un ci-dessus.</p>
+        <p className="text-encre/75 text-sm">Aucun jeu pour l&apos;instant. Créez-en un ci-dessus.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {jeux.map((j) => (
-            <div key={j.id} className="flex items-center justify-between rounded-2xl ring-1 ring-violet/15 px-5 py-4 gap-4">
+            <div key={j.id} className="flex items-center justify-between rounded-2xl ring-1 ring-bronze/15 px-5 py-4 gap-4">
               <div className="min-w-0">
-                <p className="font-semibold text-nuit">{j.nom}</p>
+                <p className="font-semibold text-encre">{j.nom}</p>
                 <div className="flex items-center gap-2 mt-1.5">
                   {editCodeId === j.id ? (
                     <>
@@ -224,30 +224,30 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
                         onChange={(e) => setCodeBrouillon(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && enregistrerCode(j.id)}
                         placeholder="Nouveau code"
-                        className="border border-violet/20 rounded px-2 py-1 text-xs outline-none focus:border-violet w-28"
+                        className="border border-bronze/20 rounded px-2 py-1 text-xs outline-none focus:border-bronze w-28"
                       />
                       <button
                         onClick={() => enregistrerCode(j.id)}
                         disabled={!codeBrouillon.trim() || savingCode}
-                        className="text-xs font-semibold text-violet-deep disabled:opacity-40"
+                        className="text-xs font-semibold text-bronze-deep disabled:opacity-40"
                       >
                         {savingCode ? "..." : "Valider"}
                       </button>
-                      <button onClick={() => setEditCodeId(null)} className="text-xs text-nuit/70">
+                      <button onClick={() => setEditCodeId(null)} className="text-xs text-encre/75">
                         Annuler
                       </button>
                     </>
                   ) : (
                     <>
-                      <span className="text-xs text-nuit/70">
-                        Code joueurs : <span className="font-mono font-semibold text-nuit">{j.codeAcces || "—"}</span>
+                      <span className="text-xs text-encre/75">
+                        Code joueurs : <span className="font-mono font-semibold text-encre">{j.codeAcces || "—"}</span>
                       </span>
                       <button
                         onClick={() => {
                           setEditCodeId(j.id);
                           setCodeBrouillon(j.codeAcces || "");
                         }}
-                        className="text-xs text-nuit/70 hover:text-violet-deep"
+                        className="text-xs text-encre/75 hover:text-bronze-deep"
                       >
                         Modifier
                       </button>
@@ -256,7 +256,7 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
                 </div>
               </div>
               <div className="flex items-center gap-4 shrink-0">
-                <Link href={`/organisateur/${j.id}`} className="text-sm font-semibold text-violet-deep">
+                <Link href={`/organisateur/${j.id}`} className="text-sm font-semibold text-bronze-deep">
                   Administrer →
                 </Link>
                 <button onClick={() => supprimer(j.id, j.nom)} className="text-xs text-alerte hover:text-alerte">
@@ -269,7 +269,7 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
       )}
 
       <div className="mt-10 text-center">
-        <Link href="/a-propos" className="text-xs text-nuit/70 hover:text-violet-deep underline">
+        <Link href="/a-propos" className="text-xs text-encre/75 hover:text-bronze-deep underline">
           À propos du développeur
         </Link>
       </div>

@@ -2,10 +2,10 @@
 
 import { useLogoPersonnalise } from "@/app/components/GameTheme";
 
-// Identité "Brume & Signal" — le logo s'appelle "la Faille" : une sphère de
-// nuit fendue en deux par une fissure en éclair. Les deux moitiés glissent
-// légèrement, et la lumière "signal" s'échappe par la brèche : c'est l'instant
-// où l'énigme cède. La fissure est le seul élément animé en continu.
+// Identité "Grimoire" — le médaillon : une étoile de boussole en bronze doré
+// autour d'un disque vert-de-gris gravé de méridiens, un serpent d'or qui
+// s'enroule, et un anneau de runes qui dérive lentement. La lueur au centre
+// respire ; c'est le seul élément animé en continu, avec les runes.
 export default function GameLogo({ className = "" }: { className?: string }) {
   // Logo choisi par l'organisateur pour ce jeu (voir onglet "Apparence").
   const logoPersonnalise = useLogoPersonnalise();
@@ -15,67 +15,41 @@ export default function GameLogo({ className = "" }: { className?: string }) {
   }
 
   return (
-    <svg viewBox="0 0 200 200" className={className} role="img" aria-label="Escape Game">
-      <defs>
-        <clipPath id="lf-sphere">
-          <circle cx="100" cy="100" r="80" />
-        </clipPath>
-        <clipPath id="lf-gauche">
-          <path d="M 0 0 L 122 0 L 90 52 L 116 88 L 84 122 L 108 156 L 88 200 L 0 200 Z" />
-        </clipPath>
-        <clipPath id="lf-droite">
-          <path d="M 200 0 L 122 0 L 90 52 L 116 88 L 84 122 L 108 156 L 88 200 L 200 200 Z" />
-        </clipPath>
-        <linearGradient id="lf-nuit-a" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#3a2a9a" />
-          <stop offset="100%" stopColor="#1a1240" />
-        </linearGradient>
-        <linearGradient id="lf-nuit-b" x1="1" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2b1d78" />
-          <stop offset="100%" stopColor="#120a33" />
-        </linearGradient>
-        <radialGradient id="lf-lumiere" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#e4fb7a" />
-          <stop offset="100%" stopColor="#c9f31d" />
-        </radialGradient>
-      </defs>
-
-      {/* halo de fuite de lumière */}
-      <circle cx="100" cy="100" r="87" fill="none" stroke="#c9f31d" strokeWidth="7" opacity="0.7" className="lg-pulse" />
-
-      {/* lumière derrière la fissure */}
-      <g clipPath="url(#lf-sphere)">
-        <rect x="0" y="0" width="200" height="200" fill="url(#lf-lumiere)" className="lg-crack" />
-      </g>
-
-      {/* deux moitiés décalées */}
-      <g clipPath="url(#lf-sphere)">
-        <g transform="translate(-7 -3)">
-          <rect x="0" y="0" width="200" height="200" fill="url(#lf-nuit-a)" clipPath="url(#lf-gauche)" />
-        </g>
-        <g transform="translate(7 3)">
-          <rect x="0" y="0" width="200" height="200" fill="url(#lf-nuit-b)" clipPath="url(#lf-droite)" />
-        </g>
-      </g>
-
-      {/* anneau de cadran, fin et brisé */}
-      <circle
-        cx="100"
-        cy="100"
-        r="90"
-        fill="none"
-        stroke="#1a1240"
-        strokeWidth="2.5"
-        strokeDasharray="4 7 30 7"
-        strokeLinecap="round"
-      />
-
-      {/* étincelles qui s'échappent de la brèche */}
-      <g fill="#c9f31d" stroke="#1a1240" strokeWidth="1.5">
-        <rect x="150" y="34" width="9" height="9" rx="2" transform="rotate(20 154 38)" />
-        <rect x="163" y="60" width="6" height="6" rx="1.5" transform="rotate(-15 166 63)" />
-        <circle cx="42" cy="152" r="4" />
-      </g>
-    </svg>
+    <svg viewBox="0 0 200 200" role="img" aria-label="Escape Game" className={className}>
+<defs>
+<linearGradient id="lgm-mb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f0d48a"/><stop offset=".45" stopColor="#b98a35"/><stop offset="1" stopColor="#6b4712"/></linearGradient>
+<linearGradient id="lgm-mb2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e8c56f"/><stop offset=".5" stopColor="#9c7124"/><stop offset="1" stopColor="#5a3a0c"/></linearGradient>
+<radialGradient id="lgm-pat" cx=".38" cy=".3" r=".85"><stop offset="0" stopColor="#5fae9a"/><stop offset=".55" stopColor="#2f6b5e"/><stop offset="1" stopColor="#15382f"/></radialGradient>
+<linearGradient id="lgm-ser" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f6dc93"/><stop offset=".5" stopColor="#c99a3e"/><stop offset="1" stopColor="#7a5216"/></linearGradient>
+<radialGradient id="lgm-halo" cx=".5" cy=".5" r=".5"><stop offset="0" stopColor="#ffe9a8" stopOpacity=".9"/><stop offset="1" stopColor="#ffe9a8" stopOpacity="0"/></radialGradient>
+<clipPath id="lgm-disque"><circle cx="100" cy="100" r="60"/></clipPath>
+</defs>
+<g stroke="#4a2f08" strokeWidth="1.4" strokeLinejoin="round">
+<g fill="url(#lgm-mb2)"><path d="M100.0 2.0L89.0 30.9L111.0 30.9Z"/><path d="M198.0 100.0L169.1 89.0L169.1 111.0Z"/><path d="M100.0 198.0L111.0 169.1L89.0 169.1Z"/><path d="M2.0 100.0L30.9 111.0L30.9 89.0Z"/></g><g fill="url(#lgm-mb)"><path d="M160.8 39.2L143.1 44.8L155.2 56.9Z"/><path d="M160.8 160.8L155.2 143.1L143.1 155.2Z"/><path d="M39.2 160.8L56.9 155.2L44.8 143.1Z"/><path d="M39.2 39.2L44.8 56.9L56.9 44.8Z"/></g>
+</g>
+<circle cx="100" cy="100" r="72" fill="url(#lgm-mb)" stroke="#4a2f08" strokeWidth="1.6"/>
+<circle cx="100" cy="100" r="66" fill="none" stroke="#4a2f08" strokeWidth="1" opacity=".7"/>
+<g fill="#4a2f08" opacity=".85"><circle cx="165.2" cy="113.0" r="1.8"/><circle cx="155.3" cy="136.9" r="1.8"/><circle cx="136.9" cy="155.3" r="1.8"/><circle cx="113.0" cy="165.2" r="1.8"/><circle cx="87.0" cy="165.2" r="1.8"/><circle cx="63.1" cy="155.3" r="1.8"/><circle cx="44.7" cy="136.9" r="1.8"/><circle cx="34.8" cy="113.0" r="1.8"/><circle cx="34.8" cy="87.0" r="1.8"/><circle cx="44.7" cy="63.1" r="1.8"/><circle cx="63.1" cy="44.7" r="1.8"/><circle cx="87.0" cy="34.8" r="1.8"/><circle cx="113.0" cy="34.8" r="1.8"/><circle cx="136.9" cy="44.7" r="1.8"/><circle cx="155.3" cy="63.1" r="1.8"/><circle cx="165.2" cy="87.0" r="1.8"/></g>
+<circle cx="100" cy="100" r="60" fill="url(#lgm-pat)" stroke="#4a2f08" strokeWidth="2"/>
+<g clipPath="url(#lgm-disque)" fill="none" stroke="#a9e0cf" strokeWidth=".7" opacity=".28">
+<circle cx="100" cy="100" r="50"/><circle cx="100" cy="100" r="36"/><path d="M40 100H160M100 40V160M58 58L142 142M142 58L58 142"/>
+<path d="M46 80Q100 60 154 80M46 120Q100 140 154 120"/>
+</g>
+<g className="lg-rotate"><g fill="none" stroke="#f0d48a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity=".9"><path d="M0 -5V5M0 -2L4 -6M0 1L4 -3" transform="rotate(0.0 100 100) translate(100 44) " /><path d="M-1 -5V5M-1 -3L4 0L-1 3" transform="rotate(15.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2M-2 0L3 3" transform="rotate(30.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2L-2 1M-2 1L3 5" transform="rotate(45.0 100 100) translate(100 44) " /><path d="M3 -5L-3 0L3 5" transform="rotate(60.0 100 100) translate(100 44) " /><path d="M-3 -5L3 5M3 -5L-3 5" transform="rotate(75.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2L-2 1" transform="rotate(90.0 100 100) translate(100 44) " /><path d="M0 -5V5" transform="rotate(105.0 100 100) translate(100 44) " /><path d="M-3 -5V5M-3 -5L3 0V5" transform="rotate(120.0 100 100) translate(100 44) " /><path d="M2 -5L-2 -1L2 1L-2 5" transform="rotate(135.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2L-2 1M-2 1L3 5" transform="rotate(150.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2M-2 0L3 3" transform="rotate(165.0 100 100) translate(100 44) " /><path d="M0 -5V5M0 -2L4 -6M0 1L4 -3" transform="rotate(180.0 100 100) translate(100 44) " /><path d="M3 -5L-3 0L3 5" transform="rotate(195.0 100 100) translate(100 44) " /><path d="M-1 -5V5M-1 -3L4 0L-1 3" transform="rotate(210.0 100 100) translate(100 44) " /><path d="M-3 -5L3 5M3 -5L-3 5" transform="rotate(225.0 100 100) translate(100 44) " /><path d="M0 -5V5" transform="rotate(240.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2L-2 1" transform="rotate(255.0 100 100) translate(100 44) " /><path d="M-3 -5V5M-3 -5L3 0V5" transform="rotate(270.0 100 100) translate(100 44) " /><path d="M2 -5L-2 -1L2 1L-2 5" transform="rotate(285.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2M-2 0L3 3" transform="rotate(300.0 100 100) translate(100 44) " /><path d="M-2 -5V5M-2 -5L3 -2L-2 1M-2 1L3 5" transform="rotate(315.0 100 100) translate(100 44) " /><path d="M-1 -5V5M-1 -3L4 0L-1 3" transform="rotate(330.0 100 100) translate(100 44) " /><path d="M3 -5L-3 0L3 5" transform="rotate(345.0 100 100) translate(100 44) " /></g></g>
+<circle cx="100" cy="100" r="34" fill="url(#lgm-halo)" className="lg-lueur"/>
+<g fill="none" strokeLinecap="round" strokeLinejoin="round">
+<path d="M 96 166 C 58 148 64 118 100 108 C 138 98 140 72 108 56" stroke="#2a1706" strokeWidth="15.5"/>
+<path d="M 96 166 C 58 148 64 118 100 108 C 138 98 140 72 108 56" stroke="url(#lgm-ser)" strokeWidth="11.5"/>
+<path d="M 96 166 C 58 148 64 118 100 108 C 138 98 140 72 108 56" stroke="#7a5216" strokeWidth="8" strokeDasharray="1.6 5.6" opacity=".75"/>
+<path d="M97 163 C 62 146 68 120 100 111 C 134 102 136 78 108 60" stroke="#fff2c2" strokeWidth="1.6" opacity=".55" transform="translate(-2.5 -2)"/>
+</g>
+<g>
+<path d="M97 168 q-14 4 -22 -3" fill="none" stroke="#2a1706" strokeWidth="5" strokeLinecap="round"/>
+<path d="M97 168 q-14 4 -22 -3" fill="none" stroke="url(#lgm-ser)" strokeWidth="2.8" strokeLinecap="round"/>
+<path d="M104 62 C 98 50 110 40 122 46 C 132 52 130 62 118 64 C 112 66 108 66 104 62Z" fill="url(#lgm-ser)" stroke="#2a1706" strokeWidth="1.6" strokeLinejoin="round" transform="rotate(12 112 54)"/>
+<circle cx="119" cy="49" r="2.6" fill="#2a1706"/><circle cx="119.8" cy="48.2" r=".9" fill="#ffe9a8" className="lg-lueur"/>
+<path d="M130 55 l8 1.5 M138 56.5 l4 -2.6 M138 56.5 l4 2.6" stroke="#9b2a1c" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+</g>
+</svg>
   );
 }

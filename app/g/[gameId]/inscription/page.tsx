@@ -97,35 +97,35 @@ export default function InscriptionParticipant() {
   if (!charge || (idInscription && !inscriptionLue)) return <LoadingScreen label="Chargement..." />;
 
   const champ =
-    "w-full rounded-xl bg-fog-2 border border-violet/40 px-4 py-3 text-nuit placeholder:text-nuit/60";
+    "w-full rounded-xl bg-parchemin-2 border border-bronze/40 px-4 py-3 text-encre placeholder:text-encre/60";
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-fog text-center">
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
+    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-parchemin text-center">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
         <GameLogo className="w-24 sm:w-28 h-auto mb-6" />
-        {nomJeu && <p className="text-sm text-nuit/70 mb-2">{nomJeu}</p>}
+        {nomJeu && <p className="text-sm text-encre/75 mb-2">{nomJeu}</p>}
 
         {inscription?.equipeId ? (
           <>
-            <p className="text-sm text-nuit/70 mb-2">{inscription.nom}, ton équipe est :</p>
-            <h1 className="font-headline font-extrabold text-4xl text-violet mb-6">{inscription.equipeNom}</h1>
-            <p className="text-sm text-nuit/70 mb-6">
+            <p className="text-sm text-encre/75 mb-2">{inscription.nom}, ton équipe est :</p>
+            <h1 className="font-headline font-extrabold text-4xl text-bronze mb-6">{inscription.equipeNom}</h1>
+            <p className="text-sm text-encre/75 mb-6">
               Retrouvez-vous et choisissez ensemble un chef d&apos;équipe : c&apos;est lui qui joue sur son téléphone,
               les autres suivent la progression.
             </p>
             <div className="flex flex-col gap-3 w-full">
               <a
                 href={`/g/${gameId}/jouer/${inscription.equipeId}/suivre`}
-                className="rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3 font-semibold text-nuit"
+                className="rounded-full bg-gradient-to-r from-or to-or-fonce px-8 py-3 font-semibold text-encre"
               >
                 Suivre mon équipe
               </a>
               <a
                 href={`/g/${gameId}/jouer`}
-                className="rounded-full border border-violet/50 px-8 py-3 font-semibold text-nuit"
+                className="rounded-full border border-bronze/50 px-8 py-3 font-semibold text-encre"
               >
                 Je suis le chef d&apos;équipe
               </a>
@@ -133,25 +133,25 @@ export default function InscriptionParticipant() {
           </>
         ) : inscription ? (
           <>
-            <h1 className="font-headline font-extrabold text-2xl text-nuit mb-3">Tu es inscrit(e) ✅</h1>
-            <p className="text-nuit mb-2">{inscription.nom}</p>
-            <p className="text-sm text-nuit/70 mb-6">
+            <h1 className="font-headline font-extrabold text-2xl text-encre mb-3">Tu es inscrit(e) ✅</h1>
+            <p className="text-encre mb-2">{inscription.nom}</p>
+            <p className="text-sm text-encre/75 mb-6">
               Les équipes seront annoncées bientôt. Garde cette page ouverte : ton équipe s&apos;affichera ici.
             </p>
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-signal animate-bounce [animation-delay:-0.3s]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-signal animate-bounce [animation-delay:-0.15s]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-signal animate-bounce" />
+              <span className="h-2.5 w-2.5 rounded-full bg-or animate-bounce [animation-delay:-0.3s]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-or animate-bounce [animation-delay:-0.15s]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-or animate-bounce" />
             </div>
           </>
         ) : !ouvertes ? (
           <>
-            <h1 className="font-headline font-extrabold text-2xl text-nuit mb-3">Inscriptions fermées</h1>
-            <p className="text-sm text-nuit/70">Si tu n&apos;as pas d&apos;équipe, préviens un organisateur.</p>
+            <h1 className="font-headline font-extrabold text-2xl text-encre mb-3">Inscriptions fermées</h1>
+            <p className="text-sm text-encre/75">Si tu n&apos;as pas d&apos;équipe, préviens un organisateur.</p>
           </>
         ) : (
           <>
-            <h1 className="font-headline font-extrabold text-2xl text-nuit mb-6">Inscris-toi</h1>
+            <h1 className="font-headline font-extrabold text-2xl text-encre mb-6">Inscris-toi</h1>
             <div className="flex flex-col gap-3 w-full text-left">
               <input
                 value={prenom}
@@ -174,11 +174,11 @@ export default function InscriptionParticipant() {
             <button
               onClick={envoyer}
               disabled={envoi}
-              className="mt-5 rounded-full bg-gradient-to-r from-signal to-signal-dark px-10 py-3 font-semibold text-nuit disabled:opacity-50"
+              className="mt-5 rounded-full bg-gradient-to-r from-or to-or-fonce px-10 py-3 font-semibold text-encre disabled:opacity-50"
             >
               {envoi ? "Inscription..." : "Je m'inscris"}
             </button>
-            <p className="text-xs text-nuit/70 mt-4">
+            <p className="text-xs text-encre/75 mt-4">
               Seuls ton prénom et ton niveau d&apos;étude sont enregistrés.
             </p>
           </>

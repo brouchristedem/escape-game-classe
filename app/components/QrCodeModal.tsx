@@ -30,7 +30,7 @@ export default function QrCodeModal({ lien, nom, onClose }: { lien: string; nom:
         className="bg-white rounded-2xl p-6 max-w-xs w-full flex flex-col items-center shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="font-semibold text-nuit mb-1 text-center">{nom}</p>
+        <p className="font-semibold text-encre mb-1 text-center">{nom}</p>
         <p className="text-xs text-slate-400 mb-4 text-center break-all">{lien}</p>
 
         {dataUrl ? (
@@ -45,7 +45,7 @@ export default function QrCodeModal({ lien, nom, onClose }: { lien: string; nom:
             <a
               href={dataUrl}
               download={`qrcode-${nom.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`}
-              className="flex-1 text-center bg-violet hover:bg-violet-deep text-white font-semibold text-sm px-4 py-2.5 rounded-lg transition"
+              className="flex-1 text-center bg-bronze hover:bg-bronze-deep text-white font-semibold text-sm px-4 py-2.5 rounded-lg transition"
             >
               Télécharger
             </a>

@@ -15,12 +15,12 @@ export default async function Tarifs({
   const retourHref = jeu ? `/g/${jeu}` : "/organisateur";
 
   return (
-    <main className={`relative min-h-screen bg-fog px-6 py-12 overflow-hidden`}>
-      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
-      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
+    <main className={`relative min-h-screen bg-parchemin px-6 py-12 overflow-hidden`}>
+      <Parallax speed={-60} className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
+      <Parallax speed={70} className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
 
       <div className="relative z-10 max-w-3xl mx-auto">
-        <Link href={retourHref} className="text-sm text-violet underline">
+        <Link href={retourHref} className="text-sm text-bronze underline">
           ← Retour à l&apos;accueil
         </Link>
 
@@ -32,10 +32,10 @@ export default async function Tarifs({
             as="h1"
             text="Créer votre propre jeu"
             type="words"
-            className="font-headline text-2xl sm:text-3xl font-bold text-nuit"
+            className="font-headline text-2xl sm:text-3xl font-bold text-encre"
           />
           <Reveal delay={0.2}>
-            <p className="text-nuit/70 mt-2 max-w-md mx-auto">
+            <p className="text-encre/75 mt-2 max-w-md mx-auto">
               Un prix unique par événement, sans abonnement : vous payez une fois, votre jeu est prêt à jouer.
             </p>
           </Reveal>
@@ -46,7 +46,7 @@ export default async function Tarifs({
         </div>
 
         <Reveal>
-          <p className="text-xs text-nuit/70 text-center mt-6">
+          <p className="text-xs text-encre/75 text-center mt-6">
             Paiement par mobile money (Wave). Besoin d&apos;un format sur-mesure ou de plusieurs jeux à la suite ?
             Contactez-moi pour en discuter.
           </p>
@@ -57,7 +57,7 @@ export default async function Tarifs({
             href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("Bonjour, je souhaite créer mon propre jeu sur la plateforme.")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-gradient-to-r from-signal to-signal-dark text-nuit font-semibold text-sm px-6 py-3 rounded-full shadow-md shadow-violet/20 transition hover:-translate-y-0.5"
+            className="bg-gradient-to-r from-or to-or-fonce text-encre font-semibold text-sm px-6 py-3 rounded-full shadow-md shadow-bronze/20 transition hover:-translate-y-0.5"
           >
             Créer mon jeu
           </a>

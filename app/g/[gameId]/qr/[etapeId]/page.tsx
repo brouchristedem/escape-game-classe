@@ -30,27 +30,27 @@ export default function ScanQr() {
   if (message === undefined) return <LoadingScreen label="Lecture du QR code..." />;
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-fog text-center">
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
+    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-parchemin text-center">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center max-w-lg w-full">
         <GameLogo className="w-24 sm:w-28 h-auto mb-8" />
 
         {message ? (
           <>
-            <h1 className="font-headline font-extrabold text-2xl text-nuit mb-6">Tu as trouvé un QR code</h1>
-            <div className="mb-8 max-w-md w-full rounded-2xl bg-paper ring-1 ring-violet/30 px-6 sm:px-8 py-7 text-nuit/90 text-lg leading-relaxed text-left sm:text-center shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)]">
+            <h1 className="font-headline font-extrabold text-2xl text-encre mb-6">Tu as trouvé un QR code</h1>
+            <div className="cadre mb-8 max-w-md w-full rounded-2xl bg-velin ring-1 ring-bronze/30 px-6 sm:px-8 py-7 text-encre/90 text-lg leading-relaxed text-left sm:text-center shadow-[0_18px_40px_-14px_rgba(60,38,10,0.45)]">
               <RichText text={message} />
             </div>
-            <p className="text-sm text-nuit/70 max-w-xs">
+            <p className="text-sm text-encre/75 max-w-xs">
               Note ce message, puis retourne sur l&apos;écran de ton équipe.
             </p>
           </>
         ) : (
           <>
-            <h1 className="font-headline font-extrabold text-2xl text-nuit mb-3">QR code non valide</h1>
-            <p className="text-sm text-nuit/70 max-w-xs">
+            <h1 className="font-headline font-extrabold text-2xl text-encre mb-3">QR code non valide</h1>
+            <p className="text-sm text-encre/75 max-w-xs">
               Ce QR code ne contient aucun message. Préviens un organisateur.
             </p>
           </>

@@ -111,48 +111,48 @@ export default function Apparence({ gameId }: { gameId: string }) {
     }
   }
 
-  if (!charge) return <p className="text-nuit/70 text-sm">Chargement...</p>;
+  if (!charge) return <p className="text-encre/75 text-sm">Chargement...</p>;
 
   return (
     <section className="max-w-2xl">
-      <p className="text-nuit/70 mb-6 text-sm">
+      <p className="text-encre/75 mb-6 text-sm">
         Personnalise le logo et les couleurs de ce jeu. Les changements s&apos;appliquent à toutes les pages
         joueur et à l&apos;écran de projection. Les textes (titre, message d&apos;accueil...) se modifient dans
         l&apos;onglet &quot;Textes du site&quot;.
       </p>
 
       <div className="grid gap-6 sm:grid-cols-2 mb-6">
-        <div className="bg-violet-mist rounded-xl p-4 flex flex-col gap-4">
-          <label className="flex items-center justify-between gap-3 text-sm font-medium text-nuit">
+        <div className="bg-sable rounded-xl p-4 flex flex-col gap-4">
+          <label className="flex items-center justify-between gap-3 text-sm font-medium text-encre">
             Couleur de fond
             <input type="color" value={fond} onChange={(e) => setFond(e.target.value)} className="h-9 w-14 cursor-pointer rounded" />
           </label>
-          <label className="flex items-center justify-between gap-3 text-sm font-medium text-nuit">
+          <label className="flex items-center justify-between gap-3 text-sm font-medium text-encre">
             Couleur d&apos;accent
             <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)} className="h-9 w-14 cursor-pointer rounded" />
           </label>
           {erreurCouleurs && <p className="text-sm text-alerte">{erreurCouleurs}</p>}
         </div>
 
-        <div className="bg-violet-mist rounded-xl p-4 flex flex-col gap-3">
-          <p className="text-sm font-medium text-nuit">Logo</p>
+        <div className="bg-sable rounded-xl p-4 flex flex-col gap-3">
+          <p className="text-sm font-medium text-encre">Logo</p>
           <input
             type="file"
             accept="image/*"
             onChange={(e) => choisirLogo(e.target.files?.[0])}
-            className="text-sm text-nuit/70"
+            className="text-sm text-encre/75"
           />
           {logo && (
-            <button onClick={() => setLogo("")} className="self-start text-sm underline text-nuit">
+            <button onClick={() => setLogo("")} className="self-start text-sm underline text-encre">
               Retirer le logo
             </button>
           )}
         </div>
       </div>
 
-      <p className="text-sm font-medium text-nuit mb-2">Aperçu</p>
+      <p className="text-sm font-medium text-encre mb-2">Aperçu</p>
       <div
-        className="rounded-xl p-6 mb-6 flex flex-col items-center text-center gap-4 bg-fog text-nuit"
+        className="rounded-xl p-6 mb-6 flex flex-col items-center text-center gap-4 bg-parchemin text-encre"
         style={variablesTheme({ couleurFond: fond, couleurAccent: accent })}
       >
         {logo ? (
@@ -162,24 +162,24 @@ export default function Apparence({ gameId }: { gameId: string }) {
           <GameLogo className="h-20 w-auto" />
         )}
         <p className="text-xl font-bold">Titre du jeu</p>
-        <div className="h-2 w-48 rounded-full bg-fog-2 overflow-hidden">
-          <div className="h-full w-2/3 rounded-full bg-violet" />
+        <div className="h-2 w-48 rounded-full bg-parchemin-2 overflow-hidden">
+          <div className="h-full w-2/3 rounded-full bg-or-fonce" />
         </div>
-        <span className="rounded-full bg-signal px-6 py-2 text-sm font-semibold text-nuit">Commencer</span>
+        <span className="rounded-full bg-or px-6 py-2 text-sm font-semibold text-encre">Commencer</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={enregistrer}
           disabled={enregistrement || !!erreurCouleurs}
-          className="rounded-full bg-signal px-6 py-2 text-sm font-semibold text-nuit disabled:opacity-50"
+          className="rounded-full bg-or px-6 py-2 text-sm font-semibold text-encre disabled:opacity-50"
         >
           {enregistrement ? "Enregistrement..." : "Enregistrer l'apparence"}
         </button>
         <button
           onClick={reinitialiser}
           disabled={enregistrement}
-          className="rounded-full border border-violet/30 px-6 py-2 text-sm text-nuit disabled:opacity-50"
+          className="rounded-full border border-bronze/30 px-6 py-2 text-sm text-encre disabled:opacity-50"
         >
           Revenir au thème par défaut
         </button>

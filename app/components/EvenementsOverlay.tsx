@@ -208,15 +208,15 @@ export default function EvenementsOverlay({
   return (
     <>
       {blocageActif && (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden bg-fog px-6 text-center">
+        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden bg-parchemin px-6 text-center">
           <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-alerte/20 blur-3xl" />
           <div className="relative z-10 flex flex-col items-center max-w-sm">
             <p className="text-5xl mb-5">🔒</p>
-            <h1 className="font-headline text-2xl font-bold text-nuit mb-3">Écran bloqué</h1>
-            <p className="text-sm text-nuit/70 mb-6">
+            <h1 className="font-headline text-2xl font-bold text-encre mb-3">Écran bloqué</h1>
+            <p className="text-sm text-encre/75 mb-6">
               Votre équipe est bloquée pendant un moment. Le chrono général continue.
             </p>
-            <p className="font-codemono text-5xl font-semibold text-violet">
+            <p className="font-codemono text-5xl font-semibold text-bronze">
               {formaterCompteARebours(((effet?.finTimestamp ?? 0) - maintenant) / 1000)}
             </p>
           </div>
@@ -224,20 +224,20 @@ export default function EvenementsOverlay({
       )}
 
       {fausseFinPhase && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-fog px-6 py-16 text-center">
-          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-parchemin px-6 py-16 text-center">
+          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
           <div className="relative z-10 flex flex-col items-center max-w-md w-full">
             {fausseFinPhase === "victoire" ? (
               <>
-                <p className="text-violet font-semibold mb-2">{nomEquipe}</p>
-                <h1 className="font-headline text-2xl font-bold mb-4 text-nuit">{t.finTitre}</h1>
-                <p className="text-nuit/70 max-w-sm">{t.finSousTitre}</p>
+                <p className="text-bronze font-semibold mb-2">{nomEquipe}</p>
+                <h1 className="font-headline text-2xl font-bold mb-4 text-encre">{t.finTitre}</h1>
+                <p className="text-encre/75 max-w-sm">{t.finSousTitre}</p>
               </>
             ) : (
               <>
                 <p className="text-5xl mb-5">🎭</p>
-                <p className="font-headline text-xl font-bold text-nuit whitespace-pre-line">{t.fausseFinLeurre}</p>
+                <p className="font-headline text-xl font-bold text-encre whitespace-pre-line">{t.fausseFinLeurre}</p>
               </>
             )}
           </div>
@@ -245,13 +245,13 @@ export default function EvenementsOverlay({
       )}
 
       {glitchVisible && (
-        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-fog px-6 py-16 text-center">
+        <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-parchemin px-6 py-16 text-center">
           <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(178,58,46,0.06)_0px,rgba(178,58,46,0.06)_1px,transparent_1px,transparent_3px)]" />
           <div className="relative z-10 flex flex-col items-center max-w-md w-full animate-glitch-flicker">
             <p className="font-codemono text-xs uppercase tracking-widest text-alerte mb-4 animate-glitch-shift">
               ⚠ ERREUR SYSTÈME ⚠
             </p>
-            <p className="font-headline text-xl font-bold text-nuit whitespace-pre-line animate-glitch-shift">
+            <p className="font-headline text-xl font-bold text-encre whitespace-pre-line animate-glitch-shift">
               {effet?.type === "glitch" ? effet.texte : ""}
             </p>
           </div>
@@ -268,25 +268,25 @@ export default function EvenementsOverlay({
       )}
 
       {enigme && peutRepondre && (enigmeVisible || afficherConfirmation) && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-fog/97 backdrop-blur-sm px-6 py-10 text-center">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-parchemin/97 backdrop-blur-sm px-6 py-10 text-center">
           <div className="flex flex-col items-center max-w-md w-full">
             <p className="text-5xl mb-4">⚡</p>
-            <h1 className="font-headline text-2xl font-extrabold text-nuit mb-5">Événement surprise !</h1>
+            <h1 className="font-headline text-2xl font-extrabold text-encre mb-5">Événement surprise !</h1>
 
             {afficherConfirmation ? (
               <>
-                <p className="text-nuit mb-2 text-lg font-semibold">Bonne réponse ✅</p>
-                <p className="text-sm text-nuit/70 mb-6">Attendez l&apos;annonce de l&apos;organisateur.</p>
+                <p className="text-encre mb-2 text-lg font-semibold">Bonne réponse ✅</p>
+                <p className="text-sm text-encre/75 mb-6">Attendez l&apos;annonce de l&apos;organisateur.</p>
                 <button
                   onClick={() => setFerme(enigme.id)}
-                  className="rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3 font-semibold text-nuit"
+                  className="rounded-full bg-gradient-to-r from-or to-or-fonce px-8 py-3 font-semibold text-encre"
                 >
                   Continuer le jeu
                 </button>
               </>
             ) : (
               <>
-                <div className="mb-6 w-full rounded-2xl bg-paper ring-1 ring-violet/30 px-6 py-6 text-nuit/90 text-lg leading-relaxed text-left shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)]">
+                <div className="cadre mb-6 w-full rounded-2xl bg-velin ring-1 ring-bronze/30 px-6 py-6 text-encre/90 text-lg leading-relaxed text-left shadow-[0_18px_40px_-14px_rgba(60,38,10,0.45)]">
                   <RichText text={enigme.enonce} />
                 </div>
                 <input
@@ -297,7 +297,7 @@ export default function EvenementsOverlay({
                   }}
                   onKeyDown={(e) => e.key === "Enter" && valider()}
                   placeholder="Votre réponse"
-                  className="w-full rounded-xl bg-fog-2 border border-violet/40 px-4 py-3 text-nuit placeholder:text-nuit/60 mb-2"
+                  className="w-full rounded-xl bg-parchemin-2 border border-bronze/40 px-4 py-3 text-encre placeholder:text-encre/60 mb-2"
                 />
                 {erreur && <p className="text-sm text-alerte mb-2">Ce n&apos;est pas ça, réessayez.</p>}
                 {erreurEnvoi && (
@@ -308,7 +308,7 @@ export default function EvenementsOverlay({
                 <button
                   onClick={valider}
                   disabled={envoi || !reponse.trim()}
-                  className="mt-2 rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3 font-semibold text-nuit disabled:opacity-50"
+                  className="mt-2 rounded-full bg-gradient-to-r from-or to-or-fonce px-8 py-3 font-semibold text-encre disabled:opacity-50"
                 >
                   Valider
                 </button>
@@ -320,7 +320,7 @@ export default function EvenementsOverlay({
 
       {enigme && !peutRepondre && !dejaRepondu && (
         <div className="fixed bottom-0 inset-x-0 z-40 flex justify-center px-4 pb-3 pointer-events-none">
-          <div className="pointer-events-auto max-w-md w-full rounded-xl bg-paper ring-1 ring-violet/40 text-nuit/90 text-sm px-4 py-3 shadow-lg">
+          <div className="pointer-events-auto max-w-md w-full rounded-xl bg-velin ring-1 ring-bronze/40 text-encre/90 text-sm px-4 py-3 shadow-lg">
             <p className="font-semibold mb-1">⚡ Événement surprise : le chef d&apos;équipe doit répondre</p>
             <RichText text={enigme.enonce} />
           </div>

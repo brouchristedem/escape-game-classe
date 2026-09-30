@@ -596,7 +596,7 @@ export default function JouerEquipe() {
 
   if (phase === "termine") {
     return (
-      <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-fog text-center">
+      <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-parchemin text-center">
         {modeTest && (
           <div className="fixed top-0 inset-x-0 z-40 flex justify-center px-4 pt-3 pointer-events-none">
             <span className="pointer-events-auto bg-amber-500 text-white text-xs font-semibold rounded-full px-4 py-1.5 shadow-md">
@@ -604,23 +604,23 @@ export default function JouerEquipe() {
             </span>
           </div>
         )}
-        <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
         <div className="relative z-10 flex flex-col items-center max-w-md w-full">
-          <p className="text-violet font-semibold mb-2">{team?.nom}</p>
+          <p className="text-bronze font-semibold mb-2">{team?.nom}</p>
           {editMode && (
             <button
               onClick={() => {
                 setPhase("playing");
                 setIndex(Math.max(questions.length - 1, 0));
               }}
-              className="text-xs text-violet underline mb-4"
+              className="text-xs text-bronze underline mb-4"
             >
               ← Revenir au circuit
             </button>
           )}
-          <EditableText as="h1" value={texts.finTitre} onSave={(v) => saveGlobalText("finTitre", v)} className="font-headline text-2xl font-bold mb-4 text-nuit" />
-          <EditableText as="p" multiline value={texts.finSousTitre} onSave={(v) => saveGlobalText("finSousTitre", v)} className="text-nuit/70 max-w-sm" />
+          <EditableText as="h1" value={texts.finTitre} onSave={(v) => saveGlobalText("finTitre", v)} className="font-headline text-2xl font-bold mb-4 text-encre" />
+          <EditableText as="p" multiline value={texts.finSousTitre} onSave={(v) => saveGlobalText("finSousTitre", v)} className="text-encre/75 max-w-sm" />
         </div>
       </main>
     );
@@ -655,16 +655,16 @@ export default function JouerEquipe() {
           </span>
         </div>
       )}
-      <main className="min-h-screen bg-fog">
+      <main className="min-h-screen bg-parchemin">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <div className="mb-6">
-        <div className="flex items-center justify-between text-sm text-nuit/70 mb-2">
-          <span className="font-medium text-nuit">{team?.nom}</span>
+        <div className="flex items-center justify-between text-sm text-encre/75 mb-2">
+          <span className="font-medium text-encre">{team?.nom}</span>
           <span>{isCodePage || isInfoPage ? "Page suivante" : "Énigme"}</span>
           {timeLeft !== null && (
             <span
               className={`font-codemono font-semibold rounded-full px-2.5 py-0.5 transition-colors ${
-                timeLeft <= 5 ? "bg-alerte text-white animate-timer-critical" : "bg-paper text-nuit"
+                timeLeft <= 5 ? "bg-alerte text-white animate-timer-critical" : "bg-velin text-encre"
               }`}
             >
               {timeLeft}s
@@ -673,7 +673,7 @@ export default function JouerEquipe() {
         </div>
       </div>
 
-      <div key={index} className="animate-card-in rounded-3xl bg-paper ring-1 ring-violet/15 shadow-[0_18px_40px_-14px_rgba(80,51,207,0.45)] p-6 sm:p-7 mb-6">
+      <div key={index} className="cadre animate-card-in rounded-3xl bg-velin ring-1 ring-bronze/15 shadow-[0_18px_40px_-14px_rgba(60,38,10,0.45)] p-6 sm:p-7 mb-6">
         {question.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -683,14 +683,14 @@ export default function JouerEquipe() {
           />
         )}
         {isInfoPage && !editMode ? (
-          <RichText text={question.texte} className="text-xl font-semibold leading-snug text-nuit" />
+          <RichText text={question.texte} className="text-xl font-semibold leading-snug text-encre" />
         ) : (
           <EditableText
             as="h1"
             multiline
             value={question.texte}
             onSave={(v) => saveQuestionField("texte", v)}
-            className="text-xl font-semibold leading-snug text-nuit"
+            className="text-xl font-semibold leading-snug text-encre"
           />
         )}
       </div>
@@ -700,9 +700,9 @@ export default function JouerEquipe() {
           {!editMode && (
             <button
               onClick={continuerPageInfo}
-              className="group self-center rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3.5 font-semibold text-nuit shadow-lg shadow-violet/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
+              className="group self-center rounded-full bg-gradient-to-r from-or to-or-fonce px-8 py-3.5 font-semibold text-encre shadow-lg shadow-bronze/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
             >
-              <EditableText as="span" value={texts.infoPageBouton} onSave={(v) => saveGlobalText("infoPageBouton", v)} className="text-nuit" />
+              <EditableText as="span" value={texts.infoPageBouton} onSave={(v) => saveGlobalText("infoPageBouton", v)} className="text-encre" />
               <span className="ml-2 transition-transform duration-200 inline-block group-hover:translate-x-1">→</span>
             </button>
           )}
@@ -731,14 +731,14 @@ export default function JouerEquipe() {
                 ? feedback.ok
                   ? "bg-green-500 border-green-500 text-white animate-unlock"
                   : "bg-red-500 border-red-500 text-white"
-                : "bg-paper/90 border-transparent focus:border-violet text-nuit"
+                : "bg-velin/90 border-transparent focus:border-bronze text-encre"
             }`}
           />
           {!feedback && !editMode && (
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
-              className="self-start rounded-full bg-gradient-to-r from-signal to-signal-dark px-6 py-3 font-semibold text-nuit shadow-md shadow-violet/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-fog-2 disabled:text-nuit/30 disabled:shadow-none disabled:cursor-not-allowed"
+              className="self-start rounded-full bg-gradient-to-r from-or to-or-fonce px-6 py-3 font-semibold text-encre shadow-md shadow-bronze/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-parchemin-2 disabled:text-encre/30 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {texts.codePageBouton}
             </button>
@@ -782,7 +782,7 @@ export default function JouerEquipe() {
             const isCorrectOption = i === question.correctIndex;
             const revealCorrect = awaitingContinue && feedback && !feedback.ok && isCorrectOption && !isSelected;
 
-            let style = "bg-paper/90 ring-1 ring-violet/10 hover:ring-violet/40 hover:-translate-y-0.5 hover:shadow-md text-nuit";
+            let style = "bg-velin/90 ring-1 ring-bronze/10 hover:ring-bronze/40 hover:-translate-y-0.5 hover:shadow-md text-encre";
             if (feedback && isSelected) {
               style = feedback.ok
                 ? "bg-green-500 text-white ring-1 ring-green-500 shadow-md shadow-green-500/20"
@@ -841,14 +841,14 @@ export default function JouerEquipe() {
                 ? feedback.ok
                   ? "bg-green-500 border-green-500 text-white"
                   : "bg-red-500 border-red-500 text-white"
-                : "bg-paper/90 border-transparent focus:border-violet text-nuit"
+                : "bg-velin/90 border-transparent focus:border-bronze text-encre"
             }`}
           />
           {!feedback && !editMode && (
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
-              className="self-start rounded-full bg-gradient-to-r from-signal to-signal-dark px-6 py-3 font-semibold text-nuit shadow-md shadow-violet/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-fog-2 disabled:text-nuit/30 disabled:shadow-none disabled:cursor-not-allowed"
+              className="self-start rounded-full bg-gradient-to-r from-or to-or-fonce px-6 py-3 font-semibold text-encre shadow-md shadow-bronze/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-parchemin-2 disabled:text-encre/30 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {texts.jeuLabelValider}
             </button>
@@ -877,13 +877,13 @@ export default function JouerEquipe() {
 
       {editMode && (
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-          <button onClick={() => inserer("libre")} className="text-violet underline">
+          <button onClick={() => inserer("libre")} className="text-bronze underline">
             + Insérer une énigme après cette étape
           </button>
-          <button onClick={() => inserer("code")} className="text-violet underline">
+          <button onClick={() => inserer("code")} className="text-bronze underline">
             + Insérer une page code après cette étape
           </button>
-          <button onClick={() => inserer("info")} className="text-violet underline">
+          <button onClick={() => inserer("info")} className="text-bronze underline">
             + Insérer une page vierge après cette étape
           </button>
           <button onClick={supprimerEtapeActuelle} className="text-red-500 underline">
@@ -893,22 +893,22 @@ export default function JouerEquipe() {
       )}
 
       {!isCodePage && !isInfoPage && (editMode || (feedback && feedback.ok && fragmentTexte)) && (
-        <div className={`mt-6 rounded-2xl bg-gradient-to-r from-signal/15 to-paper ring-2 ring-violet/40 px-5 py-4 text-center shadow-sm ${!editMode ? "animate-pop-in" : ""}`}>
+        <div className={`mt-6 rounded-2xl bg-gradient-to-r from-or/15 to-velin ring-2 ring-bronze/40 px-5 py-4 text-center shadow-sm ${!editMode ? "animate-pop-in" : ""}`}>
           <p className="text-2xl mb-1">🏆</p>
           <EditableText
             as="p"
             value={texts.jeuTexteFragmentTitre}
             onSave={(v) => saveGlobalText("jeuTexteFragmentTitre", v)}
-            className="font-semibold text-nuit"
+            className="font-semibold text-encre"
           />
           {!editMode && (
-            <p className="my-2 text-lg font-bold text-violet-deep whitespace-pre-line">
+            <p className="my-2 text-lg font-bold text-bronze-deep whitespace-pre-line">
               {fragmentTexte}
             </p>
           )}
           {editMode && (
-            <div className="mt-3 pt-3 border-t border-violet/30 text-left">
-              <p className="text-[10px] font-semibold text-nuit/70 uppercase tracking-wide mb-1">
+            <div className="mt-3 pt-3 border-t border-bronze/30 text-left">
+              <p className="text-[10px] font-semibold text-encre/75 uppercase tracking-wide mb-1">
                 Fragment affiché après cette énigme (texte libre, facultatif — Maj+Entrée pour une nouvelle ligne)
               </p>
               <EditableText
@@ -917,7 +917,7 @@ export default function JouerEquipe() {
                 value={question.fragmentTexte ?? ""}
                 onSave={saveFragmentText}
                 placeholder="Écrire le fragment à afficher après cette énigme..."
-                className="font-bold text-violet-deep whitespace-pre-line"
+                className="font-bold text-bronze-deep whitespace-pre-line"
               />
             </div>
           )}
@@ -937,16 +937,16 @@ export default function JouerEquipe() {
       {!isInfoPage && (needsRetryClick || editMode) && (
         <button
           onClick={handleRetry}
-          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3.5 font-semibold text-nuit shadow-lg shadow-violet/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
+          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-or to-or-fonce px-8 py-3.5 font-semibold text-encre shadow-lg shadow-bronze/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
         >
-          <EditableText as="span" value={texts.jeuLabelReessayer} onSave={(v) => saveGlobalText("jeuLabelReessayer", v)} className="text-nuit" />
+          <EditableText as="span" value={texts.jeuLabelReessayer} onSave={(v) => saveGlobalText("jeuLabelReessayer", v)} className="text-encre" />
         </button>
       )}
 
       {!isInfoPage && awaitingContinue && !editMode && (
         <button
           onClick={goNextQuestion}
-          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-signal to-signal-dark px-8 py-3.5 font-semibold text-nuit shadow-lg shadow-violet/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
+          className="group mt-6 inline-flex items-center justify-center gap-2 self-center rounded-full bg-gradient-to-r from-or to-or-fonce px-8 py-3.5 font-semibold text-encre shadow-lg shadow-bronze/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
         >
           {isLastQuestion ? texts.jeuLabelVoirResultat : texts.jeuLabelEnigmeSuivante}
           <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
@@ -954,23 +954,23 @@ export default function JouerEquipe() {
       )}
 
       {editMode && (
-        <div className="mt-8 flex items-center justify-between gap-3 sticky bottom-4 bg-paper/90 backdrop-blur rounded-2xl ring-1 ring-violet/20 px-4 py-3 shadow-lg">
+        <div className="mt-8 flex items-center justify-between gap-3 sticky bottom-4 bg-velin/90 backdrop-blur rounded-2xl ring-1 ring-bronze/20 px-4 py-3 shadow-lg">
           <button
             onClick={() => allerAEtape(index - 1)}
             disabled={index === 0}
-            className="text-sm font-semibold text-nuit disabled:text-slate-300"
+            className="text-sm font-semibold text-encre disabled:text-slate-300"
           >
             ← Étape précédente
           </button>
           <span className="text-xs text-slate-400">Vous parcourez le circuit en mode édition</span>
           {isLastQuestion ? (
-            <button onClick={finishQuiz} className="text-sm font-semibold text-violet-deep">
+            <button onClick={finishQuiz} className="text-sm font-semibold text-bronze-deep">
               Voir l&apos;écran final →
             </button>
           ) : (
             <button
               onClick={() => allerAEtape(index + 1)}
-              className="text-sm font-semibold text-nuit disabled:text-slate-300"
+              className="text-sm font-semibold text-encre disabled:text-slate-300"
             >
               Étape suivante →
             </button>
@@ -985,9 +985,9 @@ export default function JouerEquipe() {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-fog text-nuit">
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-signal/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-violet/20 blur-3xl" />
+    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-parchemin text-encre">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-or/35 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-patine/20 blur-3xl" />
       <p className="relative z-10 max-w-sm">{children}</p>
     </main>
   );

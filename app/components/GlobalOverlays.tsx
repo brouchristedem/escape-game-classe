@@ -83,19 +83,19 @@ export default function GlobalOverlays({
           className={`pointer-events-auto font-codemono font-semibold rounded-full px-4 py-1.5 shadow-md text-sm ${
             secondesRestantes <= 60
               ? "bg-alerte text-white animate-timer-critical"
-              : "bg-nuit text-signal ring-1 ring-signal/40"
+              : "bg-encre text-or ring-1 ring-or/40"
           }`}
         >
           ⏱️ {formatDuree(secondesRestantes)}
         </span>
       )}
       {notif && (
-        <span className="pointer-events-auto bg-signal text-nuit text-xs font-medium rounded-full px-4 py-1.5 shadow-md animate-pulse">
+        <span className="pointer-events-auto bg-or text-encre text-xs font-medium rounded-full px-4 py-1.5 shadow-md animate-pulse">
           {notif}
         </span>
       )}
       {broadcast && broadcastVisible && (
-        <div className="pointer-events-auto max-w-md w-full rounded-2xl bg-paper text-nuit ring-1 ring-violet/40 px-5 py-3 shadow-lg text-center text-sm font-medium">
+        <div className="pointer-events-auto max-w-md w-full rounded-2xl bg-velin text-encre ring-1 ring-bronze/40 px-5 py-3 shadow-lg text-center text-sm font-medium">
           📢 {broadcast.texte}
         </div>
       )}

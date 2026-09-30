@@ -1,96 +1,177 @@
 @import "tailwindcss";
 
+/* Identité "Grimoire" : un parchemin chaud (ni sombre, ni pâle) gravé de
+   symboles alchimiques en relief, des cadres et plaques d'or, une patine de
+   bronze vert-de-gris pour ce qui est validé, et une encre brune très lisible.
+   Les runes, le médaillon au serpent et la lanterne qui suit le doigt font le
+   reste du mystère. */
 :root {
-  /* Identité "Brume & Signal" : un fond de brume violette (ni sombre, ni
-     pâle) sur lequel une encre nuit très lisible et un vert "signal" acide
-     désignent ce qui est actionnable. Le violet sert aux accents de texte. */
-  --background: #ffffff;
-  --foreground: #1a1240;
+  --background: #f6f0e0;
+  --foreground: #2a1c12;
 
-  --fog: #d5d1f1;        /* fond des pages de jeu */
-  --fog-2: #c6c1e8;      /* surfaces en creux : champs, pistes, halos */
-  --paper: #f7f5ff;      /* cartes */
-  --nuit: #1a1240;       /* texte + surfaces sombres ponctuelles */
-  --violet: #5033cf;     /* accents de texte, liens, bordures */
-  --violet-deep: #3a20a8;
-  --violet-mist: #ebe7fc; /* panneaux clairs (espace organisateur) */
-  --signal: #c9f31d;     /* boutons et éléments actionnables */
-  --signal-light: #e4fb7a;
-  --signal-dark: #a8d20f;
-  --alerte: #ad1538;
+  --parchemin: #e9dfc4;   /* fond des pages de jeu */
+  --parchemin-2: #d9cba6; /* surfaces en creux : champs, pistes */
+  --velin: #f8f2e2;       /* cartes */
+  --sable: #efe6cf;       /* panneaux clairs (espace organisateur) */
+  --encre: #2a1c12;       /* texte + surfaces sombres ponctuelles */
+  --bronze: #7b5316;      /* accents de texte, liens, bordures */
+  --bronze-deep: #5c3c0c;
+  --or: #c9a04a;         /* plaques et boutons */
+  --or-clair: #e2c169;
+  --or-fonce: #a17a2c;
+  --patine: #2f6b5e;     /* vert-de-gris : progression, validé */
+  --alerte: #9b2a1c;     /* rouge sceau */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-fog: var(--fog);
-  --color-fog-2: var(--fog-2);
-  --color-paper: var(--paper);
-  --color-nuit: var(--nuit);
-  --color-violet: var(--violet);
-  --color-violet-deep: var(--violet-deep);
-  --color-violet-mist: var(--violet-mist);
-  --color-signal: var(--signal);
-  --color-signal-light: var(--signal-light);
-  --color-signal-dark: var(--signal-dark);
+  --color-parchemin: var(--parchemin);
+  --color-parchemin-2: var(--parchemin-2);
+  --color-velin: var(--velin);
+  --color-sable: var(--sable);
+  --color-encre: var(--encre);
+  --color-bronze: var(--bronze);
+  --color-bronze-deep: var(--bronze-deep);
+  --color-or: var(--or);
+  --color-or-clair: var(--or-clair);
+  --color-or-fonce: var(--or-fonce);
+  --color-patine: var(--patine);
   --color-alerte: var(--alerte);
-  --font-sans: var(--font-manrope);
-  --font-mono: var(--font-jbmono);
-  --font-headline: var(--font-syne);
-  --font-codemono: var(--font-jbmono);
+  --font-sans: var(--font-alegreya);
+  --font-mono: var(--font-plexmono);
+  --font-headline: var(--font-cinzel);
+  --font-codemono: var(--font-plexmono);
 }
 
 body {
-  background: #ffffff;
+  background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-family: var(--font-alegreya), system-ui, sans-serif;
+  font-size: 1.05rem;
 }
+
+::selection { background: rgba(201, 160, 74, 0.45); color: var(--encre); }
 
 .font-headline {
-  font-family: var(--font-syne), system-ui, sans-serif;
-  letter-spacing: -0.01em;
+  font-family: var(--font-cinzel), Georgia, serif;
+  letter-spacing: 0.02em;
 }
 .font-codemono {
-  font-family: var(--font-jbmono), ui-monospace, monospace;
+  font-family: var(--font-plexmono), ui-monospace, monospace;
 }
 
-/* Fond des pages de jeu : brume + deux halos (signal / violet) + quadrillage
-   de "table de décryptage" très discret. */
-.bg-fog {
+/* Fond des pages de jeu : parchemin vieilli (vignette + grain), symboles
+   alchimiques gravés en relief, et une lanterne qui suit le doigt / la souris
+   (variables --mx / --my posées par le composant Lanterne). */
+.bg-parchemin {
+  isolation: isolate;
   background-image:
-    radial-gradient(52rem 34rem at 100% -8%, rgba(201, 243, 29, 0.32), transparent 62%),
-    radial-gradient(46rem 36rem at -8% 108%, rgba(80, 51, 207, 0.26), transparent 62%),
-    linear-gradient(rgba(26, 18, 64, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(26, 18, 64, 0.045) 1px, transparent 1px);
-  background-size: auto, auto, 28px 28px, 28px 28px;
-  background-attachment: fixed, fixed, scroll, scroll;
+    radial-gradient(22rem 22rem at var(--mx, 50%) var(--my, 18%), rgba(255, 232, 160, 0.38), transparent 70%),
+    radial-gradient(70rem 46rem at 50% -6%, rgba(255, 249, 226, 0.75), transparent 62%),
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(120, 84, 30, 0.30) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cdefs%3E%3Cg id='s' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%22150%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%22136%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%22100%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%2234%22/%3E%3Ccircle cx=%22210%22 cy=%22610%22 r=%229%22/%3E%3Cpath d=%22M346.0 610.0L360.0 610.0M343.9 633.6L357.7 636.0M337.8 656.5L351.0 661.3M327.8 678.0L339.9 685.0M314.2 697.4L324.9 706.4M297.4 714.2L306.4 724.9M278.0 727.8L285.0 739.9M256.5 737.8L261.3 751.0M233.6 743.9L236.0 757.7M210.0 746.0L210.0 760.0M186.4 743.9L184.0 757.7M163.5 737.8L158.7 751.0M142.0 727.8L135.0 739.9M122.6 714.2L113.6 724.9M105.8 697.4L95.1 706.4M92.2 678.0L80.1 685.0M82.2 656.5L69.0 661.3M76.1 633.6L62.3 636.0M74.0 610.0L60.0 610.0M76.1 586.4L62.3 584.0M82.2 563.5L69.0 558.7M92.2 542.0L80.1 535.0M105.8 522.6L95.1 513.6M122.6 505.8L113.6 495.1M142.0 492.2L135.0 480.1M163.5 482.2L158.7 469.0M186.4 476.1L184.0 462.3M210.0 474.0L210.0 460.0M233.6 476.1L236.0 462.3M256.5 482.2L261.3 469.0M278.0 492.2L285.0 480.1M297.4 505.8L306.4 495.1M314.2 522.6L324.9 513.6M327.8 542.0L339.9 535.0M337.8 563.5L351.0 558.7M343.9 586.4L357.7 584.0%22/%3E%3Cpath d=%22M210.0 510.0L296.6 660.0L123.4 660.0Z%22/%3E%3Cpath d=%22M210.0 710.0L123.4 560.0L296.6 560.0Z%22/%3E%3Cpath d=%22M560 110L625 175M625 175L705 140M625 175L668 258M668 258L560 300M668 258L742 312M560 110L560 300%22/%3E%3Ccircle cx=%22560%22 cy=%22110%22 r=%226%22/%3E%3Ccircle cx=%22625%22 cy=%22175%22 r=%226%22/%3E%3Ccircle cx=%22705%22 cy=%22140%22 r=%226%22/%3E%3Ccircle cx=%22668%22 cy=%22258%22 r=%226%22/%3E%3Ccircle cx=%22560%22 cy=%22300%22 r=%226%22/%3E%3Ccircle cx=%22742%22 cy=%22312%22 r=%226%22/%3E%3Cpath d=%22M742.0 298.0L744.8 309.2L756.0 312.0L744.8 314.8L742.0 326.0L739.2 314.8L728.0 312.0L739.2 309.2Z%22/%3E%3Ccircle cx=%22330%22 cy=%22156%22 r=%2211%22/%3E%3Cpath d=%22M330 167V196M317 181H343M316 130A14 14 0 0 0 344 130%22/%3E%3Cpath d=%22M92.0 188.0L114.5 227.0L69.5 227.0Z%22/%3E%3Cpath d=%22M92 240V268M80 254H104%22/%3E%3Cpath d=%22M420 430Q462 396 504 430Q462 464 420 430Z%22/%3E%3Ccircle cx=%22462%22 cy=%22430%22 r=%2211%22/%3E%3Ccircle cx=%22462%22 cy=%22430%22 r=%223%22/%3E%3Cpath d=%22M462 380V392M430 396L438 405M494 396L486 405%22/%3E%3Ccircle cx=%22632%22 cy=%22566%22 r=%2217%22/%3E%3Ccircle cx=%22632%22 cy=%22566%22 r=%227%22/%3E%3Cpath d=%22M632 583V640M632 610H650M632 626H646M632 640H654%22/%3E%3Cpath d=%22M96 96A30 30 0 1 0 120 150A24 24 0 1 1 96 96Z%22/%3E%3Ccircle cx=%22520%22 cy=%22716%22 r=%2216%22/%3E%3Ccircle cx=%22520%22 cy=%22716%22 r=%223%22/%3E%3Cpath d=%22M542.0 716.0L554.0 716.0M539.1 727.0L549.4 733.0M531.0 735.1L537.0 745.4M520.0 738.0L520.0 750.0M509.0 735.1L503.0 745.4M500.9 727.0L490.6 733.0M498.0 716.0L486.0 716.0M500.9 705.0L490.6 699.0M509.0 696.9L503.0 686.6M520.0 694.0L520.0 682.0M531.0 696.9L537.0 686.6M539.1 705.0L549.4 699.0%22/%3E%3Cpath d=%22M430.0 180.0L430.6 180.2L431.1 180.6L431.3 181.3L431.2 182.1L430.8 183.0L430.0 183.7L428.9 184.1L427.6 184.2L426.1 183.9L424.7 183.1L423.5 181.7L422.7 180.0L422.3 177.9L422.6 175.7L423.5 173.5L425.1 171.5L427.3 170.0L430.0 169.0L433.0 168.8L436.1 169.4L439.1 170.9L441.6 173.3L443.6 176.4L444.7 180.0L444.8 184.0L443.8 187.9L441.7 191.7L438.6 194.8L434.6 197.1L430.0 198.3L425.1 198.3L420.2 196.9L415.7 194.3L412.0 190.4L409.3 185.5L408.0 180.0L408.2 174.1L409.9 168.4L413.1 163.1L417.8 158.8L423.5 155.8L430.0 154.3L436.8 154.6L443.4 156.7L449.4 160.6L454.3 165.9L457.7 172.6L459.3 180.0L458.9 187.8L456.5 195.3L452.0 202.0L445.9 207.5L438.4 211.3L430.0 213.0L421.3 212.5L412.9 209.6L405.4 204.6L399.3 197.7L395.2 189.3L393.3 180.0L394.0 170.4L397.2 161.1L402.8 152.8L410.4 146.1L419.7 141.6L430.0 139.7L440.6 140.5L450.8 144.0L459.8 150.2L467.0 158.6L471.9 168.8L474.0 180.0%22/%3E%3Ccircle cx=%22708%22 cy=%22470%22 r=%2240%22/%3E%3Ccircle cx=%22708%22 cy=%22470%22 r=%2230%22/%3E%3Cpath d=%22M708 430V440M708 500V510M668 470H678M738 470H748M708 452L714 470L708 488L702 470Z%22/%3E%3Cpath d=%22M330 330L346 366L384 372L356 398L364 436L330 416L296 436L304 398L276 372L314 366Z%22/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23s' stroke='%23fffaf0' opacity='.85' transform='translate%282 2%29'/%3E%3Cuse href='%23s' stroke='%236f5222' opacity='.34'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .27 0 0 0 0 .12 0 0 0 .32 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: auto, auto, auto, min(820px, 170vw) auto, 220px 220px;
+  background-attachment: fixed, fixed, fixed, scroll, scroll;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
 }
 
-/* Boutons principaux (remplissage "signal") : liseré nuit + ombre pleine,
-   ils s'enfoncent au clic. */
-button[class*="from-signal"],
-a[class*="from-signal"] {
-  border: 2px solid var(--nuit);
-  box-shadow: 0 4px 0 0 var(--nuit);
+/* Cadre doré à double filet : les cartes importantes. */
+.cadre {
+  position: relative;
+  border: 2px solid var(--or);
+  box-shadow:
+    inset 0 0 0 4px var(--velin),
+    inset 0 0 0 5px rgba(161, 122, 44, 0.85),
+    0 0 0 1px rgba(92, 60, 12, 0.35),
+    0 18px 34px -16px rgba(60, 38, 10, 0.5);
+}
+.cadre::before,
+.cadre::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: var(--or);
+  border: 1px solid var(--bronze-deep);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.cadre::before { top: -6px; left: -6px; }
+.cadre::after { bottom: -6px; right: -6px; }
+
+/* Plaques de bronze doré : tous les boutons principaux. */
+button[class*="from-or"],
+a[class*="from-or"] {
+  font-family: var(--font-cinzel), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--encre);
+  border: 1px solid var(--bronze-deep);
+  border-radius: 12px;
+  outline: 1px solid rgba(42, 28, 18, 0.5);
+  outline-offset: -5px;
+  background-image: linear-gradient(180deg, var(--or-clair) 0%, var(--or) 48%, var(--or-fonce) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 210, 0.85),
+    0 3px 0 var(--bronze-deep),
+    0 12px 20px -8px rgba(60, 38, 10, 0.6);
+  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.6);
+}
+button[class*="from-or"] *,
+a[class*="from-or"] * { color: inherit; }
+button[class*="from-or"]:hover:not(:disabled),
+a[class*="from-or"]:hover {
+  filter: brightness(1.07) saturate(1.05);
+}
+button[class*="from-or"]:active:not(:disabled),
+a[class*="from-or"]:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 210, 0.85),
+    0 1px 0 var(--bronze-deep),
+    0 6px 12px -8px rgba(60, 38, 10, 0.6);
+}
+button[class*="from-or"]:disabled {
   background-image: none;
-  background-color: var(--signal);
-}
-button[class*="from-signal"]:hover:not(:disabled),
-a[class*="from-signal"]:hover {
-  background-color: var(--signal-light);
-}
-button[class*="from-signal"]:active:not(:disabled),
-a[class*="from-signal"]:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 0 var(--nuit);
-}
-button[class*="from-signal"]:disabled {
+  background-color: var(--parchemin-2);
+  color: rgba(42, 28, 18, 0.5);
+  border-color: rgba(92, 60, 12, 0.25);
+  outline-color: transparent;
   box-shadow: none;
-  border-color: transparent;
-  background-color: var(--fog-2);
+  text-shadow: none;
 }
 
-/* Animations de l'identité "Brume & Signal" (logo + chrono critique) */
+/* Filet ornemental sous les titres. */
+.filet-orne {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--bronze);
+}
+.filet-orne::before,
+.filet-orne::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, var(--bronze) 60%);
+}
+.filet-orne::after { transform: scaleX(-1); }
+
+@keyframes derive-lente {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes lueur-respire {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.lg-rotate { animation: derive-lente 90s linear infinite; transform-origin: 100px 100px; }
+.lg-lueur { animation: lueur-respire 3.6s ease-in-out infinite; }
+
+/* Animations de l'identité "Grimoire" (logo + chrono critique) */
 @keyframes lg-pulse {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
@@ -102,8 +183,8 @@ button[class*="from-signal"]:disabled {
   80% { opacity: 0.9; }
 }
 @keyframes timer-critical-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(173, 21, 56, 0.55); }
-  50% { box-shadow: 0 0 0 8px rgba(173, 21, 56, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(155, 42, 28, 0.55); }
+  50% { box-shadow: 0 0 0 8px rgba(155, 42, 28, 0); }
 }
 
 /* Effet "site piraté" (glitch) : décalage rapide du texte + tremblement,
@@ -149,9 +230,9 @@ button[class*="from-signal"]:disabled {
   100% { opacity: 1; transform: scale(1); }
 }
 @keyframes unlock-flash {
-  0% { box-shadow: 0 0 0 0 rgba(80, 51, 207, 0.55); }
-  60% { box-shadow: 0 0 0 14px rgba(80, 51, 207, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(80, 51, 207, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(201, 160, 74, 0.55); }
+  60% { box-shadow: 0 0 0 14px rgba(201, 160, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 160, 74, 0); }
 }
 @keyframes option-in {
   0% { opacity: 0; transform: translateY(6px); }
@@ -164,7 +245,7 @@ button[class*="from-signal"]:disabled {
 .animate-option-in { animation: option-in 0.35s ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .lg-pulse, .lg-crack, .animate-timer-critical, .animate-glitch-shift, .animate-glitch-flicker,
+  .lg-rotate, .lg-lueur, .lg-pulse, .lg-crack, .animate-timer-critical, .animate-glitch-shift, .animate-glitch-flicker,
   .animate-card-in, .animate-pop-in, .animate-unlock, .animate-option-in {
     animation: none !important;
   }
