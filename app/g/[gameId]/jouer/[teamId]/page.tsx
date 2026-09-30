@@ -539,24 +539,28 @@ export default function JouerEquipe() {
     if (correct) {
       setFragmentTexte(question.fragmentTexte?.trim() ? question.fragmentTexte : null);
       setFeedback({
-        // Page "code" : messages entièrement indépendants des Messages de
-        // réussite/échec (onglet "Textes du site") — jamais de repli dessus.
-        text: isCodePage
-          ? question.feedbackCorrect || "Bravo, c'est le bon code !"
-          : messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec),
+        // Tous les feedback (pages code comprises) viennent uniquement de
+        // "Textes du site" : jamais des messages du fichier de scénario.
+        text: messagePourEnigme(index, true, texts.messagesReussite, texts.messagesEchec),
         ok: true,
       });
       setAwaitingContinue(true);
     } else if (isCodePage) {
       // Page "code" : pas de limite de tentatives, on laisse réessayer directement.
-      setFeedback({ text: question.feedbackIncorrect || texts.jeuTexteMauvaiseReponse, ok: false });
+      setFeedback({
+        text: messagePourEnigme(index + totalTentatives, false, texts.messagesReussite, texts.messagesEchec),
+        ok: false,
+      });
       setNeedsRetryClick(true);
     } else {
       setAttempts((a) => a + 1);
       setTotalTentatives((n) => n + 1);
       // Mauvaise réponse : jamais de passage automatique, l'équipe réessaie
       // jusqu'à trouver la bonne énigme.
-      setFeedback({ text: texts.jeuTexteMauvaiseReponse, ok: false });
+      setFeedback({
+        text: messagePourEnigme(index + totalTentatives, false, texts.messagesReussite, texts.messagesEchec),
+        ok: false,
+      });
       setNeedsRetryClick(true);
     }
   }
@@ -754,22 +758,6 @@ export default function JouerEquipe() {
                 onSave={(v) => saveQuestionField("reponse", v)}
                 placeholder="Ex. IUA2026"
                 className="font-mono text-slate-700"
-              />
-              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-2">Message si code correct</label>
-              <EditableText
-                as="p"
-                value={question.feedbackCorrect}
-                onSave={(v) => saveQuestionField("feedbackCorrect", v)}
-                placeholder="(message par défaut)"
-                className="text-sm text-slate-700"
-              />
-              <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide mt-2">Message si code incorrect</label>
-              <EditableText
-                as="p"
-                value={question.feedbackIncorrect}
-                onSave={(v) => saveQuestionField("feedbackIncorrect", v)}
-                placeholder="(message par défaut)"
-                className="text-sm text-slate-700"
               />
             </div>
           )}

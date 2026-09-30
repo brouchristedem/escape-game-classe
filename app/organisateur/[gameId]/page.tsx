@@ -1020,24 +1020,6 @@ function AdminPanel({ gameId }: { gameId: string }) {
               </p>
             )}
 
-            {qForm.type === "code" && (
-              <>
-                <label className="block text-sm text-nuit/75 mb-1">Message affiché si le code est correct (facultatif)</label>
-                <input
-                  value={qForm.feedbackCorrect}
-                  onChange={(e) => setQForm({ ...qForm, feedbackCorrect: e.target.value })}
-                  className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-3 w-full"
-                  placeholder="Bravo, c'est la bonne réponse !"
-                />
-                <label className="block text-sm text-nuit/75 mb-1">Message affiché si le code est incorrect</label>
-                <input
-                  value={qForm.feedbackIncorrect}
-                  onChange={(e) => setQForm({ ...qForm, feedbackIncorrect: e.target.value })}
-                  className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-3 w-full"
-                  placeholder="Ce n'est pas ça, réessayez !"
-                />
-              </>
-            )}
 
             <div className="flex gap-3 mt-4">
               <button
