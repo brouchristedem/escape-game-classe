@@ -59,7 +59,7 @@ export default function SuivreEquipe() {
   if (!state || !state.phase) {
     return (
       <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6 text-center bg-brume text-nuit">
-        <EditableText as="p" multiline value={texts.suivreAttente} onSave={(v) => saveText("suivreAttente", v)} className="max-w-sm text-nuit/75" />
+        <EditableText as="p" multiline value={texts.suivreAttente} onSave={(v) => saveText("suivreAttente", v)} className="max-w-sm text-nuit/90" />
       </main>
     );
   }
@@ -80,7 +80,7 @@ export default function SuivreEquipe() {
           {banner}
           <p className="text-acier font-semibold mb-2">{team?.nom}</p>
           <h1 className="font-headline text-2xl font-bold mb-4 text-nuit">{texts.finTitre}</h1>
-          <p className="text-nuit/75 max-w-sm">{texts.finSousTitre}</p>
+          <p className="text-nuit/90 max-w-sm">{texts.finSousTitre}</p>
         </div>
       </main>
     );
@@ -93,7 +93,7 @@ export default function SuivreEquipe() {
       <EvenementsOverlay gameId={gameId!} teamId={teamId!} nomEquipe={team?.nom ?? ""} peutRepondre={false} texts={texts} />
       {banner}
       <div className="mb-6">
-        <div className="flex items-center justify-between text-sm text-nuit/75 mb-2">
+        <div className="flex items-center justify-between text-sm text-nuit/90 mb-2">
           <span className="font-medium text-nuit">{team?.nom}</span>
           <span>Énigme</span>
           {state.timeLeft !== null && (
@@ -175,7 +175,7 @@ export default function SuivreEquipe() {
       )}
 
       {state.awaitingContinue && (
-        <p className="mt-6 text-center text-nuit/75 text-sm">{texts.suivreAttenteContinuer}</p>
+        <p className="mt-6 text-center text-nuit/90 text-sm">{texts.suivreAttenteContinuer}</p>
       )}
       </div>
     </main>

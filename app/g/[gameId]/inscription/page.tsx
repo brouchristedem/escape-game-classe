@@ -97,7 +97,7 @@ export default function InscriptionParticipant() {
   if (!charge || (idInscription && !inscriptionLue)) return <LoadingScreen label="Chargement..." />;
 
   const champ =
-    "w-full rounded-xl bg-brume-2 border border-acier/40 px-4 py-3 text-nuit placeholder:text-nuit/60";
+    "w-full rounded-xl bg-brume-2 border border-acier/40 px-4 py-3 text-nuit placeholder:text-nuit/85";
 
   return (
     <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-16 bg-brume text-center">
@@ -106,13 +106,13 @@ export default function InscriptionParticipant() {
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
         <GameLogo className="w-24 sm:w-28 h-auto mb-6" />
-        {nomJeu && <p className="text-sm text-nuit/75 mb-2">{nomJeu}</p>}
+        {nomJeu && <p className="text-sm text-nuit/90 mb-2">{nomJeu}</p>}
 
         {inscription?.equipeId ? (
           <>
-            <p className="text-sm text-nuit/75 mb-2">{inscription.nom}, ton équipe est :</p>
+            <p className="text-sm text-nuit/90 mb-2">{inscription.nom}, ton équipe est :</p>
             <h1 className="font-headline font-extrabold text-4xl text-acier mb-6">{inscription.equipeNom}</h1>
-            <p className="text-sm text-nuit/75 mb-6">
+            <p className="text-sm text-nuit/90 mb-6">
               Retrouvez-vous et choisissez ensemble un chef d&apos;équipe : c&apos;est lui qui joue sur son téléphone,
               les autres suivent la progression.
             </p>
@@ -135,7 +135,7 @@ export default function InscriptionParticipant() {
           <>
             <h1 className="font-headline font-extrabold text-2xl text-nuit mb-3">Tu es inscrit(e) ✅</h1>
             <p className="text-nuit mb-2">{inscription.nom}</p>
-            <p className="text-sm text-nuit/75 mb-6">
+            <p className="text-sm text-nuit/90 mb-6">
               Les équipes seront annoncées bientôt. Garde cette page ouverte : ton équipe s&apos;affichera ici.
             </p>
             <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export default function InscriptionParticipant() {
         ) : !ouvertes ? (
           <>
             <h1 className="font-headline font-extrabold text-2xl text-nuit mb-3">Inscriptions fermées</h1>
-            <p className="text-sm text-nuit/75">Si tu n&apos;as pas d&apos;équipe, préviens un organisateur.</p>
+            <p className="text-sm text-nuit/90">Si tu n&apos;as pas d&apos;équipe, préviens un organisateur.</p>
           </>
         ) : (
           <>
@@ -178,7 +178,7 @@ export default function InscriptionParticipant() {
             >
               {envoi ? "Inscription..." : "Je m'inscris"}
             </button>
-            <p className="text-xs text-nuit/75 mt-4">
+            <p className="text-xs text-nuit/90 mt-4">
               Seuls ton prénom et ton niveau d&apos;étude sont enregistrés.
             </p>
           </>

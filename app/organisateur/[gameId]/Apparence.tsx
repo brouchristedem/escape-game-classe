@@ -111,11 +111,11 @@ export default function Apparence({ gameId }: { gameId: string }) {
     }
   }
 
-  if (!charge) return <p className="text-nuit/75 text-sm">Chargement...</p>;
+  if (!charge) return <p className="text-nuit/90 text-sm">Chargement...</p>;
 
   return (
     <section className="max-w-2xl">
-      <p className="text-nuit/75 mb-6 text-sm">
+      <p className="text-nuit/90 mb-6 text-sm">
         Personnalise le logo et les couleurs de ce jeu. Les changements s&apos;appliquent à toutes les pages
         joueur et à l&apos;écran de projection. Les textes (titre, message d&apos;accueil...) se modifient dans
         l&apos;onglet &quot;Textes du site&quot;.
@@ -140,7 +140,7 @@ export default function Apparence({ gameId }: { gameId: string }) {
             type="file"
             accept="image/*"
             onChange={(e) => choisirLogo(e.target.files?.[0])}
-            className="text-sm text-nuit/75"
+            className="text-sm text-nuit/90"
           />
           {logo && (
             <button onClick={() => setLogo("")} className="self-start text-sm underline text-nuit">

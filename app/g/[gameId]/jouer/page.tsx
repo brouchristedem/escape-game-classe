@@ -103,7 +103,7 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
           as="p"
           value={texts.equipeSousTitre}
           onSave={(v) => saveText("equipeSousTitre", v)}
-          className="text-sm text-nuit/75 mb-8 text-center"
+          className="text-sm text-nuit/90 mb-8 text-center"
         />
 
         {(!loading && teams.length === 0) || editMode ? (
@@ -112,7 +112,7 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
             multiline
             value={texts.equipeAucuneEquipe}
             onSave={(v) => saveText("equipeAucuneEquipe", v)}
-            className="text-nuit/75 mb-8 text-center max-w-sm"
+            className="text-nuit/90 mb-8 text-center max-w-sm"
           />
         ) : null}
 
@@ -139,7 +139,7 @@ export default function ChoixEquipe({ params }: { params: Promise<{ gameId: stri
           <button
             onClick={commencerMeneur}
             disabled={!selected && !editMode}
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-8 py-3.5 text-lg font-semibold text-nuit shadow-lg shadow-acier/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:bg-none disabled:bg-brume-2 disabled:text-nuit/30 disabled:shadow-none disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-8 py-3.5 text-lg font-semibold text-nuit shadow-lg shadow-acier/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:bg-none disabled:bg-brume-2 disabled:text-nuit/55 disabled:shadow-none disabled:cursor-not-allowed"
           >
             <EditableText as="span" value={texts.equipeBoutonChef} onSave={(v) => saveText("equipeBoutonChef", v)} className="text-nuit" />
           </button>

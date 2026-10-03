@@ -86,7 +86,7 @@ export default async function AProposDuDeveloppeur({
           as="section"
           stagger
           staggerAmount={0.15}
-          className="cadre mt-10 bg-dalle rounded-2xl ring-1 ring-acier/25 shadow-[0_18px_40px_-14px_rgba(8,16,40,0.45)] p-6 text-nuit/80 leading-relaxed space-y-4"
+          className="cadre mt-10 bg-dalle rounded-2xl ring-1 ring-acier/25 shadow-[0_18px_40px_-14px_rgba(8,16,40,0.45)] p-6 text-nuit/90 leading-relaxed space-y-4"
         >
           <p>
             Actuellement en Licence 3 Logistique, je poursuis un parcours à la croisée de deux mondes qui me

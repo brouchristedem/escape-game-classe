@@ -78,7 +78,7 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
           multiline
           value={texts.accueilDescription}
           onSave={(v) => saveText("accueilDescription", v)}
-          className="text-nuit/75 max-w-sm mb-10 leading-relaxed whitespace-pre-line"
+          className="text-nuit/90 max-w-sm mb-10 leading-relaxed whitespace-pre-line"
         />
 
         <button
@@ -91,13 +91,13 @@ export default function Home({ params }: { params: Promise<{ gameId: string }> }
 
         <Link
           href={`/a-propos?jeu=${gameId}`}
-          className="mt-10 text-xs text-nuit/75 hover:text-acier underline"
+          className="mt-10 text-xs text-nuit/90 hover:text-acier underline"
         >
           À propos du développeur
         </Link>
         <Link
           href={`/tarifs?jeu=${gameId}`}
-          className="mt-2 text-xs text-nuit/75 hover:text-acier underline"
+          className="mt-2 text-xs text-nuit/90 hover:text-acier underline"
         >
           Tarifs
         </Link>

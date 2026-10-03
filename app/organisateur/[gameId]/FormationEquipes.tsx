@@ -154,7 +154,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
             )}
           </div>
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-nuit/75">
+            <p className="text-sm text-nuit/90">
               Les participants scannent ce QR code et saisissent leur prénom et leur niveau d&apos;étude (utilisé
               pour répartir les niveaux équitablement entre équipes). Ouvre l&apos;affiche pour le projeter en
               plein écran ou l&apos;imprimer.
@@ -174,12 +174,12 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                 </a>
               )}
             </div>
-            {lien && <p className="text-xs text-nuit/75 break-all">{lien}</p>}
+            {lien && <p className="text-xs text-nuit/90 break-all">{lien}</p>}
             <div className="flex flex-wrap items-center gap-3">
               <button onClick={basculerInscriptions} disabled={occupe} className={ouvertes ? boutonSecondaire : bouton}>
                 {ouvertes ? "Fermer les inscriptions" : "Ouvrir les inscriptions"}
               </button>
-              <span className={`text-sm font-medium ${ouvertes ? "text-green-600" : "text-nuit/75"}`}>
+              <span className={`text-sm font-medium ${ouvertes ? "text-green-600" : "text-nuit/90"}`}>
                 {ouvertes ? "Inscriptions ouvertes" : "Inscriptions fermées"}
               </span>
             </div>
@@ -199,7 +199,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
               Aucune équipe pour l&apos;instant : crée d&apos;abord les équipes dans l&apos;onglet &quot;Équipes&quot;.
             </p>
           ) : (
-            <p className="text-sm text-nuit/75">
+            <p className="text-sm text-nuit/90">
               Répartit tous les inscrits dans les {teams.length} équipes du jeu, en équipes de même taille (à une
               personne près) et en équilibrant les niveaux d&apos;étude entre équipes
               {tailleApprox > 0 && <> : environ {tailleApprox} personnes par équipe</>}. Aucune équipe n&apos;est
@@ -231,7 +231,7 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
           )}
         </div>
         {inscrits.length === 0 ? (
-          <p className="text-sm text-nuit/75">Personne n&apos;est inscrit pour l&apos;instant.</p>
+          <p className="text-sm text-nuit/90">Personne n&apos;est inscrit pour l&apos;instant.</p>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
             {[...equipesAvecMembres, { team: null, membres: sansEquipe }]
@@ -242,14 +242,14 @@ export default function FormationEquipes({ gameId, teams }: { gameId: string; te
                     {g.team ? g.team.nom : "Sans équipe"} ({g.membres.length})
                   </p>
                   {g.membres.length === 0 ? (
-                    <p className="text-xs text-nuit/75">Personne pour l&apos;instant.</p>
+                    <p className="text-xs text-nuit/90">Personne pour l&apos;instant.</p>
                   ) : (
                     <ul className="flex flex-col gap-1">
                       {g.membres.map((i) => (
                         <li key={i.id} className="flex flex-col gap-1 text-sm text-nuit">
                           <span className="break-words">
                             {i.nom}
-                            {i.niveau && <span className="text-nuit/75"> · {i.niveau}</span>}
+                            {i.niveau && <span className="text-nuit/90"> · {i.niveau}</span>}
                             {(doublons.get(i.nom.trim().toLowerCase()) ?? 0) > 1 && (
                               <span className="ml-1 text-amber-600" title="Nom identique à une autre inscription">
                                 ⚠

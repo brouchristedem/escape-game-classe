@@ -146,7 +146,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
         <h2 className="font-semibold text-nuit mb-2">1. Énigme surprise</h2>
         {!enigme ? (
           <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
-            <p className="text-sm text-nuit/75">
+            <p className="text-sm text-nuit/90">
               L&apos;énigme s&apos;affiche en plein écran chez toutes les équipes, sans dire ce qui est en jeu. La
               première équipe à répondre juste apparaît ici.
             </p>
@@ -159,11 +159,11 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
         ) : (
           <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
             <p className="text-sm text-nuit whitespace-pre-line">{enigme.enonce}</p>
-            <p className="text-xs text-nuit/75">Réponse attendue : {enigme.reponse}</p>
+            <p className="text-xs text-nuit/90">Réponse attendue : {enigme.reponse}</p>
             <div>
               <p className="text-sm font-medium text-nuit mb-1">Équipes ayant répondu juste</p>
               {bonnes.length === 0 ? (
-                <p className="text-sm text-nuit/75">Aucune pour l&apos;instant.</p>
+                <p className="text-sm text-nuit/90">Aucune pour l&apos;instant.</p>
               ) : (
                 <ol className="text-sm text-nuit space-y-0.5">
                   {bonnes.map((b, i) => (
@@ -189,7 +189,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
       <div>
         <h2 className="font-semibold text-nuit mb-2">2. Appliquer un effet à une équipe</h2>
         <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
-          <p className="text-sm text-nuit/75">
+          <p className="text-sm text-nuit/90">
             L&apos;équipe gagnante annonce sa cible à l&apos;oral : applique ici l&apos;effet choisi.
           </p>
           <select value={teamCible} onChange={(e) => setTeamCible(e.target.value)} className={champ}>
@@ -216,7 +216,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
           {typeEffet === "prison" ? (
             <>
               <input value={personne} onChange={(e) => setPersonne(e.target.value)} className={champ} placeholder="Nom de la personne mise en prison" />
-              <label className="flex items-center gap-2 text-sm text-nuit/75">
+              <label className="flex items-center gap-2 text-sm text-nuit/90">
                 <input type="checkbox" checked={prisonDureeLimitee} onChange={(e) => setPrisonDureeLimitee(e.target.checked)} />
                 Durée limitée (sinon jusqu&apos;à ce que tu libères la personne)
               </label>
@@ -252,7 +252,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
       <div>
         <h2 className="font-semibold text-nuit mb-2">3. Fausse fin / Glitch</h2>
         <div className="bg-brume-clair rounded-xl p-4 flex flex-col gap-3">
-          <p className="text-sm text-nuit/75">
+          <p className="text-sm text-nuit/90">
             À déclencher au moment de ton choix, chez une équipe précise ou chez toutes en même temps. L&apos;effet
             se joue automatiquement (quelques secondes) puis le jeu reprend tout seul.
           </p>
@@ -279,7 +279,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             />
           )}
           <div>
-            <p className="text-xs text-nuit/75 mb-1">
+            <p className="text-xs text-nuit/90 mb-1">
               {typeSurprise === "glitch" ? "Durée d'affichage du glitch" : "Durée de l'écran de victoire (avant la révélation)"}
             </p>
             <div className="flex gap-2">
@@ -291,7 +291,7 @@ export default function Evenements({ gameId, teams }: { gameId: string; teams: T
             </div>
           </div>
           {typeSurprise === "glitch" && (
-            <label className="flex items-center gap-2 text-sm text-nuit/75">
+            <label className="flex items-center gap-2 text-sm text-nuit/90">
               <input type="checkbox" checked={vibrer} onChange={(e) => setVibrer(e.target.checked)} />
               Faire vibrer l&apos;appareil pendant le glitch (si le téléphone le permet)
             </label>

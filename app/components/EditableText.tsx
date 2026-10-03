@@ -90,7 +90,7 @@ export default function EditableText({
         saving ? "opacity-50" : ""
       }`}
     >
-      {value || <span className="text-acier/60 italic">{placeholder ?? "(cliquer pour écrire)"}</span>}
+      {value || <span className="text-acier/85 italic">{placeholder ?? "(cliquer pour écrire)"}</span>}
     </Tag>
   );
 }

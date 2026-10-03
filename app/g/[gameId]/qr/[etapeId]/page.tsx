@@ -43,14 +43,14 @@ export default function ScanQr() {
             <div className="cadre mb-8 max-w-md w-full rounded-2xl bg-dalle ring-1 ring-acier/30 px-6 sm:px-8 py-7 text-nuit/90 text-lg leading-relaxed text-center shadow-[0_18px_40px_-14px_rgba(8,16,40,0.45)]">
               <RichText text={message} />
             </div>
-            <p className="text-sm text-nuit/75 max-w-xs">
+            <p className="text-sm text-nuit/90 max-w-xs">
               Note ce message, puis retourne sur l&apos;écran de ton équipe.
             </p>
           </>
         ) : (
           <>
             <h1 className="font-headline font-extrabold text-2xl text-nuit mb-3">QR code non valide</h1>
-            <p className="text-sm text-nuit/75 max-w-xs">
+            <p className="text-sm text-nuit/90 max-w-xs">
               Ce QR code ne contient aucun message. Préviens un organisateur.
             </p>
           </>

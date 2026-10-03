@@ -27,7 +27,7 @@ export default function EspaceOrganisateur({
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
         <p className="text-nuit font-semibold mb-2">Accès réservé.</p>
-        <p className="text-sm text-nuit/75 mb-6">
+        <p className="text-sm text-nuit/90 mb-6">
           Ce compte ({user.email}) n&apos;est pas autorisé sur cette page.
         </p>
         <button
@@ -69,7 +69,7 @@ function ConnexionOrganisateur({ titre }: { titre: string }) {
     <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
       <GameLogo className="h-14 w-14 mb-4" />
       <h1 className="font-headline text-xl font-semibold mb-1 text-nuit">{titre}</h1>
-      <p className="text-sm text-nuit/75 mb-6">Connectez-vous à votre compte</p>
+      <p className="text-sm text-nuit/90 mb-6">Connectez-vous à votre compte</p>
 
       <div className="flex flex-col gap-3 w-72">
         <button
@@ -79,7 +79,7 @@ function ConnexionOrganisateur({ titre }: { titre: string }) {
           Se connecter avec Google
         </button>
 
-        <div className="flex items-center gap-2 text-xs text-nuit/75 my-1">
+        <div className="flex items-center gap-2 text-xs text-nuit/90 my-1">
           <div className="h-px flex-1 bg-acier/15" />
           ou
           <div className="h-px flex-1 bg-acier/15" />
@@ -110,7 +110,7 @@ function ConnexionOrganisateur({ titre }: { titre: string }) {
         {error && <p className="text-alerte text-sm text-center">{error}</p>}
       </div>
 
-      <Link href="/a-propos" className="mt-10 text-xs text-nuit/75 hover:text-acier-deep underline">
+      <Link href="/a-propos" className="mt-10 text-xs text-nuit/90 hover:text-acier-deep underline">
         À propos du développeur
       </Link>
     </main>
@@ -178,11 +178,11 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
           <GameLogo className="h-10 w-10 shrink-0" />
           <h1 className="font-headline text-2xl font-extrabold text-nuit">{titre}</h1>
         </div>
-        <button onClick={() => signOut()} className="text-xs text-nuit/75 hover:text-nuit/75">
+        <button onClick={() => signOut()} className="text-xs text-nuit/90 hover:text-nuit/90">
           Déconnexion ({email})
         </button>
       </div>
-      <p className="text-sm text-nuit/75 mb-8">
+      <p className="text-sm text-nuit/90 mb-8">
         La racine du site liste désormais tous les jeux publiquement, chacun verrouillé par un code. Donnez le code
         affiché ci-dessous à vos joueurs — vous pouvez le changer à tout moment. Le lien direct par jeu reste
         disponible ci-dessous si vous préférez le partager tel quel.
@@ -206,9 +206,9 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
       </div>
 
       {loading ? (
-        <p className="text-nuit/75 text-sm">Chargement...</p>
+        <p className="text-nuit/90 text-sm">Chargement...</p>
       ) : jeux.length === 0 ? (
-        <p className="text-nuit/75 text-sm">Aucun jeu pour l&apos;instant. Créez-en un ci-dessus.</p>
+        <p className="text-nuit/90 text-sm">Aucun jeu pour l&apos;instant. Créez-en un ci-dessus.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {jeux.map((j) => (
@@ -233,13 +233,13 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
                       >
                         {savingCode ? "..." : "Valider"}
                       </button>
-                      <button onClick={() => setEditCodeId(null)} className="text-xs text-nuit/75">
+                      <button onClick={() => setEditCodeId(null)} className="text-xs text-nuit/90">
                         Annuler
                       </button>
                     </>
                   ) : (
                     <>
-                      <span className="text-xs text-nuit/75">
+                      <span className="text-xs text-nuit/90">
                         Code joueurs : <span className="font-mono font-semibold text-nuit">{j.codeAcces || "—"}</span>
                       </span>
                       <button
@@ -247,7 +247,7 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
                           setEditCodeId(j.id);
                           setCodeBrouillon(j.codeAcces || "");
                         }}
-                        className="text-xs text-nuit/75 hover:text-acier-deep"
+                        className="text-xs text-nuit/90 hover:text-acier-deep"
                       >
                         Modifier
                       </button>
@@ -269,7 +269,7 @@ function ListeJeux({ uid, email, titre }: { uid: string; email: string; titre: s
       )}
 
       <div className="mt-10 text-center">
-        <Link href="/a-propos" className="text-xs text-nuit/75 hover:text-acier-deep underline">
+        <Link href="/a-propos" className="text-xs text-nuit/90 hover:text-acier-deep underline">
           À propos du développeur
         </Link>
       </div>

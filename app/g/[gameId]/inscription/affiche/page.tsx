@@ -62,7 +62,7 @@ export default function AfficheInscription() {
         )}
       </div>
 
-      {lien && <p className="text-[min(2.4vh,4vw)] text-nuit/75 break-all print:text-black">{lien}</p>}
+      {lien && <p className="text-[min(2.4vh,4vw)] text-nuit/90 break-all print:text-black">{lien}</p>}
 
       <div className="print:hidden flex flex-col items-center gap-3">
         {!ouvertes && (

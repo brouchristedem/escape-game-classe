@@ -44,9 +44,9 @@ export default function TarifsCards() {
             </span>
           )}
           <h3 className="font-headline font-bold text-lg text-nuit">{p.nom}</h3>
-          <p className="text-xs mb-4 text-nuit/75">{p.cible}</p>
+          <p className="text-xs mb-4 text-nuit/90">{p.cible}</p>
           <p className="text-3xl font-extrabold mb-5 text-acier-deep">{p.prix}</p>
-          <ul className="space-y-2 text-sm flex-1 text-nuit/80">
+          <ul className="space-y-2 text-sm flex-1 text-nuit/90">
             {p.details.map((d) => (
               <li key={d} className="flex items-start gap-2">
                 <span className="text-acier-deep">✓</span>

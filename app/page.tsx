@@ -82,9 +82,9 @@ export default function Accueil() {
         </Reveal>
 
         {loading ? (
-          <p className="text-nuit/75 text-sm">Chargement...</p>
+          <p className="text-nuit/90 text-sm">Chargement...</p>
         ) : jeux.length === 0 ? (
-          <p className="text-nuit/75 text-sm text-center">Aucun jeu disponible pour l&apos;instant.</p>
+          <p className="text-nuit/90 text-sm text-center">Aucun jeu disponible pour l&apos;instant.</p>
         ) : (
           <Reveal as="div" stagger staggerAmount={0.1} className="flex flex-col gap-3 w-full">
             {jeux.map((j) => (
@@ -168,7 +168,7 @@ function ModalCode({ jeu, onClose }: { jeu: GameMeta; onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-headline font-bold text-nuit mb-1">{jeu.nom}</h2>
-        <p className="text-xs text-nuit/75 mb-4">Entrez le code donné par votre organisateur.</p>
+        <p className="text-xs text-nuit/90 mb-4">Entrez le code donné par votre organisateur.</p>
         <input
           autoFocus
           value={code}
@@ -187,7 +187,7 @@ function ModalCode({ jeu, onClose }: { jeu: GameMeta; onClose: () => void }) {
           >
             {verifying ? "..." : "Valider"}
           </button>
-          <button onClick={onClose} className="text-sm text-nuit/75 hover:text-nuit px-3">
+          <button onClick={onClose} className="text-sm text-nuit/90 hover:text-nuit px-3">
             Annuler
           </button>
         </div>

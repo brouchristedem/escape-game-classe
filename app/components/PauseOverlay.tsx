@@ -13,7 +13,7 @@ export default function PauseOverlay({
       <div className="relative z-10 flex flex-col items-center max-w-sm">
         <p className="text-5xl mb-5">⏸️</p>
         <h1 className="font-headline text-xl font-bold text-nuit mb-3">{titre}</h1>
-        <p className="text-sm text-nuit/75">{message}</p>
+        <p className="text-sm text-nuit/90">{message}</p>
         <div className="mt-6 flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-lueur animate-bounce [animation-delay:-0.3s]" />
           <span className="h-2.5 w-2.5 rounded-full bg-lueur animate-bounce [animation-delay:-0.15s]" />

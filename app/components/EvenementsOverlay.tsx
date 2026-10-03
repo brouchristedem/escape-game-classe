@@ -213,7 +213,7 @@ export default function EvenementsOverlay({
           <div className="relative z-10 flex flex-col items-center max-w-sm">
             <p className="text-5xl mb-5">🔒</p>
             <h1 className="font-headline text-2xl font-bold text-nuit mb-3">Écran bloqué</h1>
-            <p className="text-sm text-nuit/75 mb-6">
+            <p className="text-sm text-nuit/90 mb-6">
               Votre équipe est bloquée pendant un moment. Le chrono général continue.
             </p>
             <p className="font-codemono text-5xl font-semibold text-acier">
@@ -232,7 +232,7 @@ export default function EvenementsOverlay({
               <>
                 <p className="text-acier font-semibold mb-2">{nomEquipe}</p>
                 <h1 className="font-headline text-2xl font-bold mb-4 text-nuit">{t.finTitre}</h1>
-                <p className="text-nuit/75 max-w-sm">{t.finSousTitre}</p>
+                <p className="text-nuit/90 max-w-sm">{t.finSousTitre}</p>
               </>
             ) : (
               <>
@@ -276,7 +276,7 @@ export default function EvenementsOverlay({
             {afficherConfirmation ? (
               <>
                 <p className="text-nuit mb-2 text-lg font-semibold">Bonne réponse ✅</p>
-                <p className="text-sm text-nuit/75 mb-6">Attendez l&apos;annonce de l&apos;organisateur.</p>
+                <p className="text-sm text-nuit/90 mb-6">Attendez l&apos;annonce de l&apos;organisateur.</p>
                 <button
                   onClick={() => setFerme(enigme.id)}
                   className="rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-8 py-3 font-semibold text-nuit"
@@ -297,7 +297,7 @@ export default function EvenementsOverlay({
                   }}
                   onKeyDown={(e) => e.key === "Enter" && valider()}
                   placeholder="Votre réponse"
-                  className="w-full rounded-xl bg-brume-2 border border-acier/40 px-4 py-3 text-nuit placeholder:text-nuit/60 mb-2"
+                  className="w-full rounded-xl bg-brume-2 border border-acier/40 px-4 py-3 text-nuit placeholder:text-nuit/85 mb-2"
                 />
                 {erreur && <p className="text-sm text-alerte mb-2">Ce n&apos;est pas ça, réessayez.</p>}
                 {erreurEnvoi && (

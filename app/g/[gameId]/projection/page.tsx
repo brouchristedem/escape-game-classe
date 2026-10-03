@@ -105,7 +105,7 @@ export default function EcranProjection() {
       </header>
 
       {classees.length === 0 ? (
-        <p className="m-auto text-[min(4vh,3vw)] text-nuit/75">Aucune équipe pour l&apos;instant.</p>
+        <p className="m-auto text-[min(4vh,3vw)] text-nuit/90">Aucune équipe pour l&apos;instant.</p>
       ) : (
         <ol
           className="relative flex-1 min-h-0"
@@ -131,7 +131,7 @@ export default function EcranProjection() {
               >
                 <span
                   className={`font-headline font-extrabold w-[6vw] text-center text-[min(6vh,5vw)] ${
-                    termine ? "text-acier" : "text-nuit/75"
+                    termine ? "text-acier" : "text-nuit/90"
                   }`}
                 >
                   {i + 1}
@@ -139,7 +139,7 @@ export default function EcranProjection() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-4 mb-[0.8vh]">
                     <p className="font-headline font-bold text-[min(4vh,3vw)] leading-tight truncate">{team.nom}</p>
-                    <span className="font-codemono font-medium text-[min(2.8vh,2.2vw)] shrink-0 text-nuit/80">
+                    <span className="font-codemono font-medium text-[min(2.8vh,2.2vw)] shrink-0 text-nuit/90">
                       {!commence
                         ? "En attente"
                         : termine

@@ -35,7 +35,7 @@ export default async function Tarifs({
             className="font-headline text-2xl sm:text-3xl font-bold text-nuit"
           />
           <Reveal delay={0.2}>
-            <p className="text-nuit/75 mt-2 max-w-md mx-auto">
+            <p className="text-nuit/90 mt-2 max-w-md mx-auto">
               Un prix unique par événement, sans abonnement : vous payez une fois, votre jeu est prêt à jouer.
             </p>
           </Reveal>
@@ -46,7 +46,7 @@ export default async function Tarifs({
         </div>
 
         <Reveal>
-          <p className="text-xs text-nuit/75 text-center mt-6">
+          <p className="text-xs text-nuit/90 text-center mt-6">
             Paiement par mobile money (Wave). Besoin d&apos;un format sur-mesure ou de plusieurs jeux à la suite ?
             Contactez-moi pour en discuter.
           </p>

@@ -30,7 +30,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
   const classees = classerEquipes(teams, states);
 
   if (teams.length === 0) {
-    return <p className="text-nuit/75 text-sm">Aucune équipe pour l&apos;instant.</p>;
+    return <p className="text-nuit/90 text-sm">Aucune équipe pour l&apos;instant.</p>;
   }
 
   return (
@@ -63,7 +63,7 @@ export default function Classement({ gameId, teams }: { gameId: string; teams: T
                 <p className="font-medium text-sm text-nuit truncate">{team.nom}</p>
                 <span
                   className={`text-xs font-semibold shrink-0 ${
-                    termine ? "text-green-600" : commence ? "text-nuit/75" : "text-nuit/75"
+                    termine ? "text-green-600" : commence ? "text-nuit/90" : "text-nuit/90"
                   }`}
                 >
                   {!commence

@@ -99,7 +99,7 @@ export default function Admin({ params }: { params: Promise<{ gameId: string }> 
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-center">
         <h1 className="text-xl font-semibold mb-2 text-nuit">Accès refusé</h1>
-        <p className="text-sm text-nuit/75 mb-6">
+        <p className="text-sm text-nuit/90 mb-6">
           {user
             ? "Ce compte n'est pas organisateur de ce jeu."
             : "Vous devez être connecté pour administrer ce jeu."}
@@ -604,7 +604,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           <GameLogo className="h-10 w-10 shrink-0" />
           <div>
             <h1 className="font-headline text-2xl font-bold mb-1">Espace organisateur</h1>
-            <p className="text-nuit/75 text-sm">Escape Game</p>
+            <p className="text-nuit/90 text-sm">Escape Game</p>
           </div>
         </div>
         <button
@@ -624,7 +624,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           <p className={`font-semibold ${gameStatus === "pause" ? "text-alerte" : "text-nuit"}`}>
             {gameStatus === "pause" ? "⏸️ Jeu en pause — bloqué chez toutes les équipes" : "▶️ Jeu actif"}
           </p>
-          <p className="text-xs text-nuit/75 mt-0.5">
+          <p className="text-xs text-nuit/90 mt-0.5">
             En cas de bug, met en pause le circuit chez tout le monde en même temps, sans perte de progression.
           </p>
         </div>
@@ -644,7 +644,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           <p className="font-semibold text-nuit mb-1">⏱️ Chrono général (toutes les équipes)</p>
           {tempsGeneral.finTimestamp ? (
             <>
-              <p className="text-xs text-nuit/75 mb-3">
+              <p className="text-xs text-nuit/90 mb-3">
                 Affiché à l&apos;écran chez toutes les équipes. Ajustez en direct si besoin.
               </p>
               <div className="flex flex-wrap gap-2">
@@ -664,7 +664,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 onChange={(e) => setDureeDepart(e.target.value)}
                 className="bg-white border border-acier/20 rounded-lg px-3 py-1.5 w-20 text-sm"
               />
-              <span className="text-sm text-nuit/75">minutes</span>
+              <span className="text-sm text-nuit/90">minutes</span>
               <button onClick={lancerTempsGeneral} disabled={savingTemps} className="bg-lueur hover:bg-lueur-fonce text-nuit text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
                 Démarrer
               </button>
@@ -674,7 +674,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
         <div className="rounded-2xl px-5 py-4 ring-2 ring-lueur/50 bg-brume-clair">
           <p className="font-semibold text-nuit mb-1">📢 Message ponctuel (toutes les équipes)</p>
-          <p className="text-xs text-nuit/75 mb-3">
+          <p className="text-xs text-nuit/90 mb-3">
             S&apos;affiche par-dessus l&apos;écran de toutes les équipes pendant la durée choisie, sans arrêter leur
             progression (ex. « Une personne de votre équipe est en prison »).
           </p>
@@ -693,7 +693,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               onChange={(e) => setBroadcastDuree(e.target.value)}
               className="bg-white border border-acier/20 rounded-lg px-3 py-1.5 w-20 text-sm"
             />
-            <span className="text-sm text-nuit/75">secondes</span>
+            <span className="text-sm text-nuit/90">secondes</span>
             <button onClick={diffuserMessage} disabled={sendingBroadcast} className="bg-acier-deep hover:bg-nuit text-white text-sm font-semibold px-4 py-1.5 rounded-full transition disabled:opacity-50">
               {sendingBroadcast ? "Envoi..." : "Diffuser maintenant"}
             </button>
@@ -717,7 +717,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
         <TabButton active={tab === "apparence"} onClick={() => setTab("apparence")}>Apparence</TabButton>
       </div>
 
-      {loading && <p className="text-nuit/75">Chargement...</p>}
+      {loading && <p className="text-nuit/90">Chargement...</p>}
 
       {loadError && (
         <div className="mb-6 flex items-center gap-3">
@@ -733,7 +733,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           <section className="bg-brume-clair rounded-2xl p-5 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto">
             <h2 className="font-semibold mb-4 text-nuit">{editingTeamId ? "Modifier l'équipe" : "Ajouter une équipe"}</h2>
 
-            <label className="block text-sm text-nuit/75 mb-1">Nom de l&apos;équipe</label>
+            <label className="block text-sm text-nuit/90 mb-1">Nom de l&apos;équipe</label>
             <input
               value={teamForm.nom}
               onChange={(e) => setTeamForm({ ...teamForm, nom: e.target.value })}
@@ -742,7 +742,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               placeholder="Ex. Les Lions, Team Bassam..."
             />
             {!editingTeamId && (
-              <p className="text-nuit/75 text-xs mb-4">
+              <p className="text-nuit/90 text-xs mb-4">
                 Chaque équipe a son propre circuit d&apos;énigmes, à créer ensuite dans l&apos;onglet
                 &quot;Circuit du jeu&quot;.
               </p>
@@ -753,7 +753,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 {editingTeamId ? "Enregistrer les modifications" : "Ajouter l'équipe"}
               </button>
               {editingTeamId && (
-                <button onClick={resetTeamForm} className="text-nuit/75 underline text-sm">
+                <button onClick={resetTeamForm} className="text-nuit/90 underline text-sm">
                   Annuler
                 </button>
               )}
@@ -761,7 +761,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           </section>
 
           <section>
-            {teams.length === 0 && <p className="text-nuit/75 text-sm">Aucune équipe pour l&apos;instant.</p>}
+            {teams.length === 0 && <p className="text-nuit/90 text-sm">Aucune équipe pour l&apos;instant.</p>}
             <div className="flex flex-col gap-3">
               {teams.map((t) => (
                 <div key={t.id} className="bg-brume-clair rounded-xl p-4">
@@ -826,7 +826,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
       {!loading && tab === "circuit" && teams.length > 0 && (
         <>
           <div className="mb-4 flex items-center gap-3 flex-wrap">
-            <label className="text-sm text-nuit/75">Circuit de l&apos;équipe :</label>
+            <label className="text-sm text-nuit/90">Circuit de l&apos;équipe :</label>
             <select
               value={equipeCircuit?.id ?? ""}
               onChange={(e) => setEquipeCircuitId(e.target.value)}
@@ -838,7 +838,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 </option>
               ))}
             </select>
-            <span className="text-xs text-nuit/75">
+            <span className="text-xs text-nuit/90">
               Chaque équipe a son propre circuit d&apos;énigmes, indépendant des autres.
             </span>
           </div>
@@ -849,7 +849,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               {editingQId ? "Modifier cette étape" : "Ajouter une étape à la fin"}
             </h2>
 
-            <label className="block text-sm text-nuit/75 mb-1">Type d&apos;étape</label>
+            <label className="block text-sm text-nuit/90 mb-1">Type d&apos;étape</label>
             <div className="flex gap-2 mb-3 flex-wrap">
               {qForm.type === "qcm" && (
                 <TypeButton active onClick={() => {}}>
@@ -867,7 +867,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
               </TypeButton>
             </div>
 
-            <label className="block text-sm text-nuit/75 mb-1">
+            <label className="block text-sm text-nuit/90 mb-1">
               {qForm.type === "code"
                 ? "Texte affiché en haut de la page"
                 : qForm.type === "info"
@@ -881,13 +881,13 @@ function AdminPanel({ gameId }: { gameId: string }) {
               rows={qForm.type === "code" || qForm.type === "info" ? 3 : 2}
             />
             {qForm.type === "info" && (
-              <p className="text-nuit/75 text-xs mb-3">
+              <p className="text-nuit/90 text-xs mb-3">
                 Entourez un mot de **doubles étoiles** pour l&apos;afficher en gras (ex. « **URGENT** »). Aucun code
                 n&apos;est demandé sur cette page, juste un bouton pour continuer.
               </p>
             )}
 
-            <label className="block text-sm text-nuit/75 mb-1">Image (facultatif)</label>
+            <label className="block text-sm text-nuit/90 mb-1">Image (facultatif)</label>
             {qForm.imageUrl ? (
               <div className="mb-3 flex items-start gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -911,19 +911,19 @@ function AdminPanel({ gameId }: { gameId: string }) {
                   accept="image/*"
                   onChange={handleImageChange}
                   disabled={uploadingImage}
-                  className="text-xs text-nuit/75 file:mr-3 file:rounded-full file:border-0 file:bg-lueur file:px-4 file:py-1.5 file:text-nuit file:font-semibold file:text-xs disabled:opacity-50"
+                  className="text-xs text-nuit/90 file:mr-3 file:rounded-full file:border-0 file:bg-lueur file:px-4 file:py-1.5 file:text-nuit file:font-semibold file:text-xs disabled:opacity-50"
                 />
-                {uploadingImage && <p className="text-nuit/75 text-xs mt-1">Envoi de l&apos;image…</p>}
+                {uploadingImage && <p className="text-nuit/90 text-xs mt-1">Envoi de l&apos;image…</p>}
               </div>
             )}
-            <p className="text-nuit/75 text-xs mb-3">
+            <p className="text-nuit/90 text-xs mb-3">
               Affichée au-dessus de l&apos;énoncé (utile pour une énigme visuelle, ex. calcul avec des émojis/images à
               substituer).
             </p>
 
             {qForm.type === "qcm" && (
               <>
-                <label className="block text-sm text-nuit/75 mb-1">Propositions (cochez la bonne réponse)</label>
+                <label className="block text-sm text-nuit/90 mb-1">Propositions (cochez la bonne réponse)</label>
                 {qForm.propositions.map((p, i) => (
                   <div key={i} className="flex items-center gap-2 mb-2">
                     <input
@@ -950,14 +950,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
             {qForm.type === "libre" && (
               <>
-                <label className="block text-sm text-nuit/75 mb-1">Réponse attendue</label>
+                <label className="block text-sm text-nuit/90 mb-1">Réponse attendue</label>
                 <input
                   value={qForm.reponse}
                   onChange={(e) => setQForm({ ...qForm, reponse: e.target.value })}
                   className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Réponse exacte attendue"
                 />
-                <p className="text-nuit/75 text-xs mb-3">
+                <p className="text-nuit/90 text-xs mb-3">
                   La comparaison ignore majuscules/minuscules, accents et espaces superflus.
                 </p>
               </>
@@ -965,14 +965,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
             {qForm.type === "code" && (
               <>
-                <label className="block text-sm text-nuit/75 mb-1">Code attendu (choisi par vous)</label>
+                <label className="block text-sm text-nuit/90 mb-1">Code attendu (choisi par vous)</label>
                 <input
                   value={qForm.reponse}
                   onChange={(e) => setQForm({ ...qForm, reponse: e.target.value })}
                   className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-3 w-full"
                   placeholder="Ex. IUA2026"
                 />
-                <p className="text-nuit/75 text-xs mb-3">
+                <p className="text-nuit/90 text-xs mb-3">
                   La comparaison ignore majuscules/minuscules, accents et espaces superflus. Aucune limite de tentatives sur cette page.
                 </p>
               </>
@@ -980,7 +980,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
             {(qForm.type === "qcm" || qForm.type === "libre") && (
               <>
-                <label className="block text-sm text-nuit/75 mb-1">
+                <label className="block text-sm text-nuit/90 mb-1">
                   Fragment affiché après une bonne réponse (facultatif)
                 </label>
                 <textarea
@@ -990,14 +990,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
                   rows={2}
                   placeholder="Ex. Le premier mot du code final est « TREMPLIN »."
                 />
-                <p className="text-nuit/75 text-xs mb-3">
+                <p className="text-nuit/90 text-xs mb-3">
                   Laissez vide si cette énigme ne débloque aucun fragment. Ce texte n&apos;a aucun lien avec les
                   fragments des autres énigmes.
                 </p>
               </>
             )}
 
-            <label className="block text-sm text-nuit/75 mb-1">
+            <label className="block text-sm text-nuit/90 mb-1">
               Message révélé par un QR code (facultatif)
             </label>
             <textarea
@@ -1007,14 +1007,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
               rows={2}
               placeholder="Ex. Le code à saisir est **LUNE42**."
             />
-            <p className="text-nuit/75 text-xs mb-3">
+            <p className="text-nuit/90 text-xs mb-3">
               Si vous remplissez ce champ, enregistrez l&apos;étape puis cliquez sur « QR code » dans la liste : vous
               obtenez un QR code à imprimer et cacher dans un lieu réel. En le scannant, les joueurs voient ce message
               (un indice, un code à saisir sur une page code...).
             </p>
 
             {qForm.type !== "code" && (
-              <p className="text-nuit/75 text-xs mb-3">
+              <p className="text-nuit/90 text-xs mb-3">
                 Les messages de réussite/échec affichés après cette énigme se gèrent globalement dans l&apos;onglet
                 « Textes du site ».
               </p>
@@ -1030,7 +1030,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                 {editingQId ? "Enregistrer les modifications" : "Ajouter à la fin du circuit"}
               </button>
               {editingQId && (
-                <button onClick={() => resetQForm()} className="text-nuit/75 underline text-sm">
+                <button onClick={() => resetQForm()} className="text-nuit/90 underline text-sm">
                   Annuler
                 </button>
               )}
@@ -1040,19 +1040,19 @@ function AdminPanel({ gameId }: { gameId: string }) {
           {/* Circuit ordonné */}
           <section>
             <div className="flex gap-2 mb-4 text-xs flex-wrap">
-              <button onClick={() => inserer(null, "libre")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/45">
+              <button onClick={() => inserer(null, "libre")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/70">
                 + Énigme en tête de circuit
               </button>
-              <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/45">
+              <button onClick={() => inserer(null, "code")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/70">
                 + Page code en tête de circuit
               </button>
-              <button onClick={() => inserer(null, "info")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/45">
+              <button onClick={() => inserer(null, "info")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/70">
                 + Page vierge en tête de circuit
               </button>
             </div>
 
             {etapesSalle.length === 0 && (
-              <p className="text-nuit/75 text-sm">Aucune étape pour l&apos;instant.</p>
+              <p className="text-nuit/90 text-sm">Aucune étape pour l&apos;instant.</p>
             )}
 
             <div className="flex flex-col gap-3">
@@ -1083,10 +1083,10 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         )}
                       </p>
                       <div className="flex gap-2 shrink-0 text-xs items-center">
-                        <button onClick={() => deplacerEtape(q, -1)} disabled={i === 0 || savingStep} className="text-nuit disabled:text-nuit/30" title="Monter">
+                        <button onClick={() => deplacerEtape(q, -1)} disabled={i === 0 || savingStep} className="text-nuit disabled:text-nuit/55" title="Monter">
                           ↑
                         </button>
-                        <button onClick={() => deplacerEtape(q, 1)} disabled={i === etapesSalle.length - 1 || savingStep} className="text-nuit disabled:text-nuit/30" title="Descendre">
+                        <button onClick={() => deplacerEtape(q, 1)} disabled={i === etapesSalle.length - 1 || savingStep} className="text-nuit disabled:text-nuit/55" title="Descendre">
                           ↓
                         </button>
                         {q.qrTexte && (
@@ -1106,7 +1106,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                       </div>
                     </div>
                     {q.type === "qcm" ? (
-                      <ul className="text-nuit/75 text-xs mt-2 space-y-0.5">
+                      <ul className="text-nuit/90 text-xs mt-2 space-y-0.5">
                         {(q.propositions ?? []).map((p, pi) => (
                           <li key={pi} className={pi === q.correctIndex ? "text-green-600 font-medium" : ""}>
                             {pi === q.correctIndex ? "✓ " : "· "}
@@ -1115,7 +1115,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
                         ))}
                       </ul>
                     ) : q.type === "info" ? null : (
-                      <p className="text-nuit/75 text-xs mt-2">
+                      <p className="text-nuit/90 text-xs mt-2">
                         {q.type === "code" ? "Code attendu : " : "Réponse attendue : "}
                         {q.reponse}
                       </p>
@@ -1125,17 +1125,17 @@ function AdminPanel({ gameId }: { gameId: string }) {
                     )}
                     {q.qrTexte && <p className="text-nuit text-xs mt-1">📱 Message du QR code : {q.qrTexte}</p>}
                     {q.tempsLimite && (
-                      <p className="text-nuit/75 text-xs mt-1">Temps limite : {formatTemps(q.tempsLimite)}</p>
+                      <p className="text-nuit/90 text-xs mt-1">Temps limite : {formatTemps(q.tempsLimite)}</p>
                     )}
                   </div>
                   <div className="flex gap-3 text-[11px] mt-1 mb-1 pl-1 flex-wrap">
-                    <button onClick={() => inserer(q, "libre")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/45">
+                    <button onClick={() => inserer(q, "libre")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/70">
                       + Insérer une énigme après
                     </button>
-                    <button onClick={() => inserer(q, "code")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/45">
+                    <button onClick={() => inserer(q, "code")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/70">
                       + Insérer une page code après
                     </button>
-                    <button onClick={() => inserer(q, "info")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/45">
+                    <button onClick={() => inserer(q, "info")} disabled={savingStep} className="text-acier-deep underline disabled:text-nuit/70">
                       + Insérer une page vierge après
                     </button>
                   </div>
@@ -1149,14 +1149,14 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
       {!loading && tab === "scenario" && (
         <section className="max-w-2xl">
-          <p className="text-nuit/75 mb-2 text-sm">
+          <p className="text-nuit/90 mb-2 text-sm">
             Le fragment affiché après une énigme se modifie directement dans le formulaire de cette énigme, dans
             l&apos;onglet &quot;Circuit&quot;.
           </p>
 
           <div className="bg-brume-clair rounded-2xl p-5 mb-6">
             <h2 className="font-semibold mb-2 text-nuit">Vider le scénario actuel</h2>
-            <p className="text-nuit/75 text-sm mb-3">
+            <p className="text-nuit/90 text-sm mb-3">
               Supprime toutes les énigmes du circuit et le texte de l&apos;histoire, pour repartir d&apos;une page
               blanche avant d&apos;importer votre propre scénario. Les équipes ne sont pas touchées.
             </p>
@@ -1171,7 +1171,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
           <div className="bg-brume-clair rounded-2xl p-5 mb-6">
             <h2 className="font-semibold mb-2 text-nuit">Importer un scénario (Word ou PDF)</h2>
-            <p className="text-nuit/75 text-sm mb-3">
+            <p className="text-nuit/90 text-sm mb-3">
               Choisissez un fichier <code>.docx</code> ou <code>.pdf</code> rédigé selon le format ci-dessous.
               L&apos;import remplace toutes les énigmes existantes du circuit.
             </p>
@@ -1188,24 +1188,24 @@ function AdminPanel({ gameId }: { gameId: string }) {
             >
               {importing ? "Import en cours..." : "Importer ce fichier"}
             </button>
-            {importMessage && <p className="text-nuit/75 text-sm mt-3">{importMessage}</p>}
+            {importMessage && <p className="text-nuit/90 text-sm mt-3">{importMessage}</p>}
           </div>
 
           <div className="bg-amber-50 ring-1 ring-amber-200 rounded-2xl p-5">
             <h2 className="font-semibold mb-2 text-nuit">Format attendu du document</h2>
-            <pre className="whitespace-pre-wrap text-xs text-nuit/75 leading-relaxed">{SCENARIO_FORMAT_GUIDE}</pre>
+            <pre className="whitespace-pre-wrap text-xs text-nuit/90 leading-relaxed">{SCENARIO_FORMAT_GUIDE}</pre>
           </div>
         </section>
       )}
 
       {!loading && tab === "histoire" && (
         <section className="max-w-xl">
-          <p className="text-nuit/75 mb-4 text-sm">
+          <p className="text-nuit/90 mb-4 text-sm">
             Ce texte s&apos;affiche sur la page d&apos;histoire, juste après l&apos;accueil et avant le choix de
             l&apos;équipe (logo seul, sans titre, au-dessus du texte).
           </p>
 
-          <label className="block text-sm text-nuit/75 mb-1">Texte de l&apos;histoire</label>
+          <label className="block text-sm text-nuit/90 mb-1">Texte de l&apos;histoire</label>
           <textarea
             value={histoire}
             onChange={(e) => setHistoire(e.target.value)}
@@ -1226,7 +1226,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
       {!loading && tab === "textes" && (
         <section className="max-w-2xl">
-          <p className="text-nuit/75 mb-6 text-sm">
+          <p className="text-nuit/90 mb-6 text-sm">
             Tous les autres textes affichés sur le site (hors énoncés d&apos;énigmes, gérés dans l&apos;onglet
             &quot;Circuit du jeu&quot;, et hors histoire, gérée dans son propre onglet). Le design ne change pas :
             seul le texte est modifié. Les changements s&apos;appliquent automatiquement sur le site dès
@@ -1279,7 +1279,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
 
           <TextGroup title="Pages vierges / informatives">
             <TextField label="Bouton « Continuer »" value={siteTexts.infoPageBouton} onChange={(v) => setSiteText("infoPageBouton", v)} />
-            <p className="text-nuit/75 text-xs">
+            <p className="text-nuit/90 text-xs">
               Le texte de chaque page vierge se rédige directement dans le circuit (onglet « Circuit »), entourez un
               mot de **doubles étoiles** pour l&apos;afficher en gras.
             </p>
@@ -1291,7 +1291,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
           </TextGroup>
 
           <TextGroup title="Fausse fin (onglet Événements)">
-            <p className="text-nuit/75 text-xs mb-2">
+            <p className="text-nuit/90 text-xs mb-2">
               Réutilise le titre/sous-titre de l&apos;écran final ci-dessus pour le faux écran de victoire, puis
               affiche ce message de révélation.
             </p>
@@ -1313,15 +1313,15 @@ function AdminPanel({ gameId }: { gameId: string }) {
           </TextGroup>
 
           <TextGroup title="Messages aléatoires après chaque énigme">
-            <p className="text-nuit/75 text-xs mb-2">Un message par ligne. Un message est tiré au sort (en alternance) à chaque bonne ou mauvaise réponse.</p>
-            <label className="block text-sm text-nuit/75 mb-1">Messages de réussite</label>
+            <p className="text-nuit/90 text-xs mb-2">Un message par ligne. Un message est tiré au sort (en alternance) à chaque bonne ou mauvaise réponse.</p>
+            <label className="block text-sm text-nuit/90 mb-1">Messages de réussite</label>
             <textarea
               value={siteTexts.messagesReussite.join("\n")}
               onChange={(e) => setSiteText("messagesReussite", e.target.value.split("\n"))}
               rows={3}
               className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-3 w-full"
             />
-            <label className="block text-sm text-nuit/75 mb-1">Messages d&apos;échec</label>
+            <label className="block text-sm text-nuit/90 mb-1">Messages d&apos;échec</label>
             <textarea
               value={siteTexts.messagesEchec.join("\n")}
               onChange={(e) => setSiteText("messagesEchec", e.target.value.split("\n"))}
@@ -1331,15 +1331,15 @@ function AdminPanel({ gameId }: { gameId: string }) {
           </TextGroup>
 
           <TextGroup title="Messages des pages code">
-            <p className="text-nuit/75 text-xs mb-2">Un message par ligne (en alternance). Ils ne servent que pour les pages code, pas pour les énigmes.</p>
-            <label className="block text-sm text-nuit/75 mb-1">Si le code est correct</label>
+            <p className="text-nuit/90 text-xs mb-2">Un message par ligne (en alternance). Ils ne servent que pour les pages code, pas pour les énigmes.</p>
+            <label className="block text-sm text-nuit/90 mb-1">Si le code est correct</label>
             <textarea
               value={siteTexts.messagesCodeCorrect.join("\n")}
               onChange={(e) => setSiteText("messagesCodeCorrect", e.target.value.split("\n"))}
               rows={3}
               className="bg-white border border-acier/20 rounded-lg px-3 py-2 mb-3 w-full"
             />
-            <label className="block text-sm text-nuit/75 mb-1">Si le code est incorrect</label>
+            <label className="block text-sm text-nuit/90 mb-1">Si le code est incorrect</label>
             <textarea
               value={siteTexts.messagesCodeIncorrect.join("\n")}
               onChange={(e) => setSiteText("messagesCodeIncorrect", e.target.value.split("\n"))}
@@ -1358,7 +1358,7 @@ function AdminPanel({ gameId }: { gameId: string }) {
             </button>
             <button
               onClick={() => setSiteTexts(DEFAULT_GAME_TEXTS)}
-              className="text-nuit/75 underline text-sm"
+              className="text-nuit/90 underline text-sm"
             >
               Réinitialiser aux textes par défaut
             </button>
@@ -1413,7 +1413,7 @@ function TextGroup({ title, children }: { title: string; children: React.ReactNo
 function TextField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div className="mb-3">
-      <label className="block text-sm text-nuit/75 mb-1">{label}</label>
+      <label className="block text-sm text-nuit/90 mb-1">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -1436,7 +1436,7 @@ function TextAreaField({
 }) {
   return (
     <div className="mb-3">
-      <label className="block text-sm text-nuit/75 mb-1">{label}</label>
+      <label className="block text-sm text-nuit/90 mb-1">{label}</label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}

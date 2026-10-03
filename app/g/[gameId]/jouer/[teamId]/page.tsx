@@ -627,7 +627,7 @@ export default function JouerEquipe() {
             </button>
           )}
           <EditableText as="h1" value={texts.finTitre} onSave={(v) => saveGlobalText("finTitre", v)} className="font-headline text-2xl font-bold mb-4 text-nuit" />
-          <EditableText as="p" multiline value={texts.finSousTitre} onSave={(v) => saveGlobalText("finSousTitre", v)} className="text-nuit/75 max-w-sm" />
+          <EditableText as="p" multiline value={texts.finSousTitre} onSave={(v) => saveGlobalText("finSousTitre", v)} className="text-nuit/90 max-w-sm" />
         </div>
       </main>
     );
@@ -665,7 +665,7 @@ export default function JouerEquipe() {
       <main className="min-h-screen bg-brume text-center">
       <div className="max-w-xl mx-auto w-full flex flex-col px-6 py-8">
       <div className="mb-6">
-        <div className="flex items-center justify-between text-sm text-nuit/75 mb-2">
+        <div className="flex items-center justify-between text-sm text-nuit/90 mb-2">
           <span className="font-medium text-nuit">{team?.nom}</span>
           <span>{isCodePage || isInfoPage ? "Page suivante" : "Énigme"}</span>
           {timeLeft !== null && (
@@ -745,7 +745,7 @@ export default function JouerEquipe() {
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
-              className="self-start rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-6 py-3 font-semibold text-nuit shadow-md shadow-acier/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-brume-2 disabled:text-nuit/30 disabled:shadow-none disabled:cursor-not-allowed"
+              className="self-start rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-6 py-3 font-semibold text-nuit shadow-md shadow-acier/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-brume-2 disabled:text-nuit/55 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {texts.codePageBouton}
             </button>
@@ -839,7 +839,7 @@ export default function JouerEquipe() {
             <button
               onClick={handleAnswerLibre}
               disabled={!reponseLibre.trim()}
-              className="self-start rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-6 py-3 font-semibold text-nuit shadow-md shadow-acier/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-brume-2 disabled:text-nuit/30 disabled:shadow-none disabled:cursor-not-allowed"
+              className="self-start rounded-full bg-gradient-to-r from-lueur to-lueur-fonce px-6 py-3 font-semibold text-nuit shadow-md shadow-acier/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-none disabled:bg-brume-2 disabled:text-nuit/55 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {texts.jeuLabelValider}
             </button>
@@ -899,7 +899,7 @@ export default function JouerEquipe() {
           )}
           {editMode && (
             <div className="mt-3 pt-3 border-t border-acier/30 text-center">
-              <p className="text-[10px] font-semibold text-nuit/75 uppercase tracking-wide mb-1">
+              <p className="text-[10px] font-semibold text-nuit/90 uppercase tracking-wide mb-1">
                 Fragment affiché après cette énigme (texte libre, facultatif — Maj+Entrée pour une nouvelle ligne)
               </p>
               <EditableText

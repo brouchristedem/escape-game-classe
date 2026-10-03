@@ -232,7 +232,7 @@ export default function ChecklistJourJ({ gameId, teams }: { gameId: string; team
               <p className="font-medium text-nuit">
                 {ICONE[p.niveau]} {p.titre}
               </p>
-              {p.detail && <p className="text-nuit/75 mt-0.5">{p.detail}</p>}
+              {p.detail && <p className="text-nuit/90 mt-0.5">{p.detail}</p>}
             </li>
           ))}
         </ul>

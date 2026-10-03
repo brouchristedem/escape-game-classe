@@ -181,7 +181,7 @@ export default function Telecommande({
               onChange={(e) => setDureeDepart(e.target.value)}
               className="min-h-12 w-24 rounded-2xl border border-acier/20 bg-white px-3 text-base"
             />
-            <span className="text-nuit/75">min</span>
+            <span className="text-nuit/90">min</span>
             <button onClick={demarrerChrono} disabled={occupe} className={`${gros} flex-1 bg-lueur text-nuit`}>
               Démarrer
             </button>
@@ -205,7 +205,7 @@ export default function Telecommande({
             onChange={(e) => setDureeMessage(e.target.value)}
             className="min-h-12 w-20 rounded-2xl border border-acier/20 bg-white px-3 text-base"
           />
-          <span className="text-nuit/75">secondes</span>
+          <span className="text-nuit/90">secondes</span>
           <button onClick={diffuser} disabled={occupe || !texte.trim()} className={`${gros} flex-1 bg-acier-deep text-white`}>
             Diffuser
           </button>
@@ -219,7 +219,7 @@ export default function Telecommande({
 
       <Bloc titre={`👥 Équipes en direct (${teams.length})`} ouvert>
         {teams.length === 0 ? (
-          <p className="text-sm text-nuit/75">Aucune équipe pour l&apos;instant.</p>
+          <p className="text-sm text-nuit/90">Aucune équipe pour l&apos;instant.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {classees.map((team, i) => {
@@ -233,14 +233,14 @@ export default function Telecommande({
                     <p className="font-medium text-sm text-nuit truncate">
                       {i + 1}. {team.nom}
                     </p>
-                    <span className={`text-xs font-semibold shrink-0 ${termine ? "text-green-600" : "text-nuit/75"}`}>
+                    <span className={`text-xs font-semibold shrink-0 ${termine ? "text-green-600" : "text-nuit/90"}`}>
                       {!state ? "Pas commencé" : termine ? "Terminé 🏁" : `Énigme ${state.index + 1} / ${state.totalQuestions}`}
                     </span>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-acier/10 overflow-hidden my-1.5">
                     <div className={`h-full rounded-full ${termine ? "bg-spectre" : "bg-lueur-fonce"}`} style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-xs text-nuit/75">
+                  <div className="flex items-center justify-between gap-2 text-xs text-nuit/90">
                     <span>{state && activite > 0 ? `Dernière activité ${ilYa(maintenant - activite)}` : "—"}</span>
                     <LibererChefBouton gameId={gameId} team={team} state={state} />
                   </div>
